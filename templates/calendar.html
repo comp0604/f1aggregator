@@ -11,7 +11,7 @@
         .card { border: none; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .table-f1 th { background-color: #212529; color: white; text-align: center; }
         .table-f1 td { vertical-align: middle; text-align: center; }
-        .past-race { color: #adb5bd; background-color: #f1f3f5 !important; } /* 지난 경기는 연하게 표시 */
+        .past-race { color: #adb5bd; background-color: #f1f3f5 !important; }
         a { text-decoration: none; }
     </style>
 </head>
@@ -21,7 +21,6 @@
         <div class="container">
             <h1 class="fw-bold">🏎️ LecLovF1</h1>
             <p class="lead mb-3">2026 시즌 F1 그랑프리 공식 경기 일정 및 서킷 정보</p>
-            
             <div class="mt-3">
                 <a href="/" class="btn btn-outline-light fw-bold px-4 me-2 shadow-sm">📰 최신 뉴스</a>
                 <a href="/standings" class="btn btn-outline-light fw-bold px-4 me-2 shadow-sm">🏆 드라이버 순위</a>
@@ -40,10 +39,10 @@
                         <table class="table table-hover table-bordered table-f1 mb-0">
                             <thead>
                                 <tr>
-                                    <th style="width: 10%;">라운드</th>
+                                    <th style="width: 12%;">라운드</th>
                                     <th style="width: 35%;">그랑프리 대회명</th>
                                     <th style="width: 35%;">개최 서킷 및 위치</th>
-                                    <th style="width: 20%;">결승 레이스 일자</th>
+                                    <th style="width: 18%;">결승 일자</th>
                                 </tr>
                             </thead>
                             <tbody id="calendar-rows">
@@ -75,34 +74,27 @@
                 .then(response => response.json())
                 .then(data => {
                     const races = data.MRData.RaceTable.Races;
-                    
                     if (!races || races.length === 0) {
-                        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">아직 2026 시즌 일정 데이터가 생성되지 않았습니다.</td></tr>`;
+                        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">일정이 아직 업데이트되지 않았습니다.</td></tr>`;
                         return;
                     }
 
                     let htmlContent = "";
-
                     races.forEach(race => {
                         const round = race.round;
                         const raceName = race.raceName;
                         const circuitName = race.Circuit.circuitName;
                         const locality = race.Circuit.Location.locality;
                         const country = race.Circuit.Location.country;
-                        const raceDateStr = race.date; // YYYY-MM-DD 형식
+                        const raceDateStr = race.date;
                         
-                        // 날짜 비교를 위해 Date 객체 생성
                         const raceDate = new Date(raceDateStr);
-                        
-                        // 이미 지난 경기는 스타일을 다르게 지정 (시각적 효과)
                         let rowClass = "";
-                        if (raceDate < today) {
-                            rowClass = "past-race";
-                        }
+                        if (raceDate < today) { rowClass = "past-race"; }
 
                         htmlContent += `
                             <tr class="${rowClass}">
-                                <td class="fw-bold text-secondary">${round} Round</td>
+                                <td class="fw-bold text-secondary">${round} 라운드</td>
                                 <td class="text-start ps-3 fw-bold text-dark">${raceName}</td>
                                 <td class="text-start ps-3 small text-muted">
                                     <strong>${circuitName}</strong><br>
@@ -112,12 +104,10 @@
                             </tr>
                         `;
                     });
-
                     tableBody.innerHTML = htmlContent;
                 })
                 .catch(error => {
-                    console.error("일정 API 호출 오류:", error);
-                    tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">⚠️ 일정을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">⚠️ 일정을 불러올 수 없습니다.</td></tr>`;
                 });
         });
     </script>

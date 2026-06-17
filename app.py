@@ -3,13 +3,15 @@ import sqlite3
 import os
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv()  # .env 파일 로드
 
 app = Flask(__name__)
 
 def get_db_connection():
+    # 현재 실행 중인 app.py 파일의 절대 경로를 기준으로 DB 위치 지정
     base_dir = os.path.dirname(os.path.abspath(__file__))
     db_path = os.path.join(base_dir, 'f1_news.db')
+    
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
@@ -17,6 +19,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     conn = get_db_connection()
+    # 최신 뉴스 10개 가져오기
     articles = conn.execute(
         'SELECT id, title, link, summary_ko, image_url, published_at FROM articles ORDER BY published_at DESC LIMIT 10'
     ).fetchall()
@@ -30,14 +33,14 @@ def article_detail(article_id):
     conn.close()
     return render_template('detail.html', article=article)
 
-# 🔥 [수정] 기존의 conn.execute('SELECT * FROM standings...') 코드를 싹 지웁니다!
 @app.route('/standings')
 def standings():
+    # 자바스크립트 처리 방식으로 전환되어 DB 조회 없이 템플릿만 렌더링
     return render_template('standings.html')
 
-# 🔥 [수정] 캘린더도 마찬가지로 데이터베이스를 거치지 않고 화면만 열어줍니다.
 @app.route('/calendar')
 def calendar():
+    # 자바스크립트 처리 방식으로 전환되어 DB 조회 없이 템플릿만 렌더링
     return render_template('calendar.html')
 
 if __name__ == '__main__':

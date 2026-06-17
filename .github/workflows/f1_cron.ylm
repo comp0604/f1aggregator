@@ -2,10 +2,9 @@ name: F1 News Daily Update
 
 on:
   schedule:
-    # UTC 기준 시간 (한국 시간 = UTC + 9시)
-    # 하루 2번: 한국 시간 오전 8시(23:00 UTC), 오후 8시(11:00 UTC)에 실행
+    # 하루 2번 정기 실행 (한국 시각 오전 8시, 오후 8시)
     - cron: '0 11,23 * * *'
-  workflow_dispatch: # 필요할 때 깃허브 웹에서 수동으로 실행 가능하게 함
+  workflow_dispatch: # 수동 테스트 버턴 활성화
 
 jobs:
   update-news:
@@ -15,7 +14,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/checkout@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -24,7 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Aggregator
+    - name: Run Aggregator (News Only)
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
@@ -35,5 +34,5 @@ jobs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         git add f1_news.db
-        # 변경 사항이 있을 때만 커밋
-        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 자동 뉴스 업데이트" && git push)
+        # 뉴스가 추가되어 DB 변경점이 생겼을 때만 조건부 커밋
+        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 뉴스 애그리게이터 정기 업데이트 완료" && git push)
