@@ -31,10 +31,11 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS articles 
         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-         title TEXT, 
-         link TEXT UNIQUE, 
-         summary_ko TEXT, 
-         published_at DATETIME DEFAULT CURRENT_TIMESTAMP)
+        title TEXT, 
+        link TEXT UNIQUE, 
+        summary_ko TEXT, 
+        image_url TEXT,
+        published_at DATETIME DEFAULT CURRENT_TIMESTAMP)
     ''')
     conn.commit()
     return conn
@@ -174,6 +175,13 @@ def run_f1_aggregator():
         matched_keys = set() # 중복 검사를 위해 감지된 고유 키워드를 저장하는 집합
         total_article_score = 0
 
+        # 피드에서 이미지 URL 추출하기
+        image_url = ""
+        if 'media_content' in entry and entry.media_content:
+            image_url = entry.media_content[0]['url']
+        elif 'enclosures' in entry and entry.enclosures:
+            image_url = entry.enclosures[0]['href']
+
         # 시간 페널티 계산
         if hasattr(entry, 'published_parsed') and entry.published_parsed:
             pub_time = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
@@ -217,7 +225,8 @@ def run_f1_aggregator():
             "link": link,
             "summary_raw": summary_raw,
             "score": total_article_score,
-            "matched_keys": matched_keys # 필터링을 위해 추가
+            "matched_keys": matched_keys,
+            "image_url": image_url   # 필터링을 위해 추가
         })
 
     # --- 🧹 스마트 중복 필터링 로직 ---
@@ -296,8 +305,8 @@ def run_f1_aggregator():
 
             try:
                 cursor.execute(
-                    "INSERT INTO articles (title, link, summary_ko) VALUES (?, ?, ?)",
-                    (title_ko, article['link'], summary_ko)
+                    "INSERT INTO articles (title, link, summary_ko, image_url) VALUES (?, ?, ?, ?)",
+                    (title_ko, article['link'], summary_ko, article['image_url'])
                 )
                 conn.commit() 
                 saved_count += 1

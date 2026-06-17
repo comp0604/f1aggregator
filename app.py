@@ -20,10 +20,17 @@ def get_db_connection():
 def index():
     conn = get_db_connection()
     articles = conn.execute(
-        'SELECT id, title, link, summary_ko, published_at FROM articles ORDER BY published_at DESC LIMIT 10'
+        'SELECT id, title, link, summary_ko, image_url, published_at FROM articles ORDER BY published_at DESC LIMIT 10'
     ).fetchall()
     conn.close()
     return render_template('index.html', articles=articles)
+
+@app.route('/article/<int:article_id>')
+def article_detail(article_id):
+    conn = get_db_connection()
+    article = conn.execute('SELECT * FROM articles WHERE id = ?', (article_id,)).fetchone()
+    conn.close()
+    return render_template('detail.html', article=article)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

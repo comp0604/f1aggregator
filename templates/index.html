@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏎️ 실시간 해외 F1 뉴스 요약</title>
+    <title>🏎️ LecLovF1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
@@ -20,8 +20,8 @@
 
     <header class="f1-header text-center">
         <div class="container">
-            <h1 class="fw-bold">🏎️ 실시간 해외 F1 뉴스 요약 서비스</h1>
-            <p class="lead mb-0">AI 기자가 해외 모터스포츠 뉴스를 가장 빠르게 3줄 요약해 드립니다.</p>
+            <h1 class="fw-bold">🏎️ LecLovF1</h1>
+            <p class="lead mb-0">AI 기자가 해외 모터스포츠 뉴스를 가장 빠르게 요약해 드립니다.</p>
         </div>
     </header>
 
@@ -35,8 +35,17 @@
                             <span class="badge badge-f1">F1 NEWS</span>
                             <small class="text-muted">{{ article.published_at }}</small>
                         </div>
+                        
+                        {% if article.image_url %}
+                        <div class="mb-3 text-center">
+                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer">
+                                <img src="{{ article.image_url }}" alt="뉴스 이미지" class="img-fluid rounded" style="max-height: 350px; width: 100%; object-fit: cover;">
+                            </a>
+                        </div>
+                        {% endif %}
+
                         <h3 class="h5 fw-bold mb-3">
-                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-dark">{{ article.title }}</a>
+                            <a href="/article/{{ article.id }}" target="_blank" rel="noopener noreferrer" class="text-dark">{{ article.title }}</a>
                         </h3>
                         <div class="summary-box">
                             {% for line in article.summary_ko.split('\n') %}
@@ -46,7 +55,7 @@
                             {% endfor %}
                         </div>
                         <div class="text-end mt-3">
-                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary">원문 보기 ↗️</a>
+                            <a href="/article/{{ article.id }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary">원문 보기 ↗️</a>
                         </div>
                     </div>
                     {% endfor %}
