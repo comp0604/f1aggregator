@@ -43,5 +43,10 @@ def calendar():
     # 자바스크립트 처리 방식으로 전환되어 DB 조회 없이 템플릿만 렌더링
     return render_template('calendar.html')
 
+@app.route('/google260c9375dfa2eed2.html')
+def google_search_console_verify():
+    # 구글이 이 주소로 접근하면 방금 만든 html 파일을 보여줍니다.
+    return render_template('google260c9375dfa2eed2.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
