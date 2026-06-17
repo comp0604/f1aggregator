@@ -8,14 +8,32 @@
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
         .f1-header { background-color: #e10600; color: white; padding: 2rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .card:hover { transform: translateY(-3px); }
-        .badge-f1 { background-color: #e10600; }
+        
+        /* 대시보드 카드 스타일 */
+        .dashboard-card { 
+            background: linear-gradient(135deg, #1f2124 0%, #0b0c10 100%); 
+            border: none; 
+            border-radius: 12px; 
+            color: white; 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            min-height: 240px;
+        }
+        .dashboard-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 20px rgba(225, 6, 0, 0.2); 
+            border: 1px solid rgba(225, 6, 0, 0.4);
+        }
+        
+        /* 일반 뉴스 카드 스타일 */
+        .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 12px 15px; border-radius: 0 8px 8px 0; }
         .summary-line { margin-bottom: 6px; font-size: 0.95rem; color: #333; line-height: 1.5; }
+        
+        /* 미니 순위표 스타일 */
+        .mini-rank-row { background-color: rgba(255,255,255,0.07); border-radius: 6px; padding: 6px 12px; margin-bottom: 6px; font-size: 0.9rem; }
+        
         a { text-decoration: none; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body>
@@ -34,32 +52,63 @@
 
     <main class="container">
         
-        <div id="f1-live-dashboard" class="card shadow-sm border-0 text-white overflow-hidden mb-4" style="background: linear-gradient(135deg, #1f2124 0%, #0b0c10 100%);">
-            <div class="card-body p-4 text-center">
-                <div id="dashboard-loading">
-                    <div class="spinner-border text-danger" role="status"></div>
-                    <p class="mt-2 mb-0 text-muted small">F1 라이브 타임 테이블 동기화 중...</p>
-                </div>
-                <div id="dashboard-content" class="d-none">
+        <h3 class="h5 fw-bold text-dark mb-3">📊 2026 시즌 실시간 스냅샷 <span class="text-muted small fw-normal">(클릭 시 상세 페이지 이동)</span></h3>
+        <div class="row g-3 mb-5">
+            
+            <div class="col-md-4">
+                <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/calendar'">
+                    <div>
+                        <span class="badge bg-danger mb-2">📅 NEXT GRAND PRIX</span>
+                        <h4 id="dash-race-name" class="fw-bold text-truncate text-warning">로딩 중...</h4>
+                        <p id="dash-race-circuit" class="text-white-50 small mb-0">서킷 정보 불러오는 중...</p>
                     </div>
+                    
+                    <div class="d-flex justify-content-between gap-2 text-center mt-3">
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-day" class="fw-bold fs-5">00</div><div class="text-muted" style="font-size:0.6rem;">일</div></div>
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-hour" class="fw-bold fs-5">00</div><div class="text-muted" style="font-size:0.6rem;">시</div></div>
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-min" class="fw-bold fs-5">00</div><div class="text-muted" style="font-size:0.6rem;">분</div></div>
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-sec" class="fw-bold fs-5 text-danger">00</div><div class="text-muted" style="font-size:0.6rem;">초</div></div>
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-4">
+                <div class="card dashboard-card p-4" onclick="location.href='/standings'">
+                    <span class="badge bg-primary mb-2">🏆 DRIVER TOP 3</span>
+                    <h5 class="fw-bold mb-3">드라이버 챔피언십</h5>
+                    <div id="dash-drivers-box">
+                        <div class="text-center text-muted small py-4">순위표 동기화 중...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card dashboard-card p-4" onclick="location.href='/standings'">
+                    <span class="badge bg-success mb-2">⚙️ TEAM TOP 3</span>
+                    <h5 class="fw-bold mb-3">컨스트럭터 챔피언십</h5>
+                    <div id="dash-teams-box">
+                        <div class="text-center text-muted small py-4">순위표 동기화 중...</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="row">
             <div class="col-lg-9 mx-auto">
-                <h3 class="h4 fw-bold text-dark mb-4 border-bottom pb-2">📡 실시간 주요 뉴스 요약</h3>
+                <h3 class="h5 fw-bold text-dark mb-4 border-bottom pb-2">📡 실시간 F1 주요 뉴스</h3>
                 
                 {% if articles %}
                     {% for article in articles %}
-                    <div class="card p-4 mb-4">
+                    <div class="card news-card p-4 mb-4">
                         {% if article.image_url %}
-                        <div class="mb-3 overflow-hidden rounded" style="max-height: 300px;">
-                            <img src="{{ article.image_url }}" alt="뉴스 이미지" class="img-fluid w-100" style="object-fit: cover;">
+                        <div class="mb-3 overflow-hidden rounded" style="max-height: 280px;">
+                            <img src="{{ article.image_url }}" alt="뉴스" class="img-fluid w-100" style="object-fit: cover;">
                         </div>
                         {% endif %}
 
                         <h4 class="h5 fw-bold mb-3">
-                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-dark hover-danger">{{ article.title }}</a>
+                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-dark">{{ article.title }}</a>
                         </h4>
                         
                         <div class="summary-box">
@@ -77,8 +126,8 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="text-center py-5 bg-white rounded card">
-                        <p class="text-muted fs-5 mb-0">아직 수집된 뉴스가 없습니다.<br>GitHub Actions 크론 스크립트가 실행되면 뉴스가 채워집니다.</p>
+                    <div class="text-center py-5 bg-white rounded card news-card">
+                        <p class="text-muted fs-5 mb-0">아직 요약된 뉴스가 없습니다. 크론 업데이트를 기다리는 중...</p>
                     </div>
                 {% endif %}
             </div>
@@ -91,120 +140,82 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // 오픈소스 API 엔드포인트 모음
             const calendarUrl = "https://api.jolpi.ca/ergast/f1/2026.json";
-            const contentBox = document.getElementById("dashboard-content");
-            const loadingBox = document.getElementById("dashboard-loading");
-            
+            const driversUrl = "https://api.jolpi.ca/ergast/f1/2026/driverStandings.json";
+            const teamsUrl = "https://api.jolpi.ca/ergast/f1/2026/constructorStandings.json";
+
+            // 1. 경기 일정 및 카운트다운 타이머 비동기 처리
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
                     const races = data.MRData.RaceTable.Races;
                     const now = new Date();
-                    const day = now.getDay(); // 0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토
-                    
                     let nextRace = races.find(r => new Date(r.date + (r.time ? 'T' + r.time : '')) > now);
-                    let lastRace = [...races].reverse().find(r => new Date(r.date + (r.time ? 'T' + r.time : '')) <= now);
-                    
                     if (!nextRace) nextRace = races[races.length - 1];
 
-                    let isRaceWeekend = false;
-                    let currentWeekendRace = null;
+                    document.getElementById("dash-race-name").innerText = nextRace.raceName;
+                    document.getElementById("dash-race-circuit").innerText = `📍 ${nextRace.Circuit.circuitName}`;
 
-                    if ([5, 6, 0, 1].includes(day)) {
-                        if (nextRace) {
-                            const diffToNext = (new Date(nextRace.date) - now) / (1000 * 60 * 60 * 24);
-                            if (diffToNext <= 3) { isRaceWeekend = true; currentWeekendRace = nextRace; }
-                        }
-                        if (!isRaceWeekend && lastRace) {
-                            const diffFromLast = (now - new Date(lastRace.date)) / (1000 * 60 * 60 * 24);
-                            if (diffFromLast <= 2) { isRaceWeekend = true; currentWeekendRace = lastRace; }
-                        }
+                    const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
+                    
+                    function updateClock() {
+                        const distance = targetTime - new Date().getTime();
+                        if (distance < 0) return;
+
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        document.getElementById("d-day").innerText = String(days).padStart(2, '0');
+                        document.getElementById("d-hour").innerText = String(hours).padStart(2, '0');
+                        document.getElementById("d-min").innerText = String(minutes).padStart(2, '0');
+                        document.getElementById("d-sec").innerText = String(seconds).padStart(2, '0');
                     }
+                    updateClock();
+                    setInterval(updateClock, 1000);
+                }).catch(() => { document.getElementById("dash-race-name").innerText = "일정 동기화 실패"; });
 
-                    loadingBox.classList.add("d-none");
-                    contentBox.classList.remove("d-none");
-
-                    if (isRaceWeekend && currentWeekendRace) {
-                        // 🏎️ [금, 토요일] -> 세션 안내 가이드 모드
-                        if (day === 5 || day === 6) {
-                            contentBox.innerHTML = `
-                                <span class="badge bg-danger mb-2 animate-pulse">🔴 RACE WEEKEND IN PROGRESS</span>
-                                <h2 class="fw-bold text-uppercase">${currentWeekendRace.raceName}</h2>
-                                <p class="text-white-50 small mb-3">📍 ${currentWeekendRace.Circuit.circuitName} (${currentWeekendRace.Circuit.Location.locality})</p>
-                                <div class="p-3 bg-dark rounded border border-secondary text-start mx-auto" style="max-width: 500px;">
-                                    <h6 class="fw-bold text-danger mb-2">📅 주말 레이스 세션 가이드 (현지 시각)</h6>
-                                    <div class="d-flex justify-content-between small border-bottom border-secondary py-1"><span>연습 주행 (FP1, FP2, FP3)</span> <span class="text-muted">금~토요일 세션 완료</span></div>
-                                    <div class="d-flex justify-content-between small border-bottom border-secondary py-1"><span>공식 예선 (Qualifying)</span> <span class="fw-bold text-warning">토요일 하이라이트</span></div>
-                                    <div class="d-flex justify-content-between small py-1"><span>결승 레이스 (Grand Prix)</span> <span class="fw-bold text-success">${currentWeekendRace.date} 일요일</span></div>
-                                </div>
-                            `;
-                        } else {
-                            // 🏁 [일, 월요일] -> 최신 레이스 포디움 1~3위 결과 라이브 출력 모드
-                            fetch("https://api.jolpi.ca/ergast/f1/2026/last/results.json")
-                                .then(res => res.json())
-                                .then(resData => {
-                                    const raceData = resData.MRData.RaceTable.Races[0];
-                                    const results = raceData.Results.slice(0, 3);
-                                    
-                                    let podiumHtml = "";
-                                    results.forEach((r, idx) => {
-                                        const medals = ["🥇", "🥈", "🥉"];
-                                        podiumHtml += `
-                                            <div class="d-flex justify-content-between align-items-center bg-dark p-2 my-2 rounded border-start border-4 ${idx===0?'border-warning':idx===1?'border-light':'border-danger'} text-start">
-                                                <span class="fw-bold">${medals[idx]} ${r.position}위. ${r.Driver.givenName} ${r.Driver.familyName}</span>
-                                                <span class="badge bg-secondary">${r.Constructor.name}</span>
-                                            </div>
-                                        `;
-                                    });
-
-                                    contentBox.innerHTML = `
-                                        <span class="badge bg-success mb-2">🏁 OFFICIAL RACE RESULTS</span>
-                                        <h2 class="fw-bold text-uppercase">${raceData.raceName}</h2>
-                                        <p class="text-white-50 small mb-3">그랑프리 최종 포디움 달성 드라이버 리포트</p>
-                                        <div class="mx-auto" style="max-width: 500px;">${podiumHtml}</div>
-                                    `;
-                                }).catch(() => {
-                                    contentBox.innerHTML = `<h5 class="my-3 text-warning">🏎️ ${currentWeekendRace.raceName} 결승 레이스가 한창 진행 중입니다! 결과 취합 중...</h5>`;
-                                });
-                        }
-                    } else {
-                        // ⏳ [화, 수, 목요일] -> 다음 레이스 카운트다운 타이머 모드
-                        contentBox.innerHTML = `
-                            <span class="badge bg-secondary mb-2">⏳ NEXT GRAND PRIX</span>
-                            <h2 class="fw-bold text-uppercase text-danger">${nextRace.raceName}</h2>
-                            <p class="text-white-50 small mb-4">📍 ${nextRace.Circuit.circuitName} (${nextRace.Circuit.Location.locality}, ${nextRace.Circuit.Location.country})</p>
-                            
-                            <div class="d-flex justify-content-center gap-3 mb-2 mx-auto" style="max-width: 400px;">
-                                <div class="bg-dark p-3 rounded border border-secondary flex-fill"><div id="timer-days" class="fs-2 fw-bold text-white">00</div><div class="text-muted" style="font-size:0.7rem;">DAYS</div></div>
-                                <div class="bg-dark p-3 rounded border border-secondary flex-fill"><div id="timer-hours" class="fs-2 fw-bold text-white">00</div><div class="text-muted" style="font-size:0.7rem;">HOURS</div></div>
-                                <div class="bg-dark p-3 rounded border border-secondary flex-fill"><div id="timer-mins" class="fs-2 fw-bold text-white">00</div><div class="text-muted" style="font-size:0.7rem;">MINS</div></div>
-                                <div class="bg-dark p-3 rounded border border-secondary flex-fill"><div id="timer-secs" class="fs-2 fw-bold text-danger">00</div><div class="text-muted" style="font-size:0.7rem;">SECS</div></div>
+            // 2. 드라이버 순위 TOP 3 처리
+            fetch(driversUrl)
+                .then(res => res.json())
+                .then(data => {
+                    const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
+                    const box = document.getElementById("dash-drivers-box");
+                    let html = "";
+                    const medals = ["🥇", "🥈", "🥉"];
+                    
+                    list.forEach((item, idx) => {
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center mini-rank-row">
+                                <span>${medals[idx]} <strong class="text-white">${item.Driver.familyName}</strong></span>
+                                <span class="text-warning small fw-bold">${item.points} P</span>
                             </div>
                         `;
+                    });
+                    box.innerHTML = html;
+                }).catch(() => { document.getElementById("dash-drivers-box").innerHTML = "드라이버 순위 로드 에러"; });
 
-                        const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
-                        
-                        function updateClock() {
-                            const distance = targetTime - new Date().getTime();
-                            if (distance < 0) { clearInterval(timerInterval); location.reload(); return; }
-
-                            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                            document.getElementById("timer-days").innerText = String(days).padStart(2, '0');
-                            document.getElementById("timer-hours").innerText = String(hours).padStart(2, '0');
-                            document.getElementById("timer-mins").innerText = String(minutes).padStart(2, '0');
-                            document.getElementById("timer-secs").innerText = String(seconds).padStart(2, '0');
-                        }
-                        updateClock();
-                        const timerInterval = setInterval(updateClock, 1000);
-                    }
-                })
-                .catch(err => {
-                    loadingBox.innerHTML = `<p class="text-danger small mb-0">⚠️ 캘린더 타임라인 스케줄 로드 실패</p>`;
-                });
+            // 3. 컨스트럭터(팀) 순위 TOP 3 처리
+            fetch(teamsUrl)
+                .then(res => res.json())
+                .then(data => {
+                    const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
+                    const box = document.getElementById("dash-teams-box");
+                    let html = "";
+                    const medals = ["🥇", "🥈", "🥉"];
+                    
+                    list.forEach((item, idx) => {
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center mini-rank-row">
+                                <span>${medals[idx]} <strong class="text-white-50">${item.Constructor.name}</strong></span>
+                                <span class="text-success small fw-bold">${item.points} P</span>
+                            </div>
+                        `;
+                    });
+                    box.innerHTML = html;
+                }).catch(() => { document.getElementById("dash-teams-box").innerHTML = "팀 순위 로드 에러"; });
         });
     </script>
 </body>
