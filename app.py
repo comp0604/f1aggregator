@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import sqlite3
+import os  # <-- 1. 상단에 os 라이브러리를 추가합니다.
 
 from dotenv import load_dotenv
 load_dotenv()  # 프로젝트 폴더 내의 .env 파일을 읽어옵니다.
@@ -7,7 +8,11 @@ load_dotenv()  # 프로젝트 폴더 내의 .env 파일을 읽어옵니다.
 app = Flask(__name__)
 
 def get_db_connection():
-    conn = sqlite3.connect('f1_news.db')
+    # <-- 2. 현재 실행 중인 app.py 파일의 절대 경로를 기준으로 db 위치를 찾습니다.
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, 'f1_news.db')
+    
+    conn = sqlite3.connect(db_path) # <-- 3. db_path로 연결합니다.
     conn.row_factory = sqlite3.Row
     return conn
 
