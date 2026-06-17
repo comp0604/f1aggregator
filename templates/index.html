@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏎️ 실시간 해외 F1 뉴스 요약</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
+        .f1-header { background-color: #e10600; color: white; padding: 2rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .badge-f1 { background-color: #e10600; }
+        .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 10px 15px; border-radius: 0 8px 8px 0; }
+        .summary-line { margin-bottom: 5px; font-size: 0.95rem; color: #333; }
+        a { text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header class="f1-header text-center">
+        <div class="container">
+            <h1 class="fw-bold">🏎️ 실시간 해외 F1 뉴스 요약 서비스</h1>
+            <p class="lead mb-0">AI 기자가 해외 모터스포츠 뉴스를 가장 빠르게 3줄 요약해 드립니다.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                {% if articles %}
+                    {% for article in articles %}
+                    <div class="card mb-4 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge badge-f1">F1 NEWS</span>
+                            <small class="text-muted">{{ article.published_at }}</small>
+                        </div>
+                        <h3 class="h5 fw-bold mb-3">
+                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-dark">{{ article.title }}</a>
+                        </h3>
+                        <div class="summary-box">
+                            {% for line in article.summary_ko.split('\n') %}
+                                {% if line.strip() %}
+                                    <p class="summary-line">🔹 {{ line }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="text-end mt-3">
+                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary">원문 보기 ↗️</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted fs-5">아직 수집된 뉴스가 없습니다. 데이터 수집 노트북을 먼저 실행해 주세요!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-muted py-4 mt-5 border-top">
+        <p>© 2026 F1 뉴스 애그리게이터 파이프라인 프로젝트</p>
+    </footer>
+</body>
+</html>
