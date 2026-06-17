@@ -28,6 +28,8 @@ def clean_html(raw_html):
 def init_db():
     conn = sqlite3.connect('f1_news.db')
     cursor = conn.cursor()
+    
+    # 1. 테이블이 없으면 생성
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS articles 
         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -37,6 +39,11 @@ def init_db():
         image_url TEXT,
         published_at DATETIME DEFAULT CURRENT_TIMESTAMP)
     ''')
+    
+    # 🔥 [중요] 파일 전체를 지우는 대신, 오직 뉴스 테이블만 비웁니다!
+    # 매번 완전히 새로 수집된 최신 뉴스만 보여주고 싶다면 아래 한 줄의 주석(#)을 해제하세요.
+    cursor.execute("DELETE FROM articles") 
+    
     conn.commit()
     return conn
 
@@ -88,7 +95,11 @@ def get_f1_summary_ko(raw_title, raw_text):
         return raw_title, "요약을 생성할 수 없습니다."
 
 def run_f1_aggregator():
-    F1_RSS_URL = "https://www.motorsport.com/rss/f1/news/"
+    F1_RSS_URL = [
+    "https://www.formula1.com/en/latest/all.xml",
+    "https://www.fia.com/rss/news/championships/f1-world-championship-1200.xml",
+]
+
     trends_score = {}
     important_entries = []
 
@@ -97,28 +108,35 @@ def run_f1_aggregator():
 
     print("🏎️ 해외 F1 실시간 뉴스 수집 중...")
     
-    req = urllib.request.Request(
-        F1_RSS_URL, 
-        headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
-    )
-    
+    # 1. 여러 피드의 기사를 하나로 모을 리스트 생성
+    all_entries = []
     ssl_context = ssl._create_unverified_context()
     
-    try:
-        with urllib.request.urlopen(req, timeout=10, context=ssl_context) as response:
-            rss_data = response.read()
-        feed = feedparser.parse(rss_data)
-    except Exception as e:
-        print(f"❌ RSS 피드를 연결하는 중 오류가 발생했습니다: {e}")
-        return
+    # 2. F1_RSS_URL 리스트를 돌며 하나씩 요청
+    for url in F1_RSS_URL:
+        try:
+            req = urllib.request.Request(
+                url, 
+                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+            )
+            with urllib.request.urlopen(req, timeout=10, context=ssl_context) as response:
+                rss_data = response.read()
+            
+            feed = feedparser.parse(rss_data)
+            if feed.entries:
+                all_entries.extend(feed.entries)
+                print(f"✅ 수집 성공: {url.split('/')[2]} ({len(feed.entries)}개 기사)")
+                
+        except Exception as e:
+            # 특정 사이트가 터져도 다른 사이트 수집은 계속 진행하도록 예외 처리
+            print(f"❌ RSS 피드 연결 실패 ({url}): {e}")
     
-    if not feed.entries:
-        if hasattr(feed, 'bozo_exception'):
-            print(f"🔍 파싱 에러 상세 내용: {feed.bozo_exception}")
+    # 3. 모든 피드를 돌았는데 기사가 하나도 없는 경우 처리
+    if not all_entries:
         print("❌ 뉴스를 가져오지 못했거나 최신 뉴스가 없습니다.")
         return
 
-    print(f"성공! 총 {len(feed.entries)}개의 최신 뉴스를 가져왔습니다.\n")
+    print(f"\n✨ 성공! 총 {len(all_entries)}개의 최신 뉴스를 가져왔습니다.\n")
     print("-" * 50)
 
     now_utc = datetime.now(timezone.utc)
@@ -157,6 +175,7 @@ def run_f1_aggregator():
 
     status_keywords = {
         "win": {"keywords": ["win", "triumph", "victory"], "display": "Win", "score": 300},
+        "podium": {"keywords": ["podium", "top 3"], "display": "Podium", "score": 200},
         "champion": {"keywords": ["champion", "championship"], "display": "Champion", "score": 50},
         "pole": {"keywords": ["pole"], "display": "Pole", "score": 150},
         "penalty": {"keywords": ["penalty"], "display": "Penalty", "score": 80},
@@ -165,7 +184,7 @@ def run_f1_aggregator():
         "worst": {"keywords": ["worst", "decline", "regression", "reliability", "concerns"], "display": "Worst", "score": 20}
     }
 
-    for entry in feed.entries:
+    for entry in all_entries:
         title = entry.title
         title_lower = title.lower()
         link = entry.link

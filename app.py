@@ -32,5 +32,16 @@ def article_detail(article_id):
     conn.close()
     return render_template('detail.html', article=article)
 
+@app.route('/standings')
+def standings():
+    # DB 조회 코드를 싹 지우고, 그냥 템플릿만 렌더링합니다.
+    # 진짜 순위 데이터는 사용자의 브라우저가 직접 가져올 겁니다.
+    return render_template('standings.html')
+
+@app.route('/calendar')
+def calendar():
+    # DB 조회 없이 템플릿만 깔끔하게 리턴합니다.
+    return render_template('calendar.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
