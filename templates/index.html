@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏎️ LecLovF1 - AI F1 뉴스 허브</title>
+    <title>🏎️ LecLovF1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
-        .f1-header { background-color: #e10600; color: white; padding: 2rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
+        .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 대시보드 카드 스타일 */
+        /* 미니멀 대시보드 카드 */
         .dashboard-card { 
             background: linear-gradient(135deg, #1f2124 0%, #0b0c10 100%); 
             border: none; 
@@ -17,22 +19,17 @@
             color: white; 
             cursor: pointer; 
             transition: transform 0.2s, box-shadow 0.2s; 
-            min-height: 240px;
+            min-height: 180px;
         }
         .dashboard-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 8px 20px rgba(225, 6, 0, 0.2); 
-            border: 1px solid rgba(225, 6, 0, 0.4);
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 20px rgba(225, 6, 0, 0.15); 
         }
         
-        /* 일반 뉴스 카드 스타일 */
-        .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 12px 15px; border-radius: 0 8px 8px 0; }
         .summary-line { margin-bottom: 6px; font-size: 0.95rem; color: #333; line-height: 1.5; }
-        
-        /* 미니 순위표 스타일 */
-        .mini-rank-row { background-color: rgba(255,255,255,0.07); border-radius: 6px; padding: 6px 12px; margin-bottom: 6px; font-size: 0.9rem; }
-        
+        .mini-rank-row { background-color: rgba(255,255,255,0.06); border-radius: 6px; padding: 5px 12px; margin-bottom: 5px; font-size: 0.85rem; }
         a { text-decoration: none; }
     </style>
 </head>
@@ -40,74 +37,61 @@
 
     <header class="f1-header text-center">
         <div class="container">
-            <h1 class="fw-bold">🏎️ LecLovF1</h1>
-            <p class="lead mb-3">AI 기자가 해외 모터스포츠 뉴스를 가장 빠르게 요약해 드립니다.</p>
-            <div class="mt-3">
-                <a href="/" class="btn btn-light text-danger fw-bold px-4 me-2 shadow-sm">📰 최신 뉴스</a>
-                <a href="/standings" class="btn btn-outline-light fw-bold px-4 me-2 shadow-sm">🏆 드라이버 순위</a>
-                <a href="/calendar" class="btn btn-outline-light fw-bold px-4 shadow-sm">📅 경기 일정</a>
-            </div>
+            <h1 class="fw-bold m-0">
+                <a href="/" class="f1-logo">🏎️ LecLovF1</a>
+            </h1>
         </div>
     </header>
 
     <main class="container">
         
-        <h3 class="h5 fw-bold text-dark mb-3">📊 2026 시즌 실시간 스냅샷 <span class="text-muted small fw-normal">(클릭 시 상세 페이지 이동)</span></h3>
-        <div class="row g-3 mb-5">
-            
+        <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/calendar'">
                     <div>
-                        <span class="badge bg-danger mb-2">📅 NEXT GRAND PRIX</span>
-                        <h4 id="dash-race-name" class="fw-bold text-truncate text-warning">로딩 중...</h4>
-                        <p id="dash-race-circuit" class="text-white-50 small mb-0">서킷 정보 불러오는 중...</p>
+                        <h4 id="dash-race-name" class="fw-bold text-truncate text-warning mb-1">로딩 중...</h4>
+                        <p id="dash-race-circuit" class="text-white-50 small mb-0">연동 중...</p>
                     </div>
-                    
-                    <div class="d-flex justify-content-between gap-2 text-center mt-3">
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-day" class="fw-bold fs-5">00</div><div class="text-muted" style="font-size:0.6rem;">일</div></div>
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-hour" class="fw-bold fs-5">00</div><div class="text-muted" style="font-size:0.6rem;">시</div></div>
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-min" class="fw-bold fs-5">00</div><div class="text-muted" style="font-size:0.6rem;">분</div></div>
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-sec" class="fw-bold fs-5 text-danger">00</div><div class="text-muted" style="font-size:0.6rem;">초</div></div>
+                    <div class="d-flex justify-content-between gap-1 text-center mt-2">
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-day" class="fw-bold fs-5">00</div></div>
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-hour" class="fw-bold fs-5">00</div></div>
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-min" class="fw-bold fs-5">00</div></div>
+                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-sec" class="fw-bold fs-5 text-danger">00</div></div>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card dashboard-card p-4" onclick="location.href='/standings'">
-                    <span class="badge bg-primary mb-2">🏆 DRIVER TOP 3</span>
-                    <h5 class="fw-bold mb-3">드라이버 챔피언십</h5>
-                    <div id="dash-drivers-box">
-                        <div class="text-center text-muted small py-4">순위표 동기화 중...</div>
+                <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/standings'">
+                    <h6 class="fw-bold text-white-50 mb-2">Driver Top 3</h6>
+                    <div id="dash-drivers-box" class="flex-grow-1 d-flex flex-column justify-content-center">
+                        <div class="text-center text-muted small">동기화 중...</div>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card dashboard-card p-4" onclick="location.href='/standings'">
-                    <span class="badge bg-success mb-2">⚙️ TEAM TOP 3</span>
-                    <h5 class="fw-bold mb-3">컨스트럭터 챔피언십</h5>
-                    <div id="dash-teams-box">
-                        <div class="text-center text-muted small py-4">순위표 동기화 중...</div>
+                <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/standings'">
+                    <h6 class="fw-bold text-white-50 mb-2">Team Top 3</h6>
+                    <div id="dash-teams-box" class="flex-grow-1 d-flex flex-column justify-content-center">
+                        <div class="text-center text-muted small">동기화 중...</div>
                     </div>
                 </div>
             </div>
-
         </div>
 
         <div class="row">
             <div class="col-lg-9 mx-auto">
-                <h3 class="h5 fw-bold text-dark mb-4 border-bottom pb-2">📡 실시간 F1 주요 뉴스</h3>
-                
                 {% if articles %}
                     {% for article in articles %}
-                    <div class="card news-card p-4 mb-4">
+                    <div class="card news-card p-4 mb-3">
                         {% if article.image_url %}
-                        <div class="mb-3 overflow-hidden rounded" style="max-height: 280px;">
-                            <img src="{{ article.image_url }}" alt="뉴스" class="img-fluid w-100" style="object-fit: cover;">
+                        <div class="mb-3 overflow-hidden rounded" style="max-height: 250px;">
+                            <img src="{{ article.image_url }}" alt="news" class="img-fluid w-100" style="object-fit: cover;">
                         </div>
                         {% endif %}
 
-                        <h4 class="h5 fw-bold mb-3">
+                        <h4 class="h6 fw-bold mb-3">
                             <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-dark">{{ article.title }}</a>
                         </h4>
                         
@@ -119,103 +103,66 @@
                             {% endfor %}
                         </div>
                         
-                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 text-muted small border-top">
-                            <span>수집일시: {{ article.published_at }} (UTC)</span>
-                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-danger px-3">원문 보기 ↗️</a>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 text-muted" style="font-size: 0.8rem;">
+                            <span>{{ article.published_at }}</span>
+                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-danger">원문 보기 ↗️</a>
                         </div>
                     </div>
                     {% endfor %}
                 {% else %}
                     <div class="text-center py-5 bg-white rounded card news-card">
-                        <p class="text-muted fs-5 mb-0">아직 요약된 뉴스가 없습니다. 크론 업데이트를 기다리는 중...</p>
+                        <p class="text-muted small mb-0">최신 뉴스를 불러오는 중입니다...</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </main>
 
-    <footer class="text-center text-muted py-4 mt-5 border-top">
-        <p>© 2026 F1 뉴스 애그리게이터 파이프라인 프로젝트</p>
-    </footer>
-
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // 오픈소스 API 엔드포인트 모음
             const calendarUrl = "https://api.jolpi.ca/ergast/f1/2026.json";
             const driversUrl = "https://api.jolpi.ca/ergast/f1/2026/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/2026/constructorStandings.json";
 
-            // 1. 경기 일정 및 카운트다운 타이머 비동기 처리
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
                     const races = data.MRData.RaceTable.Races;
-                    const now = new Date();
-                    let nextRace = races.find(r => new Date(r.date + (r.time ? 'T' + r.time : '')) > now);
+                    let nextRace = races.find(r => new Date(r.date + (r.time ? 'T' + r.time : '')) > new Date());
                     if (!nextRace) nextRace = races[races.length - 1];
 
-                    document.getElementById("dash-race-name").innerText = nextRace.raceName;
-                    document.getElementById("dash-race-circuit").innerText = `📍 ${nextRace.Circuit.circuitName}`;
+                    document.getElementById("dash-race-name").innerText = nextRace.raceName.replace("Grand Prix", "GP");
+                    document.getElementById("dash-race-circuit").innerText = nextRace.Circuit.Location.locality;
 
                     const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
-                    
                     function updateClock() {
                         const distance = targetTime - new Date().getTime();
                         if (distance < 0) return;
-
-                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                        document.getElementById("d-day").innerText = String(days).padStart(2, '0');
-                        document.getElementById("d-hour").innerText = String(hours).padStart(2, '0');
-                        document.getElementById("d-min").innerText = String(minutes).padStart(2, '0');
-                        document.getElementById("d-sec").innerText = String(seconds).padStart(2, '0');
+                        document.getElementById("d-day").innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                        document.getElementById("d-hour").innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                        document.getElementById("d-min").innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                        document.getElementById("d-sec").innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
                     }
-                    updateClock();
-                    setInterval(updateClock, 1000);
-                }).catch(() => { document.getElementById("dash-race-name").innerText = "일정 동기화 실패"; });
+                    updateClock(); setInterval(updateClock, 1000);
+                });
 
-            // 2. 드라이버 순위 TOP 3 처리
-            fetch(driversUrl)
-                .then(res => res.json())
-                .then(data => {
-                    const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
-                    const box = document.getElementById("dash-drivers-box");
-                    let html = "";
-                    const medals = ["🥇", "🥈", "🥉"];
-                    
-                    list.forEach((item, idx) => {
-                        html += `
-                            <div class="d-flex justify-content-between align-items-center mini-rank-row">
-                                <span>${medals[idx]} <strong class="text-white">${item.Driver.familyName}</strong></span>
-                                <span class="text-warning small fw-bold">${item.points} P</span>
-                            </div>
-                        `;
-                    });
-                    box.innerHTML = html;
-                }).catch(() => { document.getElementById("dash-drivers-box").innerHTML = "드라이버 순위 로드 에러"; });
+            fetch(driversUrl).then(res => res.json()).then(data => {
+                const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
+                let html = ""; const medals = ["🥇", "🥈", "🥉"];
+                list.forEach((item, idx) => {
+                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Driver.familyName}</span><span class="text-warning fw-bold">${item.points}</span></div>`;
+                });
+                document.getElementById("dash-drivers-box").innerHTML = html;
+            });
 
-            // 3. 컨스트럭터(팀) 순위 TOP 3 처리
-            fetch(teamsUrl)
-                .then(res => res.json())
-                .then(data => {
-                    const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
-                    const box = document.getElementById("dash-teams-box");
-                    let html = "";
-                    const medals = ["🥇", "🥈", "🥉"];
-                    
-                    list.forEach((item, idx) => {
-                        html += `
-                            <div class="d-flex justify-content-between align-items-center mini-rank-row">
-                                <span>${medals[idx]} <strong class="text-white-50">${item.Constructor.name}</strong></span>
-                                <span class="text-success small fw-bold">${item.points} P</span>
-                            </div>
-                        `;
-                    });
-                    box.innerHTML = html;
-                }).catch(() => { document.getElementById("dash-teams-box").innerHTML = "팀 순위 로드 에러"; });
+            fetch(teamsUrl).then(res => res.json()).then(data => {
+                const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
+                let html = ""; const medals = ["🥇", "🥈", "🥉"];
+                list.forEach((item, idx) => {
+                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Constructor.name.split(" ")[0]}</span><span class="text-success fw-bold">${item.points}</span></div>`;
+                });
+                document.getElementById("dash-teams-box").innerHTML = html;
+            });
         });
     </script>
 </body>
