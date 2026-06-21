@@ -11,7 +11,7 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
         .f1-logo:hover { color: rgba(255,255,255,0.8); }
 
-        /* 🔄 사이트 맨 위 가로 스크롤 캘린더 컨테이너 */
+        /* 🔄 최상단 가로 스크롤 캘린더 타임라인 */
         .calendar-scroll-wrapper {
             background-color: #1f2124;
             padding: 1.2rem 1rem;
@@ -21,7 +21,6 @@
             scroll-behavior: smooth;
             border-bottom: 5px solid #e10600;
         }
-        /* 스크롤바 디자인 슬림 최적화 */
         .calendar-scroll-wrapper::-webkit-scrollbar { height: 6px; }
         .calendar-scroll-wrapper::-webkit-scrollbar-track { background: #1f2124; }
         .calendar-scroll-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
@@ -29,26 +28,26 @@
 
         /* 🎫 가로형 레이스 일정 카드 */
         .mini-race-card {
-            flex: 0 0 240px; /* 카드별 가로 폭 고정 */
+            flex: 0 0 240px; 
             background-color: #2d3035;
             border-radius: 12px;
             padding: 1rem;
             color: white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            transition: transform 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            cursor: pointer;
         }
-        .mini-race-card:hover { transform: translateY(-2px); }
+        .mini-race-card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.2); }
 
         /* 🟡 다음/현재 그랑프리 강조 스타일 (노란색) */
         .mini-race-card.current-race {
             background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
             color: #1f2124 !important;
             font-weight: bold;
-            border: 2px solid #fff;
             box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
         }
         .mini-race-card.current-race .race-round,
@@ -57,19 +56,82 @@
             color: rgba(31, 33, 36, 0.75) !important;
         }
 
-        /* ⚪ 지난 그랑프리 스타일 (흐리게 처리) */
-        .mini-race-card.past-race {
-            opacity: 0.4;
-            background-color: #1a1c1e;
+        /* 🟢 사용자가 현재 클릭하여 선택한 카드 표시 */
+        .mini-race-card.selected-card {
+            border: 2px solid #e10600 !important;
+            box-shadow: 0 0 12px rgba(225, 6, 0, 0.6);
         }
+
+        /* ⚪ 지난 그랑프리 스타일 */
+        .mini-race-card.past-race { opacity: 0.45; background-color: #1a1c1e; }
 
         .race-round { font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; }
         .race-title { font-size: 1.1rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .race-loc { font-size: 0.8rem; margin-top: 2px; }
         .race-date { font-size: 0.9rem; font-weight: bold; margin-top: 12px; text-align: right; }
 
-        /* 하단 메인 바로가기 버튼 구역 */
-        .content-container { max-width: 1200px; margin: 3rem auto; padding: 0 1rem; }
+        /* 🏛️ [신규] 그랑프리 상세 정보 디스플레이 구역 (전광판 패턴) */
+        .race-detail-section {
+            position: relative;
+            background-color: #1f2124;
+            color: white;
+            min-height: 380px;
+            border-radius: 24px;
+            overflow: hidden;
+            padding: 2.5rem !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+        }
+        /* 🌌 배경 분위기용 대형 블러 레이어 */
+        .race-detail-section::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: var(--detail-bg, none);
+            background-size: cover;
+            background-position: center;
+            filter: blur(25px) brightness(0.18); /* 고배율 블러 및 딤 처리 */
+            transform: scale(1.1);
+            z-index: 0;
+            transition: background-image 0.4s ease-in-out;
+        }
+        .race-detail-section > * { position: relative; z-index: 1; }
+
+        /* 📸 서킷 지도/사진 우측 프레임 */
+        .detail-img-wrapper {
+            width: 100%;
+            max-width: 340px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .detail-circuit-map {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 16px;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            display: none;
+        }
+
+        /* 위키 요약 글 상자 */
+        .wiki-extract-box {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.85);
+            max-width: 600px;
+            background-color: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
         .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
         .back-btn:hover { background-color: #e10600; color: white; }
     </style>
@@ -87,8 +149,45 @@
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         </div>
 
-    <div class="content-container text-center">
-        <button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button>
+    <div class="content-container">
+        
+        <div class="card race-detail-section mb-4" id="detail-panel">
+            <div class="container-fluid p-0">
+                <div class="row align-items-center g-4">
+                    
+                    <div class="col-md-7 col-lg-8">
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <span id="detail-round" class="badge bg-danger px-3 py-1.5 mb-2 fs-6">ROUND 00</span>
+                                <h1 id="detail-title" class="display-5 fw-bold text-warning m-0">그랑프리를 선택해 주세요</h1>
+                                <p id="detail-circuit-name" class="fs-4 text-white-50 m-0">서킷 정보를 동기화 중입니다.</p>
+                                <p id="detail-location" class="fs-5 text-muted m-0">📍 위치 로딩 중...</p>
+                            </div>
+                            
+                            <div id="detail-wiki" class="wiki-extract-box">
+                                상단 스크롤 바에서 레이스를 클릭하시면, 위키피디아 엔진이 해당 서킷의 공식 히스토리와 세부 데이터를 실시간으로 크롤링하여 요약해 줍니다.
+                            </div>
+
+                            <div class="fs-5 fw-bold text-white mt-1">
+                                📅 공식 레이스 일시: <span id="detail-date" class="text-danger">0000-00-00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5 col-lg-4 d-flex justify-content-center justify-content-md-end">
+                        <div class="detail-img-wrapper">
+                            <img id="detail-map-img" class="detail-circuit-map" src="" alt="Circuit Map">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button>
+        </div>
+
     </div>
 
     <script>
@@ -96,59 +195,129 @@
             const apiUrl = "https://api.jolpi.ca/ergast/f1/current.json";
             const scrollBox = document.getElementById("calendar-scroll-box");
             const today = new Date();
+            
+            let globalRacesData = []; // 이벤트 클릭 매핑용 전역 배열 공간
 
+            // 🏛️ 특정 그랑프리 데이터를 디스플레이 패널에 바인딩하는 핵심 함수
+            function selectAndDisplayRace(race, cardElement = null) {
+                // 1. 모든 카드의 선택 하이라이트 효과 해제 후 현재 요소 활성화
+                document.querySelectorAll(".mini-race-card").forEach(c => c.classList.remove("selected-card"));
+                if (cardElement) {
+                    cardElement.classList.add("selected-card");
+                }
+
+                // 2. 기본 텍스트 정보 매핑
+                document.getElementById("detail-round").innerText = `${race.round} ROUND`;
+                document.getElementById("detail-title").innerText = race.raceName;
+                document.getElementById("detail-circuit-name").innerText = race.Circuit.circuitName;
+                document.getElementById("detail-location").innerText = `📍 ${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`;
+                document.getElementById("detail-date").innerText = race.date;
+
+                // 3. 위키피디아 API 연동 (배경 블러 + 전면 고화질 지도 동시 바인딩)
+                const wikiUrl = race.Circuit.url;
+                if (wikiUrl) {
+                    const pageTitle = wikiUrl.split('/wiki/')[1];
+                    if (pageTitle) {
+                        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${pageTitle}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                // 요약글 바인딩
+                                if (data.extract) {
+                                    document.getElementById("detail-wiki").innerText = data.extract;
+                                } else {
+                                    document.getElementById("detail-wiki").innerText = "해당 서킷의 상세 위키 요약 링크가 비어 있습니다.";
+                                }
+
+                                // 이미지 바인딩
+                                const imgUrl = data.originalimage?.source || data.thumbnail?.source;
+                                if (imgUrl) {
+                                    // 배경 블러 주입
+                                    document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${imgUrl}')`);
+                                    // 우측 프레임 지도 주입
+                                    const mapImg = document.getElementById("detail-map-img");
+                                    mapImg.src = imgUrl;
+                                    mapImg.style.display = "block";
+                                }
+                            })
+                            .catch(err => {
+                                console.error("위키 정보 로드 실패:", err);
+                                document.getElementById("detail-wiki").innerText = "위키피디아 데이터를 불러오는 중 오류가 발생했습니다.";
+                            });
+                    }
+                }
+            }
+
+            // API 패치 및 최초 리스트 빌드
             fetch(apiUrl)
                 .then(res => res.json())
                 .then(data => {
                     const races = data.MRData.RaceTable.Races;
+                    globalRacesData = races; // 데이터 백업
+                    
                     let htmlContent = "";
-                    let nextRaceFound = false;
+                    let nextRaceIdx = -1;
 
                     races.forEach((race, idx) => {
-                        // 날짜 및 시간 파싱 결합 데이터 생성
                         const raceDateTimeStr = race.date + (race.time ? 'T' + race.time : 'T23:59:59');
                         const raceDate = new Date(raceDateTimeStr);
                         
                         let cardClass = "";
                         let cardIdAttr = "";
 
-                        // 1. 지난 경기 체크
                         if (raceDate < today) {
                             cardClass = "past-race";
-                        } 
-                        // 2. 다가올 가장 가까운 경기를 노란색 활성화 카드로 칠하기
-                        else if (!nextRaceFound) {
+                        } else if (nextRaceIdx === -1) {
                             cardClass = "current-race";
-                            nextRaceFound = true;
-                            cardIdAttr = 'id="next-active-race"'; // 포커싱용 ID 부여
+                            nextRaceIdx = idx; // 최초로 마주치는 미래 경기를 활성화 인덱스로 저장
+                            cardIdAttr = 'id="next-active-race"';
                         }
 
+                        // data-idx 속성을 부여하여 클릭 시 배열 번호를 식별할 수 있게 조치
                         htmlContent += `
-                            <div ${cardIdAttr} class="mini-race-card ${cardClass}">
+                            <div ${cardIdAttr} class="mini-race-card ${cardClass}" data-idx="${idx}">
                                 <div>
-                                    <div class="race-round text-danger text-uppercase">${race.round} ROUND</div>
+                                    <div class="race-round text-danger text-uppercase">${race.round} Rd</div>
                                     <div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div>
-                                    <div class="race-loc text-white-50">📍 ${race.Circuit.Location.locality}, ${race.Circuit.Location.country}</div>
+                                    <div class="race-loc text-white-50">📍 ${race.Circuit.Location.locality}</div>
                                 </div>
                                 <div class="race-date text-warning">${race.date}</div>
                             </div>
                         `;
                     });
                     
-                    // 시즌이 완전히 종료되었을 경우 예외처리로 마지막 라운드 활성화
-                    if (!nextRaceFound && races.length > 0) {
-                        htmlContent = htmlContent.replace(`class="mini-race-card past-race"`, `id="next-active-race" class="mini-race-card current-race"`);
+                    // 만약 모든 경기가 과거라면 (시즌 종료) 마지막 레이스를 기본 타겟으로 설정
+                    if (nextRaceIdx === -1 && races.length > 0) {
+                        nextRaceIdx = races.length - 1;
                     }
 
                     scrollBox.innerHTML = htmlContent;
 
-                    // ✨ [UX 핵심] 현재 활성화된 노란색 그랑프리 카드를 화면 정중앙으로 스무스하게 자동 스크롤 이동
+                    // 💥 [최초 자동화 실행] 결정된 활성화 그랑프리 세부 정보를 하단에 즉시 랜더링
+                    if (nextRaceIdx !== -1) {
+                        const defaultRace = globalRacesData[nextRaceIdx];
+                        const defaultCardEl = document.querySelector(`[data-idx="${nextRaceIdx}"]`);
+                        selectAndDisplayRace(defaultRace, defaultCardEl);
+                    }
+
+                    // 🎯 스무스 스크롤 이동
                     setTimeout(() => {
                         const activeCard = document.getElementById("next-active-race");
                         if (activeCard) {
                             activeCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                         }
                     }, 250);
+
+                    // 🕹️ 이벤트 위임 패턴을 이용한 상단 카드 클릭 감지 및 동적 화면 전환 로직
+                    scrollBox.addEventListener("click", function(e) {
+                        const card = e.target.closest(".mini-race-card");
+                        if (!card) return;
+
+                        const targetIdx = parseInt(card.getAttribute("data-idx"));
+                        const selectedRaceData = globalRacesData[targetIdx];
+                        
+                        // 화면 갱신 함수 실행
+                        selectAndDisplayRace(selectedRaceData, card);
+                    });
                 });
         });
     </script>
