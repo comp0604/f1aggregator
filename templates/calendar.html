@@ -65,7 +65,18 @@
         .d-podium-name { font-size: 0.8rem; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; }
 
         .detail-img-wrapper { width: 100%; max-width: 320px; height: 240px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
+        
+        /* 🚨 [CSS 긴급 패치 완료] 이미지에 다시 강력한 스타일 제약 적용 */
+        .detail-circuit-map {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 16px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            display: none;
+        }
 
         .wiki-extract-box { font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; }
         .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
@@ -84,7 +95,7 @@
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
             <div class="spinner-border text-danger spinner-border-sm"></div>
-            <span>F1 일정 타임라인 연결 중...</span>
+            <span>대시보드 라이브 데이터 로드 중...</span>
         </div>
     </div>
 
@@ -111,7 +122,7 @@
 
                     <div class="col-md-4 d-flex justify-content-center justify-content-md-end" id="detail-map-col">
                         <div class="detail-img-wrapper">
-                            <img id="detail-map-img" src="" alt="Circuit Map">
+                            <img id="detail-map-img" class="detail-circuit-map" src="" alt="Circuit Map">
                         </div>
                     </div>
 
@@ -127,7 +138,6 @@
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
 
-            // 공통 이미지/설명문 렌더링 함수
             function renderDetailPanel(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
@@ -152,7 +162,6 @@
                 const tCol = document.getElementById("detail-text-col");
                 const mCol = document.getElementById("detail-map-col");
 
-                // 구멍 유무와 관계없이 백엔드가 수집을 대행해 주는 포디움 API 비동기 노크
                 if (race.is_past) {
                     fetch(`/api/race-podium/${race.round}`)
                         .then(res => res.json())
@@ -198,7 +207,6 @@
                 }
             }
 
-            // 1단계: 메인 리스트 초고속 렌더링
             fetch("/api/calendar-list")
                 .then(res => res.json())
                 .then(data => {
@@ -211,7 +219,7 @@
                         let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
                         
                         if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
-                        if (race.winner_name && !race.is_next) cardClass += " has-team-color";
+                        if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
 
                         let winnerBadge = "";
                         if (race.winner_name) {
@@ -238,7 +246,6 @@
 
                     scrollBox.innerHTML = html;
 
-                    // 스크롤바 카드 내 미니 우승자 썸네일 순차적 비동기 로딩
                     localRacesArray.forEach(race => {
                         if (race.winner_wiki) {
                             fetch(`/api/wiki-meta/${race.winner_wiki}`)
