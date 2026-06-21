@@ -8,11 +8,45 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
-        .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 🏎️ 대시보드 카드 공통 스타일 */
+        /* 💥 [그랑프리 전용] 화면 끝에서 끝까지 일직선으로 채워지는 대형 배너 */
+        .grandprix-full-banner {
+            position: relative;
+            background-color: #1f2124;
+            color: white;
+            cursor: pointer;
+            min-height: 340px;
+            overflow: hidden;
+            padding: 2rem 4rem !important; /* 내부 여백 */
+            width: 100%;
+            margin-bottom: 2.5rem; /* 아래 랭킹 보드들과의 간격 */
+            border: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .grandprix-full-banner::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: var(--bg-image, none); 
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.2); 
+            transform: scale(1.1); 
+            z-index: 0;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        .grandprix-full-banner > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 🏎️ 드챔 & 컨챔용 박스 형태 카드 스타일 (기존 유지) */
         .dashboard-row-card { 
             position: relative; 
             background-color: #1f2124; 
@@ -31,7 +65,6 @@
             box-shadow: 0 10px 25px rgba(225, 6, 0, 0.22); 
         }
 
-        /* 🌌 배경 분위기용 블러 레이어 */
         .dashboard-row-card::before {
             content: "";
             position: absolute;
@@ -50,11 +83,11 @@
             z-index: 1;
         }
 
-        /* 🎯 그랑프리 카드를 위한 가로 정렬(Row) 컨테이너 */
+        /* 그랑프리 가로 정렬 컨테이너 */
         .row-content-race {
             display: flex;
             align-items: center;
-            justify-content: space-between; /* 💥 좌우 끝 배치 */
+            justify-content: space-between; 
             width: 100%;
             height: 100%;
             gap: 2rem;
@@ -64,10 +97,10 @@
         .timer-num { font-size: 3rem !important; font-weight: 800; line-height: 1; }
         .timer-label { font-size: 0.8rem; letter-spacing: 1px; margin-top: 4px; }
 
-        /* ✨ 오른쪽 배치용 서킷 이미지 프레임 */
+        /* 오른쪽 배치용 서킷 이미지 프레임 */
         .circuit-img-wrapper {
             flex-shrink: 0;
-            width: 320px; /* 서킷 이미지 너비 확보 */
+            width: 320px; 
             height: 280px;
             display: flex;
             align-items: center;
@@ -77,15 +110,15 @@
         .dash-circuit-map {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* 짤리지 않게 전체 비율 유지 */
+            object-fit: contain; 
             border-radius: 16px;
             padding: 10px;
-            background-color: rgba(255, 255, 255, 0.95); /* 흰색 배경으로 지도 가독성 업 */
+            background-color: rgba(255, 255, 255, 0.95); 
             box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-            display: none; /* 이미지 로드 전 숨김 */
+            display: none; 
         }
 
-        /* 🏛️ 랭킹 보드용 정중앙 세로 바닥 정렬 시상대 컨테이너 */
+        /* 🏛️ 랭킹 보드용 컨테이너 */
         .row-content-rank {
             display: flex;
             flex-direction: column;
@@ -107,7 +140,7 @@
             margin: 0 auto; 
         }
 
-        /* 시상대 개별 기둥 디자인 */
+        /* 시상대 기둥 디자인 */
         .podium-step {
             background-color: rgba(255, 255, 255, 0.08);
             border-radius: 16px 16px 8px 8px;
@@ -122,7 +155,6 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
-        /* 포디움 등수별 기둥 높이 */
         .podium-1 {
             height: 100%; 
             background: linear-gradient(to top, rgba(255, 215, 0, 0.18), rgba(255, 215, 0, 0.04));
@@ -139,7 +171,7 @@
             border: 1px solid rgba(205, 127, 50, 0.22);
         }
 
-        /* 📸 대형 사진 스펙 (90px) */
+        /* 📸 포디움 이미지 */
         .podium-img {
             width: 90px;
             height: 90px;
@@ -179,36 +211,31 @@
         </div>
     </header>
 
-    <div class="container-fluid px-4 mb-5">
-        
-        <div class="row mb-4">
-            <div class="col-12">
-                <div id="card-race" class="card dashboard-row-card" onclick="location.href='/calendar'">
-                    <div class="row-content-race">
-                        
-                        <div class="d-flex flex-column align-items-start gap-4">
-                            <div>
-                                <span class="badge bg-danger px-3 py-1.5 mb-2">NEXT GRAND PRIX</span>
-                                <h1 id="dash-race-name" class="display-5 fw-bold text-warning m-0">로딩 중...</h1>
-                                <p id="dash-race-circuit" class="fs-5 text-white-50 m-0">연동 중...</p>
-                            </div>
-                            <div class="d-flex gap-3 text-center" style="max-width: 500px; width: 100%;">
-                                <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
-                                <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
-                                <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
-                                <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
-                            </div>
-                        </div>
-
-                        <div class="circuit-img-wrapper">
-                            <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
-                        </div>
-
-                    </div>
+    <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
+        <div class="row-content-race px-md-5">
+            
+            <div class="d-flex flex-column align-items-start gap-4">
+                <div>
+                    <span class="badge bg-danger px-3 py-1.5 mb-2">NEXT GRAND PRIX</span>
+                    <h1 id="dash-race-name" class="display-5 fw-bold text-warning m-0">로딩 중...</h1>
+                    <p id="dash-race-circuit" class="fs-5 text-white-50 m-0">연동 중...</p>
+                </div>
+                <div class="d-flex gap-3 text-center" style="max-width: 500px; width: 100%;">
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
                 </div>
             </div>
-        </div>
 
+            <div class="circuit-img-wrapper">
+                <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container-fluid px-4 mb-5">
         <div class="row g-4">
             <div class="col-lg-6">
                 <div id="card-driver" class="card dashboard-row-card h-100" onclick="location.href='/standings'">
@@ -238,7 +265,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <main class="container">
@@ -288,7 +314,6 @@
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
-            // 1. 블러 처리 배경용 위키피디아 로더
             function fetchWikiImage(wikiUrl, elementId) {
                 if (!wikiUrl) return;
                 const pageTitle = wikiUrl.split('/wiki/')[1]; 
@@ -304,7 +329,6 @@
                     }).catch(err => console.error(err));
             }
 
-            // 2. 전면 정밀 이미지 로더 (짤림 방지)
             function fetchForegroundImage(wikiUrl, imgElementId) {
                 if (!wikiUrl) return;
                 const pageTitle = wikiUrl.split('/wiki/')[1];
@@ -324,7 +348,7 @@
                     }).catch(err => console.error(err));
             }
 
-            // 1. 레이스 캘린더 연동 (배경 블러 + 우측 서킷 지도)
+            // 1. 레이스 캘린더 연동
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
@@ -335,9 +359,7 @@
                     document.getElementById("dash-race-name").innerText = nextRace.raceName.replace("Grand Prix", "GP");
                     document.getElementById("dash-race-circuit").innerText = nextRace.Circuit.Location.locality;
 
-                    // 배경 블러 이미지 로드
                     fetchWikiImage(nextRace.Circuit.url, "card-race");
-                    // 💥 우측 전면 서킷 지도 로드
                     fetchForegroundImage(nextRace.Circuit.url, "dash-circuit-map");
 
                     const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
