@@ -13,45 +13,38 @@
         .calendar-scroll-wrapper { background-color: #1f2124; padding: 1.2rem 1rem; display: flex; overflow-x: auto; gap: 1rem; align-items: center; border-bottom: 5px solid #e10600; min-height: 175px; }
         .calendar-scroll-wrapper::-webkit-scrollbar { height: 6px; }
         .calendar-scroll-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-        .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #e10600; }
-
-        .mini-race-card { flex: 0 0 240px; background-color: #2d3035; border-radius: 12px; padding: 1rem; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; border: 2px solid transparent; cursor: pointer; min-height: 145px; }
-        .mini-race-card.current-race { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important; color: #1f2124 !important; font-weight: bold; border: 2px solid #ffffff !important; }
+        
+        .mini-race-card { flex: 0 0 240px; background-color: #2d3035; border-radius: 12px; padding: 1rem; color: white; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid transparent; min-height: 145px; }
+        .mini-race-card.current-race { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important; color: #1f2124 !important; border: 2px solid #ffffff !important; }
         .mini-race-card.current-race .race-round, .mini-race-card.current-race .race-loc, .mini-race-card.current-race .race-date { color: rgba(31,33,36,0.8) !important; }
         .mini-race-card.has-team-color { color: white !important; }
         .mini-race-card.selected-card { border: 2px solid #e10600 !important; box-shadow: 0 0 12px rgba(225,6,0,0.6); }
         .mini-race-card.past-race { opacity: 0.85; }
 
-        .race-round { font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; }
+        .race-round { font-size: 0.85rem; font-weight: bold; }
         .race-title { font-size: 1.1rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .race-loc { font-size: 0.8rem; margin-top: 2px; }
         .race-date { font-size: 0.9rem; font-weight: bold; margin-top: 6px; text-align: right; }
 
         .scroll-winner-container { display: flex; align-items: center; gap: 8px; margin-top: 8px; background-color: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 6px; }
-        .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: white; display: none; }
+        .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; display: none; }
         .scroll-winner-name { font-size: 0.75rem; font-weight: bold; color: #ffc107; }
 
         .race-detail-section { position: relative; background-color: #1f2124; color: white; min-height: 400px; border-radius: 24px; overflow: hidden; padding: 2.5rem !important; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
-        .race-detail-section::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--detail-bg, none); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); transform: scale(1.1); z-index: 0; }
+        .race-detail-section::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--detail-bg, none); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); z-index: 0; }
         .race-detail-section > * { position: relative; z-index: 1; }
 
-        .huge-podium-container { display: flex; justify-content: center; gap: 20px; align-items: flex-end; height: 330px; margin-top: 20px; width: 100%; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        .huge-podium-container { display: flex; justify-content: center; gap: 20px; align-items: flex-end; height: 300px; margin-top: 20px; width: 100%; border-bottom: 2px solid rgba(255,255,255,0.1); }
         .huge-podium-step { border-radius: 20px 20px 0 0; padding: 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; width: 28%; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
         .huge-p-1 { height: 100%; z-index: 3; border-top: 3px solid rgba(255,255,255,0.4); }
-        .huge-p-2 { height: 78%; z-index: 2; border-top: 3px solid rgba(255,255,255,0.25); }
-        .huge-p-3 { height: 64%; z-index: 1; border-top: 3px solid rgba(255,255,255,0.15); }
+        .huge-p-2 { height: 75%; z-index: 2; border-top: 3px solid rgba(255,255,255,0.25); }
+        .huge-p-3 { height: 60%; z-index: 1; border-top: 3px solid rgba(255,255,255,0.15); }
 
-        .huge-avatar { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 4px solid rgba(255,255,255,0.6); background-color: white; margin-bottom: 10px; display: none; }
-        .huge-p-1 .huge-avatar { width: 120px; height: 120px; border-color: #ffc107; }
+        .huge-avatar { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.6); background-color: white; margin-bottom: 10px; display: none; }
+        .huge-p-1 .huge-avatar { width: 110px; height: 110px; border-color: #ffc107; }
         .huge-rank-icon { font-size: 1.8rem; margin-bottom: 4px; }
-        .huge-driver-name { font-size: 1.1rem; font-weight: bold; }
-        .huge-p-1 .huge-driver-name { font-size: 1.4rem; color: #ffc107; }
-
-        .accolade-badges { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; width: 100%; align-items: center; }
-        .accolade-badge { font-size: 0.72rem; font-weight: bold; padding: 4px 8px; border-radius: 6px; width: 90%; text-align: center; }
-        .badge-sprint { background-color: #0dcaf0; color: #000; }
-        .badge-fastest { background-color: #800080; color: #fff; }
-        .badge-pole { background-color: #dc3545; color: #fff; }
+        .huge-driver-name { font-size: 1.1rem; font-weight: bold; color: white;}
+        .huge-p-1 .huge-driver-name { font-size: 1.3rem; color: #ffc107; }
 
         .detail-circuit-map { width: 100%; max-height: 200px; object-fit: contain; background-color: white; padding: 8px; border-radius: 12px; display: none; }
         .wiki-extract-box { font-size: 0.95rem; line-height: 1.6; background-color: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; }
@@ -60,13 +53,10 @@
     </style>
 </head>
 <body>
-
-    <header class="f1-header text-center">
-        <div class="container"><h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1></div>
-    </header>
+    <header class="f1-header text-center"><div class="container"><h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1></div></header>
 
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
-        <div class="text-white mx-auto d-flex align-items-center gap-2"><div class="spinner-border text-danger spinner-border-sm"></div><span>데이터 동기화 중...</span></div>
+        <div class="text-white mx-auto d-flex align-items-center gap-2"><div class="spinner-border text-danger spinner-border-sm"></div><span>캘린더 데이터 동기화 중...</span></div>
     </div>
 
     <div class="content-container">
@@ -76,23 +66,16 @@
                     <div class="col-12">
                         <span id="detail-round" class="badge bg-danger px-3 py-1.5 mb-2 fs-6">ROUND 00</span>
                         <h1 id="detail-title" class="display-5 fw-bold text-warning m-0">그랑프리를 선택해 주세요</h1>
-                        <p id="detail-circuit-name" class="fs-4 text-white-50 m-0 mt-1">기록 파이프라인 대기 중</p>
-                        <p id="detail-location" class="fs-5 text-muted m-0">📍 위치 연동 | 📅 <span id="detail-date" class="text-danger">0000-00-00</span></p>
+                        <p id="detail-circuit-name" class="fs-4 text-white-50 m-0 mt-1">대기 중</p>
+                        <p id="detail-location" class="fs-5 text-muted m-0">📍 위치 | 📅 <span id="detail-date" class="text-danger">0000-00-00</span></p>
                     </div>
                 </div>
 
                 <div class="row d-none" id="main-podium-row"><div class="col-12"><div class="huge-podium-container" id="huge-podium-box"></div></div></div>
 
                 <div class="row mt-4 g-4 align-items-stretch" id="bottom-info-row">
-                    <div class="col-md-8"><div id="detail-wiki" class="wiki-extract-box">레이스를 선택하시면 요약 피드가 매핑됩니다.</div></div>
+                    <div class="col-md-8"><div id="detail-wiki" class="wiki-extract-box">레이스를 선택하시면 정보가 표시됩니다.</div></div>
                     <div class="col-md-4 d-flex align-items-center"><img id="detail-map-img" class="detail-circuit-map" src="" alt="Map"></div>
-                </div>
-
-                <div id="weekend-sessions-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
-                    <div class="col-12 px-0">
-                        <h5 class="text-warning fw-bold mb-3">📋 그랑프리 세션 리포트 (<span id="session-season-tag" class="text-white-50"></span>)</h5>
-                        <div class="row g-3" id="session-tables-container"></div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -100,13 +83,9 @@
     </div>
 
     <script>
-        const TEAM_COLORS = {
-            "ferrari": "#cc0000", "mclaren": "#ff8700", "redbull": "#061043", "mercedes": "#00a19c",
-            "astonmartin": "#006f62", "aston": "#006f62", "alpine": "#0090ff", "williams": "#005aff", "haas": "#787878", "sauber": "#c41130"
-        };
-        function getTeamHex(cid) {
-            if(!cid) return "#1a1c1e";
-            const key = cid.toLowerCase().replace(/[^a-z]/g, '');
+        const TEAM_COLORS = { "ferrari": "#cc0000", "mclaren": "#ff8700", "red bull": "#061043", "mercedes": "#00a19c", "aston martin": "#006f62", "alpine": "#0090ff", "williams": "#005aff", "haas": "#787878", "sauber": "#c41130" };
+        function getTeamHex(name) {
+            const key = (name||"").toLowerCase();
             for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
             return "#1a1c1e";
         }
@@ -114,39 +93,6 @@
         document.addEventListener("DOMContentLoaded", function() {
             const scrollBox = document.getElementById("calendar-scroll-box");
             let racesArray = [];
-
-            function loadSessions(round, isPast) {
-                const container = document.getElementById("session-tables-container");
-                const tag = document.getElementById("session-season-tag");
-                const season = isPast ? "current" : "2025";
-                
-                tag.innerText = isPast ? "2026 Live 데이터" : "2025 전 시즌 참조";
-                document.getElementById("weekend-sessions-row").classList.remove("d-none");
-                container.innerHTML = `<div class="text-center w-100 py-2 text-white-50">세션 로드 중...</div>`;
-                
-                fetch(`/api/race-sessions/${round}?season=${season}`)
-                    .then(r => r.json()).then(data => {
-                        let html = "";
-                        if(data.schedule) {
-                            const s = data.schedule;
-                            html += `<div class="col-md-3"><div class="p-3 rounded h-100" style="background-color:rgba(0,0,0,0.3); font-size:0.8rem; border-left:3px solid #e10600;">
-                                <div class="fw-bold text-danger mb-2">⏱️ TIMELINE</div>
-                                <div>FP1: ${s.fp1}</div><div>FP2: ${s.fp2}</div><div>FP3: ${s.fp3}</div>
-                                <div class="text-info">Quali: ${s.qualifying}</div>
-                                ${s.sprint !== "-" ? `<div class="text-success">Sprint: ${s.sprint}</div>` : ""}
-                                <div class="text-warning fw-bold">Race: ${s.race}</div>
-                            </div></div>`;
-                        }
-                        const makeBlock = (title, color, list, type) => {
-                            let rows = list && list.length > 0 ? list.map(x => `<div><b>${x.position}</b> ${x.driver.split(' ')[1]||x.driver} <span class="float-end text-muted" style="font-size:0.7rem;">${type==='q'?x.time : x.points+'P'}</span></div>`).join('') : '<div class="text-muted">기록 없음</div>';
-                            return `<div class="col-md-3"><div class="p-3 rounded h-100" style="background-color:rgba(0,0,0,0.3); font-size:0.8rem; border-left:3px solid ${color};"><div class="fw-bold mb-2" style="color:${color};">${title}</div>${rows}</div></div>`;
-                        };
-                        html += makeBlock("⏱️ QUALIFYING TOP 5", "#00a19c", data.qualifying, 'q');
-                        html += makeBlock("🏃‍♂️ SPRINT TOP 5", "#ff8700", data.sprint, 's');
-                        html += makeBlock("🏆 MAIN RACE TOP 5", "#ffc107", data.race, 'r');
-                        container.innerHTML = html;
-                    }).catch(() => { container.innerHTML = '<div class="text-danger p-2">기록 스트리밍 실패</div>'; });
-            }
 
             function renderDetail(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
@@ -166,28 +112,19 @@
                 if (race.is_past) {
                     pRow.classList.remove("d-none");
                     fetch(`/api/race-podium/${race.round}`).then(r => r.json()).then(data => {
-                        if(data && data.podium && data.podium.length >= 3) {
-                            const p = data.podium;
-                            const d1 = p.find(x => x.position === "1"), d2 = p.find(x => x.position === "2"), d3 = p.find(x => x.position === "3");
-                            const c1 = getTeamHex(d1.constructorId), c2 = getTeamHex(d2.constructorId), c3 = getTeamHex(d3.constructorId);
+                        if(data && data.length >= 3) {
+                            const d1 = data.find(x => x.position === "1"), d2 = data.find(x => x.position === "2"), d3 = data.find(x => x.position === "3");
+                            const c1 = getTeamHex(d1.constructorName), c2 = getTeamHex(d2.constructorName), c3 = getTeamHex(d3.constructorName);
                             
-                            const getAcc = (name) => {
-                                let b = '';
-                                if(name === data.pole) b += '<span class="accolade-badge badge-pole">🎯 Pole</span>';
-                                if(name === data.sprint_winner) b += '<span class="accolade-badge badge-sprint">🏃‍♂️ Sprint Win</span>';
-                                if(name === data.fastest_lap) b += '<span class="accolade-badge badge-fastest">⏱️ FL</span>';
-                                return b ? `<div class="accolade-badges">${b}</div>` : '';
-                            };
-
                             document.getElementById("huge-podium-box").innerHTML = `
                                 <div class="huge-podium-step huge-p-2" style="background:linear-gradient(to top, ${c2}88, ${c2}11); border-color:${c2};">
-                                    <img class="huge-avatar" id="h-ava-2" src=""><div class="huge-rank-icon">🥈</div><div class="huge-driver-name">${d2.familyName}</div>${getAcc(d2.familyName)}
+                                    <img class="huge-avatar" id="h-ava-2"><div class="huge-rank-icon">🥈</div><div class="huge-driver-name">${d2.familyName}</div>
                                 </div>
                                 <div class="huge-podium-step huge-p-1" style="background:linear-gradient(to top, ${c1}99, ${c1}22); border-color:${c1};">
-                                    <img class="huge-avatar" id="h-ava-1" src=""><div class="huge-rank-icon">🥇</div><div class="huge-driver-name">${d1.familyName}</div>${getAcc(d1.familyName)}
+                                    <img class="huge-avatar" id="h-ava-1"><div class="huge-rank-icon">🥇</div><div class="huge-driver-name">${d1.familyName}</div>
                                 </div>
                                 <div class="huge-podium-step huge-p-3" style="background:linear-gradient(to top, ${c3}88, ${c3}11); border-color:${c3};">
-                                    <img class="huge-avatar" id="h-ava-3" src=""><div class="huge-rank-icon">🥉</div><div class="huge-driver-name">${d3.familyName}</div>${getAcc(d3.familyName)}
+                                    <img class="huge-avatar" id="h-ava-3"><div class="huge-rank-icon">🥉</div><div class="huge-driver-name">${d3.familyName}</div>
                                 </div>`;
                             
                             const setAva = (title, id) => fetch(`/api/wiki-meta/${title}`).then(r=>r.json()).then(w => { if(w.image) { const i=document.getElementById(id); i.src=w.image; i.style.display="block"; } });
@@ -195,12 +132,10 @@
                         } else { pRow.classList.add("d-none"); }
                     }).catch(() => pRow.classList.add("d-none"));
                 } else { pRow.classList.add("d-none"); }
-
-                loadSessions(race.round, race.is_past);
             }
 
             fetch("/api/calendar-list").then(r => r.json()).then(data => {
-                if(!data.races) return;
+                if(!data.races) { scrollBox.innerHTML = '<div class="text-danger p-3">API 서버 응답 실패</div>'; return; }
                 racesArray = data.races;
                 let html = "";
                 racesArray.forEach(r => {
@@ -220,7 +155,7 @@
                     renderDetail(racesArray[data.next_race_idx]);
                     setTimeout(() => { const t = document.getElementById("next-active-race"); if(t) t.scrollIntoView({ behavior: 'smooth', inline: 'center' }); }, 200);
                 }
-            }).catch(() => { scrollBox.innerHTML = '<div class="text-danger p-3">대시보드 동기화 락 해제 실패</div>'; });
+            }).catch(() => { scrollBox.innerHTML = '<div class="text-danger p-3">서버 연결 실패</div>'; });
 
             scrollBox.addEventListener("click", function(e) {
                 const c = e.target.closest(".mini-race-card"); if(!c) return;
