@@ -26,7 +26,7 @@
         .calendar-scroll-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
         .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #e10600; }
 
-        /* 🎫 가로형 레이스 일정 카드 */
+        /* 🎫 가로형 레이스 일정 카드 기본형 */
         .mini-race-card {
             flex: 0 0 240px; 
             background-color: #2d3035;
@@ -44,17 +44,35 @@
         }
         .mini-race-card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.2); }
 
-        /* 🟡 다음/현재 그랑프리 강조 스타일 (노란색) */
+        /* 🟡 [예외 조항 1순위] 다음/현재 그랑프리 강조 스타일 (노란색 그라데이션 유지) */
         .mini-race-card.current-race {
             background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
             color: #1f2124 !important;
             font-weight: bold;
             box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+            border: 2px solid #ffffff !important;
+            opacity: 1 !important;
         }
         .mini-race-card.current-race .race-round,
         .mini-race-card.current-race .race-loc,
-        .mini-race-card.current-race .race-date {
+        .mini-race-card.current-race .race-date,
+        .mini-race-card.current-race .scroll-winner-name {
             color: rgba(31, 33, 36, 0.75) !important;
+        }
+
+        /* 🎨 [우승팀 팀컬러 조항] 결과 확정 카드 글자 대비 최적화 */
+        .mini-race-card.has-team-color {
+            color: #ffffff !important;
+        }
+        .mini-race-card.has-team-color .race-round {
+            color: rgba(255, 255, 255, 0.6) !important; /* 팀컬러 배경 위에서 가독성을 확보하기 위해 백색 딤 처리 */
+        }
+        .mini-race-card.has-team-color .race-date {
+            color: #ffffff !important;
+            opacity: 0.9;
+        }
+        .mini-race-card.has-team-color .scroll-winner-name {
+            color: #ffeb3b !important; /* 트로피 이름 황금색 고정 */
         }
 
         /* 🟢 선택된 카드 빨간색 테두리 */
@@ -63,24 +81,26 @@
             box-shadow: 0 0 12px rgba(225, 6, 0, 0.6);
         }
 
-        /* ⚪ 지난 그랑프리 스타일 */
-        .mini-race-card.past-race { opacity: 0.6; background-color: #1a1c1e; }
+        /* ⚪ 지난 그랑프리 기본 배경 스타일 */
+        .mini-race-card.past-race { opacity: 0.85; background-color: #1a1c1e; }
 
         .race-round { font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; }
         .race-title { font-size: 1.1rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .race-loc { font-size: 0.8rem; margin-top: 2px; }
         .race-date { font-size: 0.9rem; font-weight: bold; margin-top: 6px; text-align: right; }
 
-        /* 🎨 상단 스크롤바 전용 우승팀 컬러 기반 우승 배지 상자 */
+        /* 우승자 배지 스타일 */
         .scroll-winner-container {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-top: 8px;
-            padding: 6px 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-            transition: background-color 0.2s;
+            background-color: rgba(255,255,255,0.12);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .mini-race-card.current-race .scroll-winner-container {
+            background-color: rgba(0, 0, 0, 0.06);
         }
         .scroll-winner-thumb {
             width: 26px;
@@ -94,10 +114,11 @@
         }
         .scroll-winner-name {
             font-size: 0.75rem;
-            font-weight: 800;
+            font-weight: bold;
+            color: #ffc107;
         }
 
-        /* 🏛 ... 상세 정보 디스플레이 구역 ... */
+        /* 상세 정보 섹션 */
         .race-detail-section {
             position: relative;
             background-color: #1f2124;
@@ -122,7 +143,7 @@
         }
         .race-detail-section > * { position: relative; z-index: 1; }
 
-        /* 🥇🥈🥉 미니 포디움 */
+        /* 미니 포디움 기믹 */
         .detail-podium {
             display: flex;
             gap: 10px;
@@ -145,6 +166,7 @@
         }
         .d-podium-1 {
             height: 100%;
+            background: linear-gradient(to top, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.02));
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
         .d-podium-2 {
@@ -172,7 +194,7 @@
         .d-podium-rank { font-size: 1.1rem; margin-bottom: 2px; line-height: 1; }
         .d-podium-name { font-size: 0.8rem; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; }
 
-        /* 서킷 지도 */
+        /* 서킷 지도 프레임 */
         .detail-img-wrapper {
             width: 100%;
             max-width: 320px;
@@ -276,21 +298,29 @@
             let globalRacesData = [];
             let globalResultsMap = {};
 
-            // 🎨 100% 실시간 동기화용 F1 공식 팀 컬러 팔레트 해시맵 매핑
-            const teamColors = {
-                "ferrari": "#E10600",
-                "mclaren": "#FF8700",
-                "red_bull": "#3671C6",
-                "mercedes": "#27CCB1",
-                "aston_martin": "#229971",
-                "alpine": "#0093CC",
-                "williams": "#005AFF",
-                "rb": "#6692FF",
-                "visa_cash_app_rb": "#6692FF",
-                "haas": "#787878",
-                "sauber": "#52E252",
-                "kick_sauber": "#52E252"
-            };
+            // 🎨 2026 시즌 22개 그리드 스펙 맞춤형 우승팀 컬러 추출 딕셔너리 함수
+            function getTeamColor(constructorId, constructorName) {
+                const id = (constructorId || "").toLowerCase().replace(/[\s_-]/g, "");
+                const name = (constructorName || "").toLowerCase().replace(/[\s_-]/g, "");
+                
+                if (id.includes("ferrari") || name.includes("ferrari")) return "#cc0000"; // 페라리 레드
+                if (id.includes("mclaren") || name.includes("mclaren")) return "#ff8700"; // 맥라렌 파파야 오렌지
+                if (id.includes("redbull") || name.includes("redbull")) return "#061043"; // 레드불 네이비
+                if (id.includes("mercedes") || name.includes("mercedes")) return "#00a19c"; // 메르세데스 페트로나스 에메랄드
+                if (id.includes("aston") || name.includes("aston")) return "#006f62"; // 애스턴마틴 레이싱 그린
+                if (id.includes("alpine") || name.includes("alpine")) return "#0090ff"; // 알핀 블루
+                if (id.includes("williams") || name.includes("williams")) return "#005aff"; // 윌리엄스 딥블루
+                if (id.includes("haas") || name.includes("haas")) return "#787878"; // 하스 그레이
+                
+                // 💥 2026 규정 신규 유입 진영 예외 매핑
+                if (id.includes("audi") || name.includes("audi") || id.includes("sauber") || name.includes("sauber")) return "#c41130"; // 아우디 스포트 레드
+                if (id.includes("cadillac") || name.includes("cadillac") || id.includes("andretti") || name.includes("andretti")) return "#243345"; // 안드레티 캐딜락 다크네이비
+                
+                // 비자 캐시앱 RB (레이싱불스) 진영
+                if (id.includes("rb") || name.includes("rb") || id.includes("racingbulls") || name.includes("racingbulls")) return "#002fa7";
+                
+                return "#1a1c1e"; // 기본 백업 다크그레이
+            }
 
             function fetchWikiImage(wikiUrl, elementId) {
                 if (!wikiUrl) return;
@@ -324,7 +354,6 @@
                     }).catch(err => console.error(err));
             }
 
-            // 그랑프리 상세 패널 동적 제어
             function selectAndDisplayRace(race, cardElement = null) {
                 document.querySelectorAll(".mini-race-card").forEach(c => c.classList.remove("selected-card"));
                 if (cardElement) cardElement.classList.add("selected-card");
@@ -350,11 +379,6 @@
                     const d2 = raceResults.find(r => r.position === "2");
                     const d3 = raceResults.find(r => r.position === "3");
 
-                    // 💥 1위 우승팀 컬러 추출
-                    const winnerTeamId = d1.Constructor.constructorId;
-                    const d1Color = teamColors[winnerTeamId] || "#ffc107";
-                    const d1TextColor = (winnerTeamId === "sauber" || winnerTeamId === "kick_sauber") ? "#1f2124" : "#ffffff";
-
                     podiumCol.innerHTML = `
                         <span class="badge bg-warning text-dark px-2.5 py-1 mb-2 fw-bold" style="font-size:0.72rem;">RACE PODIUM</span>
                         <div class="detail-podium">
@@ -363,10 +387,10 @@
                                 <div class="d-podium-rank">🥈</div>
                                 <div class="d-podium-name">${d2.Driver.familyName}</div>
                             </div>
-                            <div class="detail-podium-step d-podium-1" style="background: linear-gradient(to top, ${d1Color} 35%, rgba(255,255,255,0.02) 100%) !important; border-color: ${d1Color} !important;">
+                            <div class="detail-podium-step d-podium-1">
                                 <img id="d-avatar-1" class="d-podium-img" src="" alt="1st">
-                                <div class="d-podium-rank" style="color: ${d1TextColor};">🥇</div>
-                                <div class="d-podium-name" style="color: ${d1TextColor};">${d1.Driver.familyName}</div>
+                                <div class="d-podium-rank">🥇</div>
+                                <div class="d-podium-name">${d1.Driver.familyName}</div>
                             </div>
                             <div class="detail-podium-step d-podium-3">
                                 <img id="d-avatar-3" class="d-podium-img" src="" alt="3rd">
@@ -400,14 +424,11 @@
                                     mapImg.src = imgUrl;
                                     mapImg.style.display = "block";
                                 }
-                            }).catch(() => {
-                                document.getElementById("detail-wiki").innerText = "위키 통신 장애가 발생했습니다.";
                             });
                     }
                 }
             }
 
-            // 병렬 프로미스 수집 구동
             Promise.all([
                 fetch(calendarUrl).then(res => res.json()),
                 fetch(resultsUrl).then(res => res.json())
@@ -423,42 +444,55 @@
                 let htmlContent = "";
                 let nextRaceIdx = -1;
 
+                // 1단계 포커싱 계산 스레드 사전 처리
+                races.forEach((race, idx) => {
+                    const raceDateTimeStr = race.date + (race.time ? 'T' + race.time : 'T23:59:59');
+                    const raceDate = new Date(raceDateTimeStr);
+                    if (raceDate >= today && nextRaceIdx === -1) {
+                        nextRaceIdx = idx;
+                    }
+                });
+
                 races.forEach((race, idx) => {
                     const raceDateTimeStr = race.date + (race.time ? 'T' + race.time : 'T23:59:59');
                     const raceDate = new Date(raceDateTimeStr);
                     
                     let cardClass = "";
+                    let cardStyle = ""; // 동적 인라인 배경 주입용 변수
                     let cardIdAttr = "";
                     let winnerBadgeHtml = "";
 
                     const matchResults = globalResultsMap[race.round];
 
+                    // 1. 종료 및 결과 검증 분기
                     if (raceDate < today || matchResults) {
                         cardClass = "past-race";
                         if (matchResults && matchResults.length > 0) {
                             const winnerData = matchResults.find(w => w.position === "1");
                             if (winnerData) {
-                                const teamId = winnerData.Constructor.constructorId;
-                                // 💥 우승팀 컬러 상자 배경색 매핑 및 글자색 반전 최적화
-                                const bgHex = teamColors[teamId] || "rgba(255,255,255,0.07)";
-                                const textHex = (teamId === "sauber" || teamId === "kick_sauber" || teamId === "haas") ? "#1f2124" : "#ffffff";
-
                                 winnerBadgeHtml = `
-                                    <div class="scroll-winner-container" style="background-color: ${bgHex} !important;">
+                                    <div class="scroll-winner-container">
                                         <img id="scroll-win-thumb-${race.round}" class="scroll-winner-thumb" src="" alt="Win">
-                                        <span class="scroll-winner-name" style="color: ${textHex} !important;">🏆 ${winnerData.Driver.familyName}</span>
+                                        <span class="scroll-winner-name">🏆 ${winnerData.Driver.familyName}</span>
                                     </div>
                                 `;
+                                // 🎨 우승팀 매핑 데이터 가져오기 및 스타일 연동 추가
+                                const teamColor = getTeamColor(winnerData.Constructor.constructorId, winnerData.Constructor.name);
+                                cardStyle = `style="background: ${teamColor}; border-color: ${teamColor};"`;
+                                cardClass += " has-team-color";
                             }
                         }
-                    } else if (nextRaceIdx === -1) {
+                    }
+
+                    // 2. 🟡 [예외 최우선 순위 순서 배치] 현재/다음 그랑프리는 무조건 노란색 그라데이션을 칠하기 위해 인라인 백그라운드 리셋 오버라이드
+                    if (idx === nextRaceIdx) {
                         cardClass = "current-race";
-                        nextRaceIdx = idx;
+                        cardStyle = ""; // 기존 스타일을 공백으로 초기화하여 CSS 그라데이션 복구
                         cardIdAttr = 'id="next-active-race"';
                     }
 
                     htmlContent += `
-                        <div ${cardIdAttr} class="mini-race-card ${cardClass}" data-idx="${idx}">
+                        <div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${idx}">
                             <div>
                                 <div class="race-round text-danger text-uppercase">${race.round} ROUND</div>
                                 <div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div>
@@ -473,7 +507,6 @@
                 if (nextRaceIdx === -1 && races.length > 0) nextRaceIdx = races.length - 1;
                 scrollBox.innerHTML = htmlContent;
 
-                // 드라이버 썸네일 위키피디아 로드
                 races.forEach(race => {
                     const matchResults = globalResultsMap[race.round];
                     if (matchResults && matchResults.length > 0) {
