@@ -65,18 +65,7 @@
         .d-podium-name { font-size: 0.8rem; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; }
 
         .detail-img-wrapper { width: 100%; max-width: 320px; height: 240px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        
-        /* 🚨 [CSS 긴급 패치 완료] 이미지에 다시 강력한 스타일 제약 적용 */
-        .detail-circuit-map {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: 16px;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            display: none;
-        }
+        .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
 
         .wiki-extract-box { font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; }
         .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
@@ -95,7 +84,7 @@
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
             <div class="spinner-border text-danger spinner-border-sm"></div>
-            <span>대시보드 라이브 데이터 로드 중...</span>
+            <span>2026 그랑프리 마스터 피드 패키징 구축 중...</span>
         </div>
     </div>
 
@@ -138,6 +127,7 @@
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
 
+            // 💥 딜레이 0초 무한 질주 렌더러 함수
             function renderDetailPanel(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
@@ -146,6 +136,7 @@
                 document.getElementById("detail-date").innerText = race.date;
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
 
+                // 설명 및 지도 로드 (비동기 병렬 레이지)
                 fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
                     .then(res => res.json())
                     .then(wiki => {
@@ -162,52 +153,47 @@
                 const tCol = document.getElementById("detail-text-col");
                 const mCol = document.getElementById("detail-map-col");
 
-                if (race.is_past) {
-                    fetch(`/api/race-podium/${race.round}`)
-                        .then(res => res.json())
-                        .then(podium => {
-                            if (podium && podium.length >= 3) {
-                                pCol.classList.remove("d-none");
-                                pCol.className = "col-md-3"; tCol.className = "col-md-6"; mCol.className = "col-md-3";
+                // 💥 기존의 네트워크 fetch 노크를 완전히 도려내고, 이미 갖고있는 내부 배열 데이터 주입!
+                if (race.podium && race.podium.length >= 3) {
+                    pCol.classList.remove("d-none");
+                    pCol.className = "col-md-3"; tCol.className = "col-md-6"; mCol.className = "col-md-3";
 
-                                const d1 = podium.find(p => p.position === "1");
-                                const d2 = podium.find(p => p.position === "2");
-                                const d3 = podium.find(p => p.position === "3");
+                    const d1 = race.podium.find(p => p.position === "1");
+                    const d2 = race.podium.find(p => p.position === "2");
+                    const d3 = race.podium.find(p => p.position === "3");
 
-                                pCol.innerHTML = `
-                                    <span class="badge bg-warning text-dark px-2.5 py-1 mb-2 fw-bold" style="font-size:0.72rem;">RACE PODIUM</span>
-                                    <div class="detail-podium">
-                                        <div class="detail-podium-step d-podium-2">
-                                            <img class="d-podium-img" id="pod-avatar-2" src="" alt="2nd">
-                                            <div class="d-podium-rank">🥈</div>
-                                            <div class="d-podium-name">${d2.familyName}</div>
-                                        </div>
-                                        <div class="detail-podium-step d-podium-1">
-                                            <img class="d-podium-img" id="pod-avatar-1" src="" alt="1st">
-                                            <div class="d-podium-rank">🥇</div>
-                                            <div class="d-podium-name">${d1.familyName}</div>
-                                        </div>
-                                        <div class="detail-podium-step d-podium-3">
-                                            <img class="d-podium-img" id="pod-avatar-3" src="" alt="3rd">
-                                            <div class="d-podium-rank">🥉</div>
-                                            <div class="d-podium-name">${d3.familyName}</div>
-                                        </div>
-                                    </div>
-                                `;
-                                
-                                fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-1"); i.src=w.image; i.style.display="block"; } });
-                                fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-2"); i.src=w.image; i.style.display="block"; } });
-                                fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-3"); i.src=w.image; i.style.display="block"; } });
-                            } else {
-                                pCol.classList.add("d-none"); tCol.className = "col-md-8"; mCol.className = "col-md-4";
-                            }
-                        });
+                    pCol.innerHTML = `
+                        <span class="badge bg-warning text-dark px-2.5 py-1 mb-2 fw-bold" style="font-size:0.72rem;">RACE PODIUM</span>
+                        <div class="detail-podium">
+                            <div class="detail-podium-step d-podium-2">
+                                <img class="d-podium-img" id="pod-avatar-2" src="" alt="2nd">
+                                <div class="d-podium-rank">🥈</div>
+                                <div class="d-podium-name">${d2.familyName}</div>
+                            </div>
+                            <div class="detail-podium-step d-podium-1">
+                                <img class="d-podium-img" id="pod-avatar-1" src="" alt="1st">
+                                <div class="d-podium-rank">🥇</div>
+                                <div class="d-podium-name">${d1.familyName}</div>
+                            </div>
+                            <div class="detail-podium-step d-podium-3">
+                                <img class="d-podium-img" id="pod-avatar-3" src="" alt="3rd">
+                                <div class="d-podium-rank">🥉</div>
+                                <div class="d-podium-name">${d3.familyName}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 얼굴만 위키피디아에서 비차단 스트리밍 로딩
+                    fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-1"); i.src=w.image; i.style.display="block"; } });
+                    fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-2"); i.src=w.image; i.style.display="block"; } });
+                    fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-3"); i.src=w.image; i.style.display="block"; } });
                 } else {
                     pCol.classList.add("d-none"); tCol.className = "col-md-8"; mCol.className = "col-md-4";
                 }
             }
 
-            fetch("/api/calendar-list")
+            // 마스터 묶음 API 1회만 호출
+            fetch("/api/calendar-master")
                 .then(res => res.json())
                 .then(data => {
                     localRacesArray = data.races;
@@ -219,7 +205,7 @@
                         let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
                         
                         if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
-                        if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
+                        if (race.winner_name && !race.is_next) cardClass += " has-team-color";
 
                         let winnerBadge = "";
                         if (race.winner_name) {
@@ -246,6 +232,7 @@
 
                     scrollBox.innerHTML = html;
 
+                    // 미니 상단 얼굴 배지 순차 파이프라인 가동
                     localRacesArray.forEach(race => {
                         if (race.winner_wiki) {
                             fetch(`/api/wiki-meta/${race.winner_wiki}`)

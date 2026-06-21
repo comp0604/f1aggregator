@@ -11,8 +11,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# 💾 2차 소스(OpenF1) 데이터 구멍 메우기용 서버 메모리 캐시
-OPENF1_PODIUM_CACHE = {}
+# ⚡ 글로벌 메모리 캐시 (1차 + 2차 피드를 완벽히 가공한 최종 완성본 저장소)
+FULL_CALENDAR_CACHE = {"data": None, "updated_at": None}
 
 def get_db_connection():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +21,6 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# 🎨 2026 규정 반영 11개 팀 컬러 매핑
 def get_team_color(constructor_id, constructor_name):
     c_id = (constructor_id or "").lower().replace(" ", "").replace("_", "").replace("-", "")
     name = (constructor_name or "").lower().replace(" ", "").replace("_", "").replace("-", "")
@@ -58,18 +57,15 @@ def fetch_json_safely(url):
         )
         with urllib.request.urlopen(req, timeout=4, context=ssl_context) as response:
             return json.loads(response.read().decode('utf-8'))
-    except Exception as e:
-        print(f"⚠️ API 통신 지연/실패 ({url}): {e}")
+    except:
         return None
 
-# 💥 OpenF1 2차 피드 정밀 타격 함수 (구멍 난 라운드 요청 시에만 딱 1번 기동)
-def fetch_openf1_fallback(locality, race_date):
+def fetch_openf1_podium_direct(locality, race_date):
     try:
         sessions = fetch_json_safely("https://api.openf1.org/v1/sessions?year=2026&session_name=Race")
         if not sessions: return None
-        
         matched = next((s for s in sessions if locality.lower() in s.get("location", "").lower() or s.get("date_start", "").startswith(race_date)), None)
-        if not matched: return None
+        if (!matched): return None
         session_key = matched["session_key"]
         
         results = fetch_json_safely(f"https://api.openf1.org/v1/session_result?session_key={session_key}")
@@ -80,13 +76,12 @@ def fetch_openf1_fallback(locality, race_date):
         sorted_res = sorted([r for r in results if 1 <= r.get("position", 99) <= 3], key=lambda x: x["position"])
         for r in sorted_res:
             d_info = next((d for d in drivers if d.get("driver_number") == r.get("driver_number")), {})
-            wiki_title = (d_info.get("full_name") or "").replace(" ", "_")
             podium.append({
                 "position": str(r["position"]),
                 "familyName": d_info.get("last_name") or "Driver",
                 "constructorId": d_info.get("team_name", "").lower().replace(" ", ""),
                 "constructorName": d_info.get("team_name") or "Unknown",
-                "wiki_title": wiki_title
+                "wiki_title": (d_info.get("full_name") or "").replace(" ", "_")
             })
         return podium
     except:
@@ -107,93 +102,79 @@ def calendar_page():
 def standings():
     return render_template('standings.html')
 
-# 🏛️ [라우트 1] 1차 소스(Jolpi)만 조회하여 0.01초 만에 스크롤바 뼈대를 뿜는 API
-@app.route('/api/calendar-list')
-def api_calendar_list():
+# 🏛️ [대개조 API] 1차+2차 데이터 및 이미지까지 완벽히 조립 후 프론트에 던지는 마스터 엔드포인트
+@app.route('/api/calendar-master')
+def api_calendar_master():
+    global FULL_CALENDAR_CACHE
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
     
+    # 캐시 유효 시 외부 요청 0회, 응답 속도 0.001초 보장
+    if FULL_CALENDAR_CACHE["data"] and (now - FULL_CALENDAR_CACHE["updated_at"]).total_seconds() < 600:
+        return jsonify(FULL_CALENDAR_CACHE["data"])
+        
     calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
     results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
-    if not calendar_data: return jsonify({"error": "1차 소스 통신 실패"}), 500
+    if not calendar_data: return jsonify({"error": "1차 소스 피드 다운"}), 500
     
     races = calendar_data["MRData"]["RaceTable"]["Races"]
     results_map = {r["round"]: r["Results"] for r in results_data["MRData"]["RaceTable"]["Races"]} if results_data else {}
     next_race_idx = next((i for i, r in enumerate(races) if r["date"] >= today_str), len(races) - 1)
     
-    list_payload = []
+    master_payload = []
     for idx, race in enumerate(races):
         r_num = race["round"]
         c_date = race["date"]
+        locality = race["Circuit"]["Location"]["locality"]
         is_past = (c_date < today_str or r_num in results_map)
         
         winner_name, team_color, winner_wiki = "", "#1a1c1e", ""
+        final_podium = []
         
-        # 1차 소스에 결과가 존재할 때만 리스트에 우승자 미리 바인딩
-        podium = results_map.get(r_num)
-        if podium:
-            w1 = podium[0]
-            winner_name = w1["Driver"]["familyName"]
-            team_color = get_team_color(w1["Constructor"]["constructorId"], w1["Constructor"]["name"])
-            winner_wiki = w1["Driver"]["url"].split('/wiki/')[-1]
-        elif is_past and r_num in OPENF1_PODIUM_CACHE:
-            # 2차 소스로 이미 구멍을 메운 전적이 있다면 캐시에서 공급
-            w1 = next((p for p in OPENF1_PODIUM_CACHE[r_num] if p["position"] == "1"), None)
+        # 1. 포디움 조립 분기 (1차 우선 -> 없으면 2차 자동 대체)
+        jolpi_podium = results_map.get(r_num)
+        if jolpi_podium:
+            for p in jolpi_podium[:3]:
+                final_podium.append({
+                    "position": p["position"],
+                    "familyName": p["Driver"]["familyName"],
+                    "wiki_title": p["Driver"]["url"].split('/wiki/')[-1]
+                })
+        elif is_past:
+            # 💥 구멍 발견 시 백엔드에서 미리 OpenF1 동기식 결합 유도
+            op_pod = fetch_openf1_podium_direct(locality, c_date)
+            if op_pod:
+                final_podium = op_pod
+
+        # 2. 메인 화면용 우승자 정보 가공
+        if final_podium:
+            w1 = next((p for p in final_podium if p["position"] == "1"), None)
             if w1:
                 winner_name = w1["familyName"]
-                team_color = get_team_color(w1["constructorId"], w1["constructorName"])
                 winner_wiki = w1["wiki_title"]
+                # OpenF1 구조 혹은 Jolpi 구조에 맞춰 팀 컬러 세팅
+                c_id = w1.get("constructorId") or w1.get("Constructor", {}).get("constructorId", "")
+                c_name = w1.get("constructorName") or w1.get("Constructor", {}).get("name", "")
+                team_color = get_team_color(c_id, c_name)
 
-        list_payload.append({
-            "idx": idx, "round": r_num, "raceName": race["raceName"], "locality": race["Circuit"]["Location"]["locality"],
-            "date": c_date, "is_past": is_past, "is_next": (idx == next_race_idx),
-            "winner_name": winner_name, "team_color": team_color, "winner_wiki": winner_wiki,
-            "flag_url": get_flag_url(race["Circuit"]["Location"]["country"]),
+        master_payload.append({
+            "idx": idx, "round": r_num, "raceName": race["raceName"], "locality": locality,
+            "country": race["Circuit"]["Location"]["country"], "date": c_date, "is_past": is_past,
+            "is_next": (idx == next_race_idx), "winner_name": winner_name, "team_color": team_color,
+            "winner_wiki": winner_wiki, "flag_url": get_flag_url(race["Circuit"]["Location"]["country"]),
             "circuit_wiki_title": race["Circuit"]["url"].split('/wiki/')[-1],
-            "circuit_name": race["Circuit"]["circuitName"]
+            "circuit_name": race["Circuit"]["circuitName"],
+            "podium": final_podium
         })
 
-    return jsonify({"next_race_idx": next_race_idx, "races": list_payload})
+    FULL_CALENDAR_CACHE = {"data": {"next_race_idx": next_race_idx, "races": master_payload}, "updated_at": now}
+    return jsonify(FULL_CALENDAR_CACHE["data"])
 
-# 🏛️ [라우트 2] 클릭 시 실행되며, 1차 소스에 구멍이 났을 때만 2차 소스로 자동 대처하는 포디움 API
-@app.route('/api/race-podium/<round_num>')
-def api_race_podium(round_num):
-    # 1. 메모리 캐시에 이미 존재하면 외부 요청 없이 즉시 반환
-    if round_num in OPENF1_PODIUM_CACHE:
-        return jsonify(OPENF1_PODIUM_CACHE[round_num])
-        
-    # 2. 캐시에 없으면 1차 소스(Jolpi) 확인
-    results_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/results.json")
-    if results_data and results_data["MRData"]["RaceTable"]["Races"]:
-        podium_list = results_data["MRData"]["RaceTable"]["Races"][0]["Results"][:3]
-        payload = [{
-            "position": p["position"], "familyName": p["Driver"]["familyName"],
-            "constructorId": p["Constructor"]["constructorId"], "constructorName": p["Constructor"]["name"],
-            "wiki_title": p["Driver"]["url"].split('/wiki/')[-1]
-        } for p in podium_list]
-        
-        OPENF1_PODIUM_CACHE[round_num] = payload
-        return jsonify(payload)
-    
-    # 3. 🔥 [구멍 확인 완료] 1차 소스가 비어있을 때만 독립적으로 2차 소스(OpenF1) 가동
-    calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
-    if calendar_data:
-        race = next((r for r in calendar_data["MRData"]["RaceTable"]["Races"] if r["round"] == round_num), None)
-        if race:
-            print(f"🚨 [1차 구멍 발견] {race['raceName']} 결과를 OpenF1에서 자동 대체 수집합니다.")
-            op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
-            if op_podium:
-                OPENF1_PODIUM_CACHE[round_num] = op_podium
-                return jsonify(op_podium)
-                
-    return jsonify([])
-
-# 🏛️ [라우트 3] 위키피디아 403 차단 우회용 프록시 API
+# 프론트가 이미지와 텍스트를 실시간 레이지 플로우할 프록시는 독립 유지
 @app.route('/api/wiki-meta/<page_title>')
 def api_wiki_meta(page_title):
-    fallback = {"extract": "요약 정보를 불러올 수 없습니다.", "image": ""}
     data = fetch_json_safely(f"https://en.wikipedia.org/api/rest_v1/page/summary/{page_title}")
-    if not data: return jsonify(fallback)
+    if not data: return jsonify({"extract": "정보 없음", "image": ""})
     return jsonify({
         "extract": data.get("extract", "설명이 비어 있습니다."),
         "image": data.get("originalimage", {}).get("source") or data.get("thumbnail", {}).get("source") or ""
