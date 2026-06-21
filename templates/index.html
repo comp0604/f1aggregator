@@ -7,18 +7,18 @@
     <title>🏎️ LecLovF1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
+        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
         .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 💥 [그랑프리 배너] 높이를 줄이고 중앙 정렬 기반으로 변경 */
+        /* 💥 [그랑프리 배너] 국기 배색이 은은하게 번지도록 블러 레이어 최적화 */
         .grandprix-full-banner {
             position: relative;
             background-color: #1f2124;
             color: white;
             cursor: pointer;
-            min-height: 240px; /* 💥 높이를 슬림하게 최적화 */
+            min-height: 240px; 
             overflow: hidden;
             padding: 1.5rem 2rem !important; 
             width: 100%;
@@ -35,7 +35,7 @@
             background-image: var(--bg-image, none); 
             background-size: cover;
             background-position: center;
-            filter: blur(20px) brightness(0.2); 
+            filter: blur(25px) brightness(0.22); /* 💥 국기 고유의 다채로운 색감이 완벽히 녹아들도록 블러 가중치 상승 */
             transform: scale(1.1); 
             z-index: 0;
             transition: background-image 0.5s ease-in-out;
@@ -46,27 +46,27 @@
             z-index: 1;
         }
 
-        /* 🎯 타이머를 완벽한 정가운데로 놓기 위한 상대 위치 컨테이너 */
+        /* 타이머 가로 정렬 컨테이너 */
         .row-content-race {
             position: relative;
             display: flex;
             align-items: center;
-            justify-content: center; /* 💥 내부 요소를 중앙 정렬 */
+            justify-content: center; 
             width: 100%;
             height: 100%;
         }
         
-        /* ⏰ 타이머 및 텍스트 폰트 크기 슬림화 */
+        /* ⏰ 타이머 디자인 */
         .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
         .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
 
-        /* 📸 서킷 지도를 오른쪽 구석으로 절대 배치하여 타이머 정중앙 유지 */
+        /* 서킷 지도 프레임 */
         .circuit-img-wrapper {
             position: absolute;
             right: 2rem;
             top: 50%;
             transform: translateY(-50%);
-            width: 240px; /* 줄어든 높이에 맞춰 지도 크기 조정 */
+            width: 240px; 
             height: 190px;
             display: flex;
             align-items: center;
@@ -84,7 +84,7 @@
             display: none; 
         }
 
-        /* 🏛️ 랭킹 보드용 스타일 (기존 크기 유지) */
+        /* 🏛️ 랭킹 보드용 스타일 */
         .row-content-rank {
             display: flex;
             flex-direction: column;
@@ -311,6 +311,20 @@
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
+            // 🎨 국가명을 매칭하여 고해상도 국기 이미지 CDN 주소를 반환하는 유틸 함수
+            function getFlagUrl(countryName) {
+                const name = (countryName || "").toLowerCase().trim();
+                const mapping = {
+                    "australia": "au", "bahrain": "bh", "saudi arabia": "sa", "japan": "jp", "china": "cn",
+                    "usa": "us", "united states": "us", "monaco": "mc", "spain": "es", "canada": "ca",
+                    "austria": "at", "uk": "gb", "united kingdom": "gb", "great britain": "gb", "hungary": "hu",
+                    "belgium": "be", "netherlands": "nl", "italy": "it", "azerbaijan": "az", "singapore": "sg",
+                    "mexico": "mx", "brazil": "br", "qatar": "qa", "uae": "ae", "united arab emirates": "ae"
+                };
+                const code = mapping[name] || "un";
+                return `https://flagcdn.com/w1280/${code}.png`;
+            }
+
             function fetchWikiImage(wikiUrl, elementId) {
                 if (!wikiUrl) return;
                 const pageTitle = wikiUrl.split('/wiki/')[1]; 
@@ -335,17 +349,15 @@
                     .then(res => res.json())
                     .then(data => {
                         const imgUrl = data.originalimage?.source || data.thumbnail?.source;
-                        if (imgUrl) {
-                            const imgEl = document.getElementById(imgElementId);
-                            if (imgEl) {
-                                imgEl.src = imgUrl;
-                                imgEl.style.display = "block";
-                            }
+                        const imgEl = document.getElementById(imgElementId);
+                        if (imgUrl && imgEl) {
+                            imgEl.src = imgUrl;
+                            imgEl.style.display = "block";
                         }
                     }).catch(err => console.error(err));
             }
 
-            // 1. 레이스 캘린더 연동
+            // 1. 레이스 캘린더 연동 (배너 배경에 국기 연동)
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
@@ -356,7 +368,10 @@
                     document.getElementById("dash-race-name").innerText = nextRace.raceName.replace("Grand Prix", "GP");
                     document.getElementById("dash-race-circuit").innerText = nextRace.Circuit.Location.locality;
 
-                    fetchWikiImage(nextRace.Circuit.url, "card-race");
+                    // 💥 분위기 배경을 서킷 사진 대신 개최국 국기로 다이렉트 전환 주입
+                    const flagUrl = getFlagUrl(nextRace.Circuit.Location.country);
+                    document.getElementById("card-race").style.setProperty('--bg-image', `url('${flagUrl}')`);
+                    
                     fetchForegroundImage(nextRace.Circuit.url, "dash-circuit-map");
 
                     const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
@@ -375,84 +390,44 @@
             fetch(driversUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
                 const d1 = list[0], d2 = list[1], d3 = list[2];
-
                 if (d1) fetchWikiImage(d1.Driver.url, "card-driver");
 
                 let html = "";
                 if (d2) {
-                    html += `
-                        <div class="podium-step podium-2">
-                            <img id="driver-img-2" class="podium-img" src="" alt="2nd">
-                            <div class="podium-rank">🥈</div>
-                            <div class="podium-name">${d2.Driver.familyName}</div>
-                            <div class="podium-pts text-warning">${d2.points} PTS</div>
-                        </div>`;
+                    html += `<div class="podium-step podium-2"><img id="driver-img-2" class="podium-img" src="" alt="2nd"><div class="podium-rank">🥈</div><div class="podium-name">${d2.Driver.familyName}</div><div class="podium-pts text-warning">${d2.points} PTS</div></div>`;
                 }
                 if (d1) {
-                    html += `
-                        <div class="podium-step podium-1">
-                            <img id="driver-img-1" class="podium-img" src="" alt="1st">
-                            <div class="podium-rank">🥇</div>
-                            <div class="podium-name">${d1.Driver.givenName}</div>
-                            <div class="podium-pts text-warning">${d1.points} PTS</div>
-                        </div>`;
+                    html += `<div class="podium-step podium-1"><img id="driver-img-1" class="podium-img" src="" alt="1st"><div class="podium-rank">🥇</div><div class="podium-name">${d1.Driver.givenName}</div><div class="podium-pts text-warning">${d1.points} PTS</div></div>`;
                 }
                 if (d3) {
-                    html += `
-                        <div class="podium-step podium-3">
-                            <img id="driver-img-3" class="podium-img" src="" alt="3rd">
-                            <div class="podium-rank">🥉</div>
-                            <div class="podium-name">${d3.Driver.familyName}</div>
-                            <div class="podium-pts text-warning">${d3.points} PTS</div>
-                        </div>`;
+                    html += `<div class="podium-step podium-3"><img id="driver-img-3" class="podium-img" src="" alt="3rd"><div class="podium-rank">🥉</div><div class="podium-name">${d3.Driver.familyName}</div><div class="podium-pts text-warning">${d3.points} PTS</div></div>`;
                 }
                 document.getElementById("dash-drivers-box").innerHTML = html;
-
-                if (d1) { fetchForegroundImage(d1.Driver.url, "driver-img-1"); }
-                if (d2) { fetchForegroundImage(d2.Driver.url, "driver-img-2"); }
-                if (d3) { fetchForegroundImage(d3.Driver.url, "driver-img-3"); }
+                if (d1) fetchForegroundImage(d1.Driver.url, "driver-img-1");
+                if (d2) fetchForegroundImage(d2.Driver.url, "driver-img-2");
+                if (d3) fetchForegroundImage(d3.Driver.url, "driver-img-3");
             });
 
             // 3. 팀 랭킹 연동
             fetch(teamsUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
                 const t1 = list[0], t2 = list[1], t3 = list[2];
-
                 if (t1) fetchWikiImage(t1.Constructor.url, "card-team");
 
                 let html = "";
                 if (t2) {
-                    html += `
-                        <div class="podium-step podium-2 team-step">
-                            <img id="team-img-2" class="podium-img" src="" alt="2nd">
-                            <div class="podium-rank">🥈</div>
-                            <div class="podium-name">${t2.Constructor.name.split(" ")[0]}</div>
-                            <div class="podium-pts text-success">${t2.points} PTS</div>
-                        </div>`;
+                    html += `<div class="podium-step podium-2 team-step"><img id="team-img-2" class="podium-img" src="" alt="2nd"><div class="podium-rank">🥈</div><div class="podium-name">${t2.Constructor.name.split(" ")[0]}</div><div class="podium-pts text-success">${t2.points} PTS</div></div>`;
                 }
                 if (t1) {
-                    html += `
-                        <div class="podium-step podium-1 team-step">
-                            <img id="team-img-1" class="podium-img" src="" alt="1st">
-                            <div class="podium-rank">🥇</div>
-                            <div class="podium-name">${t1.Constructor.name.split(" ")[0]}</div>
-                            <div class="podium-pts text-success">${t1.points} PTS</div>
-                        </div>`;
+                    html += `<div class="podium-step podium-1 team-step"><img id="team-img-1" class="podium-img" src="" alt="1st"><div class="podium-rank">🥇</div><div class="podium-name">${t1.Constructor.name.split(" ")[0]}</div><div class="podium-pts text-success">${t1.points} PTS</div></div>`;
                 }
                 if (t3) {
-                    html += `
-                        <div class="podium-step podium-3 team-step">
-                            <img id="team-img-3" class="podium-img" src="" alt="3rd">
-                            <div class="podium-rank">🥉</div>
-                            <div class="podium-name">${t3.Constructor.name.split(" ")[0]}</div>
-                            <div class="podium-pts text-success">${t3.points} PTS</div>
-                        </div>`;
+                    html += `<div class="podium-step podium-3 team-step"><img id="team-img-3" class="podium-img" src="" alt="3rd"><div class="podium-rank">🥉</div><div class="podium-name">${t3.Constructor.name.split(" ")[0]}</div><div class="podium-pts text-success">${t3.points} PTS</div></div>`;
                 }
                 document.getElementById("dash-teams-box").innerHTML = html;
-
-                if (t1) { fetchForegroundImage(t1.Constructor.url, "team-img-1"); }
-                if (t2) { fetchForegroundImage(t2.Constructor.url, "team-img-2"); }
-                if (t3) { fetchForegroundImage(t3.Constructor.url, "team-img-3"); }
+                if (t1) fetchForegroundImage(t1.Constructor.url, "team-img-1");
+                if (t2) fetchForegroundImage(t2.Constructor.url, "team-img-2");
+                if (t3) fetchForegroundImage(t3.Constructor.url, "team-img-3");
             });
         });
     </script>
