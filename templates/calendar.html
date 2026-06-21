@@ -45,7 +45,7 @@
 
         .scroll-winner-container { display: flex; align-items: center; gap: 8px; margin-top: 8px; background-color: rgba(255,255,255,0.12); padding: 4px 8px; border-radius: 6px; }
         .mini-race-card.current-race .scroll-winner-container { background-color: rgba(0, 0, 0, 0.06); }
-        .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center 15%; background-color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center 15%; background-color: white; border: 1px solid rgba(255,255,255,0.3); display: none; }
         .scroll-winner-name { font-size: 0.75rem; font-weight: bold; color: #ffc107; }
 
         .race-detail-section { position: relative; background-color: #1f2124; color: white; min-height: 380px; border-radius: 24px; overflow: hidden; padding: 2.5rem !important; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
@@ -60,12 +60,12 @@
         .d-podium-2 { height: 80%; background: linear-gradient(to top, rgba(192, 192, 192, 0.12), rgba(192, 192, 192, 0.02)); border: 1px solid rgba(192, 192, 192, 0.2); }
         .d-podium-3 { height: 66%; background: linear-gradient(to top, rgba(205, 127, 50, 0.1), rgba(205, 127, 50, 0.02)); border: 1px solid rgba(205, 127, 50, 0.15); }
         
-        .d-podium-img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid rgba(255, 255, 255, 0.4); background-color: white; margin-bottom: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .d-podium-img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid rgba(255, 255, 255, 0.4); background-color: white; margin-bottom: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: none; }
         .d-podium-rank { font-size: 1.1rem; margin-bottom: 2px; line-height: 1; }
         .d-podium-name { font-size: 0.8rem; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; }
 
         .detail-img-wrapper { width: 100%; max-width: 320px; height: 240px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
 
         .wiki-extract-box { font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; }
         .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
@@ -84,7 +84,7 @@
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
             <div class="spinner-border text-danger spinner-border-sm"></div>
-            <span>F1 다중 피드 백엔드 교차 검증 원격 로딩 중...</span>
+            <span>대시보드 엔진 가동 중...</span>
         </div>
     </div>
 
@@ -111,7 +111,7 @@
 
                     <div class="col-md-4 d-flex justify-content-center justify-content-md-end" id="detail-map-col">
                         <div class="detail-img-wrapper">
-                            <img id="detail-map-img" class="detail-circuit-map" style="display:none;" src="" alt="Circuit Map">
+                            <img id="detail-map-img" src="" alt="Circuit Map">
                         </div>
                     </div>
 
@@ -127,65 +127,81 @@
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
 
+            // 💥 텍스트 및 서킷 지도를 레이지 로딩해오는 코어 함수
             function renderDetailPanel(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
                 document.getElementById("detail-circuit-name").innerText = race.circuit_name;
                 document.getElementById("detail-location").innerText = `📍 ${race.locality}, ${race.country}`;
                 document.getElementById("detail-date").innerText = race.date;
-                document.getElementById("detail-wiki").innerText = race.circuit_extract;
-
-                // 국가 국기 배경 주입
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
 
-                // 서킷 전면 지도 바인딩
-                const mapImg = document.getElementById("detail-map-img");
-                if(race.circuit_map) {
-                    mapImg.src = race.circuit_map; mapImg.style.display = "block";
-                } else {
-                    mapImg.style.display = "none";
-                }
+                // 💥 텍스트 및 지도만 위키 백엔드 라우트 호출 (레이지 갱신)
+                fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
+                    .then(res => res.json())
+                    .then(wiki => {
+                        document.getElementById("detail-wiki").innerText = wiki.extract;
+                        const mapImg = document.getElementById("detail-map-img");
+                        if(wiki.image) {
+                            mapImg.src = wiki.image; mapImg.style.display = "block";
+                        } else {
+                            mapImg.style.display = "none";
+                        }
+                    });
 
-                // 3단 미니 시상대 동적 드로잉
+                // 💥 포디움 순위 패널 분리 호출 기믹
                 const pCol = document.getElementById("detail-podium-col");
                 const tCol = document.getElementById("detail-text-col");
                 const mCol = document.getElementById("detail-map-col");
 
-                if (race.podium && race.podium.length >= 3) {
-                    pCol.classList.remove("d-none");
-                    pCol.className = "col-md-3"; tCol.className = "col-md-6"; mCol.className = "col-md-3";
+                if (race.is_past) {
+                    fetch(`/api/race-podium/${race.round}`)
+                        .then(res => res.json())
+                        .then(podium => {
+                            if (podium && podium.length >= 3) {
+                                pCol.classList.remove("d-none");
+                                pCol.className = "col-md-3"; tCol.className = "col-md-6"; mCol.className = "col-md-3";
 
-                    const d1 = race.podium.find(p => p.position === "1");
-                    const d2 = race.podium.find(p => p.position === "2");
-                    const d3 = race.podium.find(p => p.position === "3");
+                                const d1 = podium.find(p => p.position === "1");
+                                const d2 = podium.find(p => p.position === "2");
+                                const d3 = podium.find(p => p.position === "3");
 
-                    pCol.innerHTML = `
-                        <span class="badge bg-warning text-dark px-2.5 py-1 mb-2 fw-bold" style="font-size:0.72rem;">RACE PODIUM</span>
-                        <div class="detail-podium">
-                            <div class="detail-podium-step d-podium-2">
-                                <img class="d-podium-img" src="${d2.avatar || ''}" style="${d2.avatar ? 'display:block;' : 'display:none;'}" alt="2nd">
-                                <div class="d-podium-rank">🥈</div>
-                                <div class="d-podium-name">${d2.familyName}</div>
-                            </div>
-                            <div class="detail-podium-step d-podium-1">
-                                <img class="d-podium-img" src="${d1.avatar || ''}" style="${d1.avatar ? 'display:block;' : 'display:none;'}" alt="1st">
-                                <div class="d-podium-rank">🥇</div>
-                                <div class="d-podium-name">${d1.familyName}</div>
-                            </div>
-                            <div class="detail-podium-step d-podium-3">
-                                <img class="d-podium-img" src="${d3.avatar || ''}" style="${d3.avatar ? 'display:block;' : 'display:none;'}" alt="3rd">
-                                <div class="d-podium-rank">🥉</div>
-                                <div class="d-podium-name">${d3.familyName}</div>
-                            </div>
-                        </div>
-                    `;
+                                pCol.innerHTML = `
+                                    <span class="badge bg-warning text-dark px-2.5 py-1 mb-2 fw-bold" style="font-size:0.72rem;">RACE PODIUM</span>
+                                    <div class="detail-podium">
+                                        <div class="detail-podium-step d-podium-2">
+                                            <img class="d-podium-img" id="pod-avatar-2" src="" alt="2nd">
+                                            <div class="d-podium-rank">🥈</div>
+                                            <div class="d-podium-name">${d2.familyName}</div>
+                                        </div>
+                                        <div class="detail-podium-step d-podium-1">
+                                            <img class="d-podium-img" id="pod-avatar-1" src="" alt="1st">
+                                            <div class="d-podium-rank">🥇</div>
+                                            <div class="d-podium-name">${d1.familyName}</div>
+                                        </div>
+                                        <div class="detail-podium-step d-podium-3">
+                                            <img class="d-podium-img" id="pod-avatar-3" src="" alt="3rd">
+                                            <div class="d-podium-rank">🥉</div>
+                                            <div class="d-podium-name">${d3.familyName}</div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                // 각 시상대 얼굴 프록시 호출 레이지 바인딩
+                                fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-1"); i.src=w.image; i.style.display="block"; } });
+                                fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-2"); i.src=w.image; i.style.display="block"; } });
+                                fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-3"); i.src=w.image; i.style.display="block"; } });
+                            } else {
+                                pCol.classList.add("d-none"); tCol.className = "col-md-8"; mCol.className = "col-md-4";
+                            }
+                        });
                 } else {
                     pCol.classList.add("d-none"); tCol.className = "col-md-8"; mCol.className = "col-md-4";
                 }
             }
 
-            // 백엔드가 빌드업한 최고 화질 압축 API 호출
-            fetch("/api/calendar-data")
+            // 1단계: 0.1초 만에 최속 로드되는 경량 API 호출
+            fetch("/api/calendar-list")
                 .then(res => res.json())
                 .then(data => {
                     localRacesArray = data.races;
@@ -196,19 +212,14 @@
                         let cardStyle = race.winner_name ? `style="background: ${race.team_color}; border-color: ${race.team_color};"` : "";
                         let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
                         
-                        if (race.is_next) {
-                            cardClass = "current-race"; cardStyle = "";
-                        }
-                        if (race.winner_name && !race.is_next) {
-                            cardClass += " has-team-color";
-                        }
+                        if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
+                        if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
 
                         let winnerBadge = "";
                         if (race.winner_name) {
-                            const w1 = race.podium.find(p => p.position === "1") || {};
                             winnerBadge = `
                                 <div class="scroll-winner-container">
-                                    <img class="scroll-winner-thumb" src="${w1.avatar || ''}" style="${w1.avatar ? 'display:block;' : 'display:none;'}" alt="Win">
+                                    <img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win">
                                     <span class="scroll-winner-name">🏆 ${race.winner_name}</span>
                                 </div>
                             `;
@@ -229,29 +240,37 @@
 
                     scrollBox.innerHTML = html;
 
-                    // 최초 타겟 자동 패널 바인딩
+                    // 스크롤바 우승자 미니 썸네일만 프록시 백그라운드 실시간 순차 로드 (비차단)
+                    localRacesArray.forEach(race => {
+                        if (race.winner_wiki) {
+                            fetch(`/api/wiki-meta/${race.winner_wiki}`)
+                                .then(r => r.json())
+                                .then(w => {
+                                    const thumb = document.getElementById(`win-thumb-${race.round}`);
+                                    if(thumb && w.image) { thumb.src = w.image; thumb.style.display = "block"; }
+                                });
+                        }
+                    });
+
+                    // 최초 기본 타겟 활성화 지정
                     if(data.next_race_idx !== -1) {
                         const defRace = localRacesArray[data.next_race_idx];
                         const defCard = document.querySelector(`[data-idx="${data.next_race_idx}"]`);
-                        defCard.classList.add("selected-card");
+                        if (defCard) defCard.classList.add("selected-card");
                         renderDetailPanel(defRace);
                     }
 
-                    // 오토 타겟 스크롤 스무스 포커싱
                     setTimeout(() => {
                         const targetCard = document.getElementById("next-active-race");
                         if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                     }, 200);
                 });
 
-            // 클릭 전환 위임 이벤트 마운트
             scrollBox.addEventListener("click", function(e) {
                 const card = e.target.closest(".mini-race-card");
                 if (!card) return;
-                
                 document.querySelectorAll(".mini-race-card").forEach(c => c.classList.remove("selected-card"));
                 card.classList.add("selected-card");
-
                 const idx = parseInt(card.getAttribute("data-idx"));
                 renderDetailPanel(localRacesArray[idx]);
             });

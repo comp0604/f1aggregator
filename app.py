@@ -11,11 +11,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# ⚡ 서버사이드 가벼운 글로벌 메모리 캐시 세팅 (서버 부하 및 속도 저하 방지)
-CALENDAR_CACHE = {
-    "data": None,
-    "updated_at": None
-}
+# ⚡ 글로벌 캐시 세팅
+CALENDAR_CACHE = {"data": None, "updated_at": None}
 
 def get_db_connection():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,11 +21,9 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# 🎨 2026 시즌 팀 컬러 매핑 유틸 함수 (서버 내부 처리)
 def get_team_color(constructor_id, constructor_name):
-    c_id = (constructor_id or "").toLowerCase().replace(" ", "").replace("_", "").replace("-", "")
-    name = (constructor_name or "").toLowerCase().replace(" ", "").replace("_", "").replace("-", "")
-    
+    c_id = (constructor_id or "").lower().replace(" ", "").replace("_", "").replace("-", "")
+    name = (constructor_name or "").lower().replace(" ", "").replace("_", "").replace("-", "")
     if "ferrari" in c_id or "ferrari" in name: return "#cc0000"
     if "mclaren" in c_id or "mclaren" in name: return "#ff8700"
     if "redbull" in c_id or "redbull" in name: return "#061043"
@@ -42,7 +37,6 @@ def get_team_color(constructor_id, constructor_name):
     if "rb" in c_id or "rb" in name or "racingbulls" in c_id or "racingbulls" in name: return "#002fa7"
     return "#1a1c1e"
 
-# 🌍 국가별 Flag 배정 주소 변환 유틸
 def get_flag_url(country_name):
     name = (country_name or "").lower().strip()
     mapping = {
@@ -52,201 +46,152 @@ def get_flag_url(country_name):
         "belgium": "be", "netherlands": "nl", "italy": "it", "azerbaijan": "az", "singapore": "sg",
         "mexico": "mx", "brazil": "br", "qatar": "qa", "uae": "ae", "united arab emirates": "ae"
     }
-    code = mapping.get(name, "un")
-    return f"https://flagcdn.com/w1280/{code}.png"
+    return f"https://flagcdn.com/w1280/{mapping.get(name, 'un')}.png"
 
-# 🛡️ 안전한 서버사이드 HTTP Request 실행기 (위키피디아 차단 우회용 식별 헤더 포함)
 def fetch_json_safely(url):
     try:
         ssl_context = ssl._create_unverified_context()
         req = urllib.request.Request(
             url,
-            headers={
-                'User-Agent': 'LecLovF1/1.0 (contact@example.com) Python-urllib/3.x',
-                'Accept': 'application/json'
-            }
+            headers={'User-Agent': 'LecLovF1/1.0 (developer@leclovf1.com) Python/3.x'}
         )
-        with urllib.request.urlopen(req, timeout=8, context=ssl_context) as response:
+        with urllib.request.urlopen(req, timeout=5, context=ssl_context) as response:
             return json.loads(response.read().decode('utf-8'))
     except Exception as e:
-        print(f"❌ 외부 API 패치 실패 ({url}): {e}")
+        print(f"⚠️ API Timeout/Error ({url}): {e}")
         return None
 
-# 📸 위키피디아 프로필/사진 경로 정밀 파싱기
-def get_wiki_data(wiki_url):
-    fallback = {"extract": "요약 정보를 불러올 수 없습니다.", "image": ""}
-    if not wiki_url: return fallback
-    page_title = wiki_url.split('/wiki/')[-1]
-    if not page_title: return fallback
-    
-    #  `page_title`로 올바르게 수정되었습니다.
-    data = fetch_json_safely(f"https://en.wikipedia.org/api/rest_v1/page/summary/{page_title}")
-    if not data: return fallback
-    
-    img_url = data.get("originalimage", {}).get("source") or data.get("thumbnail", {}).get("source") or ""
-    return {
-        "extract": data.get("extract", "상세 요약 설명이 비어 있습니다."),
-        "image": img_url
-    }
-
-# 🔄 OpenF1 라이브 연동 자동 대체 서브 스레드 엔진 (백엔드 이식 버전)
-def fetch_openf1_podium(locality, race_date):
+# 💥 [초경량화] OpenF1 최종 결과 스펙만 타격하는 라이트 엔진
+def fetch_openf1_podium_light(locality, race_date):
     try:
         sessions = fetch_json_safely("https://api.openf1.org/v1/sessions?year=2026&session_name=Race")
         if not sessions: return None
-        
         matched = next((s for s in sessions if locality.lower() in s.get("location", "").lower() or s.get("date_start", "").startswith(race_date)), None)
         if not matched: return None
         session_key = matched["session_key"]
         
+        # 💥 대용량 position 대신 최종 스탠딩 스냅샷(session_result) 엔드포인트만 매핑 조율
+        results = fetch_json_safely(f"https://api.openf1.org/v1/session_result?session_key={session_key}")
         drivers = fetch_json_safely(f"https://api.openf1.org/v1/drivers?session_key={session_key}")
-        positions = fetch_json_safely(f"https://api.openf1.org/v1/position?session_key={session_key}")
-        if not drivers or not positions: return None
+        if not results or not drivers: return None
         
-        latest_pos = {}
-        for p in positions:
-            d_num = p["driver_number"]
-            if d_num not in latest_pos or p["date"] > latest_pos[d_num]["date"]:
-                latest_pos[d_num] = p
-                
-        podium_list = sorted([p for p in latest_pos.values() if 1 <= p["position"] <= 3], key=lambda x: x["position"])
-        if len(podium_list) < 3: return None
-        
-        result = []
-        for p in podium_list:
-            drv = next((d for d in drivers if d["driver_number"] == p["driver_number"]), {})
-            wiki_name = (drv.get("full_name") or "").replace(" ", "_")
-            result.append({
-                "position": str(p["position"]),
-                "Driver": {
-                    "familyName": drv.get("last_name") or "Driver",
-                    "url": f"https://en.wikipedia.org/wiki/{wiki_name}"
-                },
-                "Constructor": {
-                    "constructorId": (drv.get("team_name") or "").lower().replace(" ", ""),
-                    "name": drv.get("team_name") or "Unknown"
-                }
+        podium = []
+        sorted_res = sorted([r for r in results if 1 <= r.get("position", 99) <= 3], key=lambda x: x["position"])
+        for r in sorted_res:
+            d_info = next((d for d in drivers if d.get("driver_number") == r.get("driver_number")), {})
+            wiki_title = (d_info.get("full_name") or "").replace(" ", "_")
+            podium.append({
+                "position": str(r["position"]),
+                "familyName": d_info.get("last_name") or "Driver",
+                "constructorId": d_info.get("team_name", "").lower().replace(" ", ""),
+                "constructorName": d_info.get("team_name") or "Unknown",
+                "wiki_title": wiki_title
             })
-        return result
-    except Exception as e:
-        print(f"❌ OpenF1 백엔드 트랙 연동 오류: {e}")
+        return podium
+    except:
         return None
 
 @app.route('/')
 def index():
     conn = get_db_connection()
-    articles = conn.execute(
-        'SELECT id, title, link, summary_ko, image_url, published_at FROM articles ORDER BY published_at DESC LIMIT 10'
-    ).fetchall()
+    articles = conn.execute('SELECT title, link, summary_ko, image_url, published_at FROM articles ORDER BY published_at DESC LIMIT 10').fetchall()
     conn.close()
     return render_template('index.html', articles=articles)
-
-@app.route('/standings')
-def standings():
-    return render_template('standings.html')
 
 @app.route('/calendar')
 def calendar_page():
     return render_template('calendar.html')
 
-# 💥 [신규 핵심] 정제된 캘린더 타임라인 일괄 패키징 백엔드 API 라우트
-@app.route('/api/calendar-data')
-def api_calendar_data():
+@app.route('/standings')
+def standings():
+    return render_template('standings.html')
+
+# 🏛️ [인덱스 1] 0.1초 만에 뼈대를 뿜어내는 가로 스크롤바 전용 경량화 API
+@app.route('/api/calendar-list')
+def api_calendar_list():
     global CALENDAR_CACHE
     now = datetime.now()
-    
-    # 5분 동안은 기존 캐시 재활용 (불필요한 외부 차단 원천 방어 및 미친듯한 서핑 속도 보장)
-    if CALENDAR_CACHE["data"] and CALENDAR_CACHE["updated_at"] and (now - CALENDAR_CACHE["updated_at"]).total_seconds() < 300:
+    if CALENDAR_CACHE["data"] and (now - CALENDAR_CACHE["updated_at"]).total_seconds() < 300:
         return jsonify(CALENDAR_CACHE["data"])
         
     calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
     results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
+    if not calendar_data: return jsonify({"error": "Data failure"}), 500
     
-    if not calendar_data:
-        return jsonify({"error": "Failed to source calendar base"}), 500
-        
     races = calendar_data["MRData"]["RaceTable"]["Races"]
-    results_list = results_data["MRData"]["RaceTable"]["Races"] if results_data else []
-    
-    results_map = {r["round"]: r["Results"] for r in results_list}
+    results_map = {r["round"]: r["Results"] for r in results_data["MRData"]["RaceTable"]["Races"]} if results_data else {}
     today_str = now.strftime("%Y-%m-%d")
     
-    processed_races = []
-    next_race_idx = -1
-    
-    # 미래 가장 가까운 인덱스 선탐색
-    for idx, race in enumerate(races):
-        if race["date"] >= today_str and next_race_idx == -1:
-            next_race_idx = idx
-            
-    if next_race_idx == -1 and races:
-        next_race_idx = len(races) - 1
+    next_race_idx = next((i for i, r in enumerate(races) if r["date"] >= today_str), len(races) - 1)
+    list_payload = []
 
     for idx, race in enumerate(races):
         r_num = race["round"]
         locality = race["Circuit"]["Location"]["locality"]
-        country = race["Circuit"]["Location"]["country"]
         c_date = race["date"]
-        
         is_past = (c_date < today_str or r_num in results_map)
-        is_next = (idx == next_race_idx)
         
+        winner_name, team_color, winner_wiki = "", "#1a1c1e", ""
         podium = results_map.get(r_num)
         
-        # 🛡️ 백엔드 오토 바이패스 2차 피드 검증 발동
         if is_past and not podium:
-            podium = fetch_openf1_openf1_podium = fetch_openf1_podium(locality, c_date)
-            
-        winner_name = ""
-        team_color = "#1a1c1e"
-        podium_payload = []
-        
-        if podium and len(podium) >= 3:
-            w1 = next((p for p in podium if p["position"] == "1"), None)
-            if w1:
-                winner_name = w1["Driver"]["familyName"]
-                team_color = get_team_color(w1["Constructor"]["constructorId"], w1["Constructor"]["name"])
-                
-            for p in podium:
-                p_url = p["Driver"]["url"]
-                wiki_meta = get_wiki_data(p_url) # 서버에서 유저 에이전트를 달고 안전하게 이미지 수집
-                podium_payload.append({
-                    "position": p["position"],
-                    "familyName": p["Driver"]["familyName"],
-                    "avatar": wiki_meta["image"]
-                })
-        
-        circuit_wiki = get_wiki_data(race["Circuit"]["url"])
-        flag_url = get_flag_url(country)
-        
-        processed_races.append({
-            "idx": idx,
-            "round": r_num,
-            "raceName": race["raceName"],
-            "locality": locality,
-            "country": country,
-            "date": c_date,
-            "is_past": is_past,
-            "is_next": is_next,
-            "winner_name": winner_name,
-            "team_color": team_color,
-            "flag_url": flag_url,
-            "circuit_name": race["Circuit"]["circuitName"],
-            "circuit_map": circuit_wiki["image"],
-            "circuit_extract": circuit_wiki["extract"],
-            "podium": podium_payload
+            podium = fetch_openf1_podium_light(locality, c_date)
+            if podium:
+                w1 = next((p for p in podium if p["position"] == "1"), None)
+                if w1:
+                    winner_name = w1["familyName"]
+                    team_color = get_team_color(w1["constructorId"], w1["constructorName"])
+                    winner_wiki = w1["wiki_title"]
+        elif podium:
+            w1 = podium[0]
+            winner_name = w1["Driver"]["familyName"]
+            team_color = get_team_color(w1["Constructor"]["constructorId"], w1["Constructor"]["name"])
+            winner_wiki = w1["Driver"]["url"].split('/wiki/')[-1]
+
+        list_payload.append({
+            "idx": idx, "round": r_num, "raceName": race["raceName"], "locality": locality,
+            "date": c_date, "is_past": is_past, "is_next": (idx == next_race_idx),
+            "winner_name": winner_name, "team_color": team_color, "winner_wiki": winner_wiki,
+            "flag_url": get_flag_url(race["Circuit"]["Location"]["country"]),
+            "circuit_wiki_title": race["Circuit"]["url"].split('/wiki/')[-1],
+            "circuit_name": race["Circuit"]["circuitName"]
         })
-        
-    response_payload = {
-        "next_race_idx": next_race_idx,
-        "races": processed_races
-    }
+
+    CALENDAR_CACHE = {"data": {"next_race_idx": next_race_idx, "races": list_payload}, "updated_at": now}
+    return jsonify(CALENDAR_CACHE["data"])
+
+# 🏛️ [인덱스 2] 특정 라운드 클릭 시 탑3 포디움 드라이버 구조만 떼어오는 서브 API
+@app.route('/api/race-podium/<round_num>')
+def api_race_podium(round_num):
+    results_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/results.json")
+    podium_list = []
+    if results_data and results_data["MRData"]["RaceTable"]["Races"]:
+        podium_list = results_data["MRData"]["RaceTable"]["Races"][0]["Results"][:3]
+        return jsonify([{
+            "position": p["position"], "familyName": p["Driver"]["familyName"],
+            "wiki_title": p["Driver"]["url"].split('/wiki/')[-1]
+        } for p in podium_list])
     
-    # 캐시 갱신
-    CALENDAR_CACHE["data"] = response_payload
-    CALENDAR_CACHE["updated_at"] = now
-    
-    return jsonify(response_payload)
+    # Ergast 누락 시 OpenF1 라이트 즉시 호출
+    calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
+    if calendar_data:
+        race = next((r for r in calendar_data["MRData"]["RaceTable"]["Races"] if r["round"] == round_num), None)
+        if race:
+            op_podium = fetch_openf1_podium_light(race["Circuit"]["Location"]["locality"], race["date"])
+            if op_podium: return jsonify(op_podium)
+            
+    return jsonify([])
+
+# 🏛️ [인덱스 3] 403 차단을 원천 차단하고 프론트엔드가 실시간 레이지 로딩해가는 위키 유틸 프록시
+@app.route('/api/wiki-meta/<page_title>')
+def api_wiki_meta(page_title):
+    fallback = {"extract": "요약 정보를 불러올 수 없습니다.", "image": ""}
+    data = fetch_json_safely(f"https://en.wikipedia.org/api/rest_v1/page/summary/{page_title}")
+    if not data: return jsonify(fallback)
+    return jsonify({
+        "extract": data.get("extract", "설명이 비어 있습니다."),
+        "image": data.get("originalimage", {}).get("source") or data.get("thumbnail", {}).get("source") or ""
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
