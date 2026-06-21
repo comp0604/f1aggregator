@@ -12,39 +12,39 @@
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 📦 거대한 슬라이더 컨테이너 설정 */
+        /* 📦 화면 절반을 채우는 초대형 슬라이더 컨테이너 */
         .dashboard-slider-wrapper {
             position: relative;
-            max-width: 800px; /* 큰 박스 형태를 위한 가로폭 확장 */
-            margin: 0 auto 2.5rem auto;
-            padding: 0 50px; /* 양 옆 화살표 버튼 공간 확보 */
+            max-width: 1100px; /* 가로폭 대폭 확장 */
+            margin: 0 auto 3rem auto;
+            padding: 0 60px; /* 화살표 버튼 공간 확대 */
         }
 
-        /* 미니멀 대시보드 카드 설정 (크기 대폭 확장) */
+        /* 🏎️ 초대형 대시보드 카드 (화면 높이의 45% 수준으로 고정) */
         .dashboard-card { 
             position: relative; 
             background-color: #1f2124; 
             border: none; 
-            border-radius: 16px; /* 부드러운 라운드 처리 */
+            border-radius: 24px; /* 더 커진 크기에 맞게 라운드 확장 */
             color: white; 
             cursor: pointer; 
             transition: transform 0.2s, box-shadow 0.2s; 
-            min-height: 250px; /* 박스를 든든하게 크게 키움 */
+            min-height: 460px; /* 💥 박스 높이를 화면 반을 채우도록 대폭 확대 */
             overflow: hidden; 
-            display: none; /* 기본적으로는 모두 숨김 처리 (JS에서 제어) */
+            display: none; 
+            padding: 2.5rem !important; /* 내부 여유 공간 대폭 확대 */
         }
-        /* 현재 활성화된 슬라이드만 노출 */
         .dashboard-card.active {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
         .dashboard-card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: 0 12px 25px rgba(225, 6, 0, 0.2); 
+            transform: translateY(-6px); 
+            box-shadow: 0 15px 35px rgba(225, 6, 0, 0.25); 
         }
 
-        /* 흐릿한 배경 사진 레이어 */
+        /* 흐릿한 배경 사진 (대형 화면에 맞게 블러 최적화) */
         .dashboard-card::before {
             content: "";
             position: absolute;
@@ -52,8 +52,8 @@
             background-image: var(--bg-image, none); 
             background-size: cover;
             background-position: center;
-            filter: blur(6px) brightness(0.35); /* 가독성을 위해 블러와 어둡기 최적화 */
-            transform: scale(1.05); 
+            filter: blur(8px) brightness(0.3); /* 대형 화면에서 눈이 아프지 않게 약간 더 어둡게 조절 */
+            transform: scale(1.08); 
             z-index: 0;
             transition: background-image 0.5s ease-in-out;
         }
@@ -63,18 +63,18 @@
             z-index: 1;
         }
 
-        /* ◀ ▶ 양 옆 화살표 버튼 스타일 */
+        /* ◀ ▶ 초대형 화살표 버튼 */
         .slider-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 44px;
-            height: 44px;
-            background-color: rgba(33, 37, 41, 0.8);
+            width: 56px; /* 버튼 크기 확대 */
+            height: 56px;
+            background-color: rgba(33, 37, 41, 0.85);
             color: white;
             border: none;
             border-radius: 50%;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,17 +84,36 @@
         }
         .slider-arrow:hover {
             background-color: #e10600;
-            color: white;
         }
         .slider-arrow.prev-btn { left: 0; }
         .slider-arrow.next-btn { right: 0; }
-        .slider-arrow:active { transform: translateY(-50%) scale(0.95); }
         
-        /* 뉴스 카드 영역 스타일 */
+        /* ⏰ 디데이 타이머 서체 초대형화 (전광판 스타일) */
+        .timer-num {
+            font-size: 3.5rem !important; /* 숫자 크기 대폭 폭발 */
+            font-weight: 800;
+            line-height: 1;
+        }
+        .timer-label {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* 🏆 순위 박스 가독성 및 크기 확장 */
+        .mini-rank-row { 
+            background-color: rgba(255,255,255,0.09); 
+            border-radius: 10px; 
+            padding: 12px 24px; /* 더 시원시원하게 배치 */
+            margin-bottom: 10px; 
+            font-size: 1.15rem; /* 글자 크기 업그레이드 */
+            font-weight: bold;
+        }
+        
+        /* 하단 뉴스 영역 */
         .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 12px 15px; border-radius: 0 8px 8px 0; }
         .summary-line { margin-bottom: 6px; font-size: 0.95rem; color: #333; line-height: 1.5; }
-        .mini-rank-row { background-color: rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 15px; margin-bottom: 6px; font-size: 0.95rem; }
         a { text-decoration: none; }
     </style>
 </head>
@@ -113,37 +132,37 @@
         <div class="dashboard-slider-wrapper">
             <button class="slider-arrow prev-btn" id="slide-prev-btn">&#10094;</button>
 
-            <div id="card-race" class="card dashboard-card active p-4" onclick="location.href='/calendar'">
+            <div id="card-race" class="card dashboard-card active" onclick="location.href='/calendar'">
                 <div>
-                    <span class="badge bg-danger mb-2">Next Grand Prix</span>
-                    <h3 id="dash-race-name" class="fw-bold text-warning mb-1">로딩 중...</h3>
-                    <p id="dash-race-circuit" class="text-white-50 small mb-0">연동 중...</p>
+                    <span class="badge bg-danger px-3 py-2 fs-6 mb-3">NEXT GRAND PRIX</span>
+                    <h1 id="dash-race-name" class="display-4 fw-bold text-warning mb-2">로딩 중...</h1>
+                    <p id="dash-race-circuit" class="fs-4 text-white-50 mb-0">연동 중...</p>
                 </div>
-                <div class="d-flex justify-content-between gap-2 text-center mt-3 mx-auto w-100" style="max-width: 500px;">
-                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-day" class="fw-bold fs-3">00</div><small class="text-white-50">DAYS</small></div>
-                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-hour" class="fw-bold fs-3">00</div><small class="text-white-50">HRS</small></div>
-                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-min" class="fw-bold fs-3">00</div><small class="text-white-50">MINS</small></div>
-                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-sec" class="fw-bold fs-3 text-danger">00</div><small class="text-white-50">SECS</small></div>
+                <div class="d-flex justify-content-between gap-3 text-center mt-4 w-100 mx-auto" style="max-width: 650px;">
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
+                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
                 </div>
             </div>
 
-            <div id="card-driver" class="card dashboard-card p-4" onclick="location.href='/standings'">
+            <div id="card-driver" class="card dashboard-card" onclick="location.href='/standings'">
                 <div>
-                    <span class="badge bg-primary mb-2">Championship Leader</span>
-                    <h4 class="fw-bold text-white mb-3">Driver Top 3</h4>
+                    <span class="badge bg-primary px-3 py-2 fs-6 mb-3">CHAMPIONSHIP LEADER</span>
+                    <h2 class="display-5 fw-bold text-white mb-1">Driver Top 3</h2>
                 </div>
-                <div id="dash-drivers-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto" style="max-width: 500px;">
-                    <div class="text-center text-muted small">동기화 중...</div>
+                <div id="dash-drivers-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto mt-3" style="max-width: 650px;">
+                    <div class="text-center text-muted">동기화 중...</div>
                 </div>
             </div>
 
-            <div id="card-team" class="card dashboard-card p-4" onclick="location.href='/standings'">
+            <div id="card-team" class="card dashboard-card" onclick="location.href='/standings'">
                 <div>
-                    <span class="badge bg-success mb-2">Constructor Leader</span>
-                    <h4 class="fw-bold text-white mb-3">Team Top 3</h4>
+                    <span class="badge bg-success px-3 py-2 fs-6 mb-3">CONSTRUCTOR LEADER</span>
+                    <h2 class="display-5 fw-bold text-white mb-1">Team Top 3</h2>
                 </div>
-                <div id="dash-teams-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto" style="max-width: 500px;">
-                    <div class="text-center text-muted small">동기화 중...</div>
+                <div id="dash-teams-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto mt-3" style="max-width: 650px;">
+                    <div class="text-center text-muted">동기화 중...</div>
                 </div>
             </div>
 
@@ -196,7 +215,6 @@
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
-            // 위키피디아 이미지 비동기 로드 함수
             function fetchWikiImage(wikiUrl, elementId) {
                 if (!wikiUrl) return;
                 const pageTitle = wikiUrl.split('/wiki/')[1]; 
@@ -248,7 +266,7 @@
                     if (idx === 0) {
                         fetchWikiImage(item.Driver.url, "card-driver");
                     }
-                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Driver.familyName}</span><span class="text-warning fw-bold">${item.points} P</span></div>`;
+                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Driver.givenName} ${item.Driver.familyName}</span><span class="text-warning">${item.points} P</span></div>`;
                 });
                 document.getElementById("dash-drivers-box").innerHTML = html;
             });
@@ -261,12 +279,12 @@
                     if (idx === 0) {
                         fetchWikiImage(item.Constructor.url, "card-team");
                     }
-                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Constructor.name}</span><span class="text-success fw-bold">${item.points} P</span></div>`;
+                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Constructor.name}</span><span class="text-success">${item.points} P</span></div>`;
                 });
                 document.getElementById("dash-teams-box").innerHTML = html;
             });
 
-            // 🕹️ 양 옆 화살표 버튼 제어 로직 (캐러셀 구동)
+            // 캐러셀 제어 로직
             const slides = [
                 document.getElementById("card-race"),
                 document.getElementById("card-driver"),
@@ -275,12 +293,10 @@
             let currentSlideIdx = 0;
 
             function showSlide(index) {
-                // 경계값 처리 (무한 루프 전환 슬라이딩)
                 if (index >= slides.length) currentSlideIdx = 0;
                 else if (index < 0) currentSlideIdx = slides.length - 1;
                 else currentSlideIdx = index;
 
-                // 모든 슬라이드에서 active 제거 후 해당 인덱스만 활성화
                 slides.forEach((slide, i) => {
                     if (i === currentSlideIdx) {
                         slide.classList.add("active");
@@ -291,12 +307,12 @@
             }
 
             document.getElementById("slide-prev-btn").addEventListener("click", function(e) {
-                e.stopPropagation(); // 카드 클릭 링크로 넘어가지 않도록 이벤트 버블링 방지
+                e.stopPropagation();
                 showSlide(currentSlideIdx - 1);
             });
 
             document.getElementById("slide-next-btn").addEventListener("click", function(e) {
-                e.stopPropagation(); // 카드 클릭 링크로 넘어가지 않도록 이벤트 버블링 방지
+                e.stopPropagation();
                 showSlide(currentSlideIdx + 1);
             });
         });
