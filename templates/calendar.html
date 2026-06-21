@@ -73,14 +73,14 @@
         .huge-driver-name { font-size: 1.1rem; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .huge-p-1 .huge-driver-name { font-size: 1.5rem; color: #ffc107; }
 
-        /* 🎖️ 부가 칭호 뱃지 (스프린트, 폴포지션, 패스티스트랩) - DOTD 삭제됨 */
+        /* 🎖️ 부가 칭호 뱃지 (스프린트, 폴포지션, 패스티스트랩) */
         .accolade-badges { display: flex; flex-direction: column; gap: 6px; margin-top: 15px; width: 100%; align-items: center; }
         .accolade-badge { font-size: 0.75rem; font-weight: bold; padding: 5px 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: 85%; text-align: center; letter-spacing: -0.5px; }
         .badge-sprint { background-color: #0dcaf0; color: #000; }     /* 하늘색 */
         .badge-fastest { background-color: #800080; color: #fff; }    /* 보라색 */
         .badge-pole { background-color: #dc3545; color: #fff; }       /* 빨간색 */
 
-        /* 기타 위키/맵 스타일 */
+        /* 기타 스타일 */
         .detail-img-wrapper { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
         .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
         .wiki-extract-box { font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; height: 100%; }
@@ -149,7 +149,6 @@
     </div>
 
     <script>
-        // 🎨 팀 고유 컬러 헥사코드 매핑기
         const TEAM_COLORS = {
             "ferrari": "#cc0000", "mclaren": "#ff8700", "redbull": "#061043", "mercedes": "#00a19c",
             "astonmartin": "#006f62", "aston": "#006f62", "alpine": "#0090ff", "williams": "#005aff",
@@ -176,74 +175,75 @@
                 sessionRow.classList.remove("d-none");
                 tablesContainer.innerHTML = `<div class="text-center w-100 py-3 text-white-50"><div class="spinner-border text-warning spinner-border-sm me-2"></div>세션별 세부 기록 스트리밍 중...</div>`;
                 
-                fetch(`/api/race-sessions/${round}?season=${seasonParam}`).then(res => res.json()).then(data => {
-                    let html = "";
-                    if (data.schedule && Object.keys(data.schedule).length > 0) {
-                        const s = data.schedule;
-                        html += `
-                            <div class="col-md-3">
-                                <div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #e10600; padding: 10px;">
-                                    <div class="fw-bold text-danger mb-2">⏱️ WEEKEND TIMELINE</div>
-                                    <div class="d-flex justify-content-between mb-1"><span>FP1 일정:</span><span class="text-white-50">${s.fp1}</span></div>
-                                    <div class="d-flex justify-content-between mb-1"><span>FP2 일정:</span><span class="text-white-50">${s.fp2}</span></div>
-                                    <div class="d-flex justify-content-between mb-1"><span>FP3 일정:</span><span class="text-white-50">${s.fp3}</span></div>
-                                    <div class="d-flex justify-content-between mb-1"><span class="text-info fw-bold">Quali 예선:</span><span class="text-info">${s.qualifying}</span></div>
-                                    ${s.sprint !== "-" ? `<div class="d-flex justify-content-between mb-1"><span class="text-success fw-bold">Sprint 예선:</span><span class="text-success">${s.sprint}</span></div>` : ""}
-                                    <div class="d-flex justify-content-between"><span>Race 결승:</span><span class="text-warning fw-bold">${s.race}</span></div>
+                fetch(`/api/race-sessions/${round}?season=${seasonParam}`)
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if(!data) {
+                            tablesContainer.innerHTML = `<div class="text-center text-danger w-100 py-2">세션 API 연동 누락 (서버 확인 필요)</div>`;
+                            return;
+                        }
+                        let html = "";
+                        if (data.schedule && Object.keys(data.schedule).length > 0) {
+                            const s = data.schedule;
+                            html += `
+                                <div class="col-md-3">
+                                    <div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #e10600; padding: 10px;">
+                                        <div class="fw-bold text-danger mb-2">⏱️ WEEKEND TIMELINE</div>
+                                        <div class="d-flex justify-content-between mb-1"><span>FP1 일정:</span><span class="text-white-50">${s.fp1}</span></div>
+                                        <div class="d-flex justify-content-between mb-1"><span>FP2 일정:</span><span class="text-white-50">${s.fp2}</span></div>
+                                        <div class="d-flex justify-content-between mb-1"><span>FP3 일정:</span><span class="text-white-50">${s.fp3}</span></div>
+                                        <div class="d-flex justify-content-between mb-1"><span class="text-info fw-bold">Quali 예선:</span><span class="text-info">${s.qualifying}</span></div>
+                                        ${s.sprint !== "-" ? `<div class="d-flex justify-content-between mb-1"><span class="text-success fw-bold">Sprint 예선:</span><span class="text-success">${s.sprint}</span></div>` : ""}
+                                        <div class="d-flex justify-content-between"><span>Race 결승:</span><span class="text-warning fw-bold">${s.race}</span></div>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
-                    }
-                    if (data.qualifying && data.qualifying.length > 0) {
-                        let rows = data.qualifying.map(q => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-info fw-bold" style="width:15px;">${q.position}</span><span class="text-truncate flex-grow-1 mx-2" style="max-width:100px;">${q.driver.split(" ")[1] || q.driver}</span><span class="text-white-50 text-end text-truncate" style="font-size:0.7rem; max-width:65px;">${q.time}</span></div>`).join('');
-                        html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #00a19c; padding: 10px;"><div class="fw-bold text-info mb-2">⏱️ QUALIFYING TOP 5</div>${rows}</div></div>`;
-                    } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">예선 데이터 제공 불가</div></div>`; }
-                    
-                    if (data.sprint && data.sprint.length > 0) {
-                        let rows = data.sprint.map(s => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-success fw-bold" style="width:15px;">${s.position}</span><span class="text-truncate flex-grow-1 mx-2">${s.driver.split(" ")[1] || s.driver}</span><span class="text-warning font-monospace">${s.points}P</span></div>`).join('');
-                        html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #ff8700; padding: 10px;"><div class="fw-bold text-success mb-2">🏃‍♂️ SPRINT RACE TOP 5</div>${rows}</div></div>`;
-                    } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">스프린트 미개최 주간</div></div>`; }
-                    
-                    if (data.race && data.race.length > 0) {
-                        let rows = data.race.map(r => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-warning fw-bold" style="width:15px;">${r.position}</span><span class="text-truncate flex-grow-1 mx-2">${r.driver.split(" ")[1] || r.driver}</span><span class="text-warning fw-bold font-monospace">${r.points}P</span></div>`).join('');
-                        html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #ffc107; padding: 10px;"><div class="fw-bold text-warning mb-2">🏆 MAIN RACE TOP 5</div>${rows}</div></div>`;
-                    } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">레이스 개최 전</div></div>`; }
-                    tablesContainer.innerHTML = html;
-                }).catch(() => tablesContainer.innerHTML = `<div class="text-danger text-center w-100 py-3" style="font-size:0.8rem;">데이터 연동 에러</div>`);
+                            `;
+                        }
+                        if (data.qualifying && data.qualifying.length > 0) {
+                            let rows = data.qualifying.map(q => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-info fw-bold" style="width:15px;">${q.position}</span><span class="text-truncate flex-grow-1 mx-2" style="max-width:100px;">${q.driver.split(" ")[1] || q.driver}</span><span class="text-white-50 text-end text-truncate" style="font-size:0.7rem; max-width:65px;">${q.time}</span></div>`).join('');
+                            html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #00a19c; padding: 10px;"><div class="fw-bold text-info mb-2">⏱️ QUALIFYING TOP 5</div>${rows}</div></div>`;
+                        } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">예선 데이터 제공 불가</div></div>`; }
+                        
+                        if (data.sprint && data.sprint.length > 0) {
+                            let rows = data.sprint.map(s => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-success fw-bold" style="width:15px;">${s.position}</span><span class="text-truncate flex-grow-1 mx-2">${s.driver.split(" ")[1] || s.driver}</span><span class="text-warning font-monospace">${s.points}P</span></div>`).join('');
+                            html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #ff8700; padding: 10px;"><div class="fw-bold text-success mb-2">🏃‍♂️ SPRINT RACE TOP 5</div>${rows}</div></div>`;
+                        } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">스프린트 미개최 주간</div></div>`; }
+                        
+                        if (data.race && data.race.length > 0) {
+                            let rows = data.race.map(r => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-warning fw-bold" style="width:15px;">${r.position}</span><span class="text-truncate flex-grow-1 mx-2">${r.driver.split(" ")[1] || r.driver}</span><span class="text-warning fw-bold font-monospace">${r.points}P</span></div>`).join('');
+                            html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #ffc107; padding: 10px;"><div class="fw-bold text-warning mb-2">🏆 MAIN RACE TOP 5</div>${rows}</div></div>`;
+                        } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">레이스 개최 전</div></div>`; }
+                        tablesContainer.innerHTML = html;
+                    }).catch(() => { tablesContainer.innerHTML = `<div class="text-danger text-center w-100 py-3" style="font-size:0.8rem;">데이터 동기화 실패</div>`; });
             }
 
             function renderDetailPanel(race) {
-                // 상단 헤더 바인딩
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
                 document.getElementById("detail-circuit-name").innerText = race.circuit_name;
-                document.getElementById("detail-location").innerText = `📍 ${race.locality}, ${race.country}`;
+                document.getElementById("detail-location").innerText = `📍 ${race.locality}`;
                 document.getElementById("detail-date").innerText = race.date;
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
 
-                // 위키피디아 맵 바인딩
-                fetch(`/api/wiki-meta/${race.circuit_wiki_title}`).then(res => res.json()).then(wiki => {
-                    document.getElementById("detail-wiki").innerText = wiki.extract;
-                    const mapImg = document.getElementById("detail-map-img");
-                    if(wiki.image) { mapImg.src = wiki.image; mapImg.style.display = "block"; } 
-                    else { mapImg.style.display = "none"; }
-                });
+                fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
+                    .then(res => res.ok ? res.json() : null)
+                    .then(wiki => {
+                        document.getElementById("detail-wiki").innerText = wiki ? wiki.extract : "요약 정보를 받아올 수 없습니다.";
+                        const mapImg = document.getElementById("detail-map-img");
+                        if(wiki && wiki.image) { mapImg.src = wiki.image; mapImg.style.display = "block"; } 
+                        else { mapImg.style.display = "none"; }
+                    }).catch(() => { document.getElementById("detail-wiki").innerText = "위키 백과 피드 연동 지연 발생."; });
 
                 const podiumRow = document.getElementById("main-podium-row");
-                const textCol = document.getElementById("detail-text-col");
                 
                 if (race.is_past) {
                     podiumRow.classList.remove("d-none");
-                    
-                    // 💥 다중 API 병렬 호출로 포디움, 폴, 패스티스트랩, 스프린트 우승자 추출
                     Promise.all([
                         fetch(`/api/race-podium/${race.round}`).then(r=>r.json()).catch(()=>null),
                         fetch(`https://api.jolpi.ca/ergast/f1/current/${race.round}/results.json`).then(r=>r.json()).catch(()=>null),
                         fetch(`https://api.jolpi.ca/ergast/f1/current/${race.round}/sprint.json`).then(r=>r.json()).catch(()=>null)
                     ]).then(([podium, jolpiRes, jolpiSprint]) => {
                         if (podium && podium.length >= 3) {
-                            
-                            // 칭호 주인공 식별
                             let poleDriver = "", flDriver = "", sprintWinner = "";
                             if (jolpiRes?.MRData?.RaceTable?.Races[0]?.Results) {
                                 const results = jolpiRes.MRData.RaceTable.Races[0].Results;
@@ -269,38 +269,36 @@
                             const d2 = podium.find(p => p.position === "2");
                             const d3 = podium.find(p => p.position === "3");
 
-                            // 팀 컬러 그라데이션 추출
-                            const c1 = getTeamHex(d1.constructorId), c2 = getTeamHex(d2.constructorId), c3 = getTeamHex(d3.constructorId);
+                            if(d1 && d2 && d3) {
+                                const c1 = getTeamHex(d1.constructorId), c2 = getTeamHex(d2.constructorId), c3 = getTeamHex(d3.constructorId);
+                                document.getElementById("huge-podium-box").innerHTML = `
+                                    <div class="huge-podium-step huge-p-2" style="background: linear-gradient(to top, ${c2}88, ${c2}11); border-color: ${c2};">
+                                        <img class="huge-avatar" id="huge-ava-2" src="" alt="2nd">
+                                        <div class="huge-rank-icon">🥈</div>
+                                        <div class="huge-driver-name">${d2.familyName}</div>
+                                        ${getBadges(d2.familyName)}
+                                    </div>
+                                    <div class="huge-podium-step huge-p-1" style="background: linear-gradient(to top, ${c1}99, ${c1}22); border-color: ${c1};">
+                                        <img class="huge-avatar" id="huge-ava-1" src="" alt="1st">
+                                        <div class="huge-rank-icon">🥇</div>
+                                        <div class="huge-driver-name">${d1.familyName}</div>
+                                        ${getBadges(d1.familyName)}
+                                    </div>
+                                    <div class="huge-podium-step huge-p-3" style="background: linear-gradient(to top, ${c3}88, ${c3}11); border-color: ${c3};">
+                                        <img class="huge-avatar" id="huge-ava-3" src="" alt="3rd">
+                                        <div class="huge-rank-icon">🥉</div>
+                                        <div class="huge-driver-name">${d3.familyName}</div>
+                                        ${getBadges(d3.familyName)}
+                                    </div>
+                                `;
 
-                            document.getElementById("huge-podium-box").innerHTML = `
-                                <div class="huge-podium-step huge-p-2" style="background: linear-gradient(to top, ${c2}88, ${c2}11); border-color: ${c2};">
-                                    <img class="huge-avatar" id="huge-ava-2" src="" alt="2nd">
-                                    <div class="huge-rank-icon">🥈</div>
-                                    <div class="huge-driver-name">${d2.familyName}</div>
-                                    ${getBadges(d2.familyName)}
-                                </div>
-                                <div class="huge-podium-step huge-p-1" style="background: linear-gradient(to top, ${c1}99, ${c1}22); border-color: ${c1};">
-                                    <img class="huge-avatar" id="huge-ava-1" src="" alt="1st">
-                                    <div class="huge-rank-icon">🥇</div>
-                                    <div class="huge-driver-name">${d1.familyName}</div>
-                                    ${getBadges(d1.familyName)}
-                                </div>
-                                <div class="huge-podium-step huge-p-3" style="background: linear-gradient(to top, ${c3}88, ${c3}11); border-color: ${c3};">
-                                    <img class="huge-avatar" id="huge-ava-3" src="" alt="3rd">
-                                    <div class="huge-rank-icon">🥉</div>
-                                    <div class="huge-driver-name">${d3.familyName}</div>
-                                    ${getBadges(d3.familyName)}
-                                </div>
-                            `;
-
-                            fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i=document.getElementById("huge-ava-1"); i.src=w.image; i.style.display="block"; } });
-                            fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i=document.getElementById("huge-ava-2"); i.src=w.image; i.style.display="block"; } });
-                            fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i=document.getElementById("huge-ava-3"); i.src=w.image; i.style.display="block"; } });
-                        }
-                    });
-                } else {
-                    podiumRow.classList.add("d-none");
-                }
+                                fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w?.image) { const i=document.getElementById("huge-ava-1"); i.src=w.image; i.style.display="block"; } });
+                                fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w?.image) { const i=document.getElementById("huge-ava-2"); i.src=w.image; i.style.display="block"; } });
+                                fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w?.image) { const i=document.getElementById("huge-ava-3"); i.src=w.image; i.style.display="block"; } });
+                            } else { podiumRow.classList.add("d-none"); }
+                        } else { podiumRow.classList.add("d-none"); }
+                    }).catch(() => { podiumRow.classList.add("d-none"); });
+                } else { podiumRow.classList.add("d-none"); }
 
                 loadWeekendSessions(race.round, race.is_past);
             }
@@ -308,25 +306,20 @@
             fetch("/api/calendar-list").then(res => res.json()).then(data => {
                 localRacesArray = data.races;
                 let html = "";
-
                 localRacesArray.forEach(race => {
                     let cardClass = race.is_past ? "past-race" : "";
                     let cardStyle = race.winner_name ? `style="background-color: ${race.team_color} !important; border-color: ${race.team_color} !important;"` : "";
                     let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
-                    
                     if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
                     if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
-
                     let winnerBadge = race.winner_name ? `<div class="scroll-winner-container"><img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win"><span class="scroll-winner-name">🏆 ${race.winner_name}</span></div>` : "";
-
                     html += `<div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}"><div><div class="race-round text-danger text-uppercase">${race.round} ROUND</div><div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div><div class="race-loc text-white-50">📍 ${race.locality}</div></div>${winnerBadge}<div class="race-date text-warning">${race.date}</div></div>`;
                 });
-
                 scrollBox.innerHTML = html;
 
                 localRacesArray.forEach(race => {
                     if (race.winner_wiki) {
-                        fetch(`/api/wiki-meta/${race.winner_wiki}`).then(r=>r.json()).then(w => { const t = document.getElementById(`win-thumb-${race.round}`); if(t && w.image) { t.src = w.image; t.style.display = "block"; } });
+                        fetch(`/api/wiki-meta/${race.winner_wiki}`).then(r=>r.json()).then(w => { const t = document.getElementById(`win-thumb-${race.round}`); if(t && w?.image) { t.src = w.image; t.style.display = "block"; } });
                     }
                 });
 
@@ -336,7 +329,6 @@
                     if (defCard) defCard.classList.add("selected-card");
                     renderDetailPanel(defRace);
                 }
-
                 setTimeout(() => { const t = document.getElementById("next-active-race"); if (t) t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 200);
             });
 

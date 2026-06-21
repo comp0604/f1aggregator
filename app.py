@@ -21,6 +21,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# 🎨 2026 규정 반영 11개 팀 컬러 매핑
 def get_team_color(constructor_id, constructor_name):
     c_id = (constructor_id or "").lower().replace(" ", "").replace("_", "").replace("-", "")
     name = (constructor_name or "").lower().replace(" ", "").replace("_", "").replace("-", "")
@@ -61,8 +62,7 @@ def fetch_json_safely(url):
         print(f"⚠️ API 통신 지연/실패 ({url}): {e}")
         return None
 
-# 💥 OpenF1 2차 피드 정밀 타격 함수 (API 간 지역명 불일치 및 예외 처리 완벽 방어)
-# 💥 OpenF1 2차 피드 정밀 타격 함수 (API 간 지역명 불일치 및 위키피디아 대소문자 완벽 방어)
+# OpenF1 2차 피드 정밀 타격 함수
 def fetch_openf1_fallback(locality, race_date):
     try:
         year = race_date.split("-")[0] if race_date else "2026"
@@ -70,15 +70,10 @@ def fetch_openf1_fallback(locality, race_date):
         if not sessions: return None
         
         loc_mapping = {
-            "monte-carlo": "monaco",
-            "montmeló": "barcelona",
-            "marina bay": "singapore",
-            "abu dhabi": "yas island",
-            "são paulo": "sao paulo",
-            "mexico city": "mexico city"
+            "monte-carlo": "monaco", "montmeló": "barcelona", "marina bay": "singapore",
+            "abu dhabi": "yas island", "são paulo": "sao paulo", "mexico city": "mexico city"
         }
         mapped_loc = loc_mapping.get(locality.lower(), locality.lower())
-        
         matched = next((s for s in sessions if mapped_loc in s.get("location", "").lower() or s.get("date_start", "").startswith(race_date)), None)
         if not matched: return None
         session_key = matched["session_key"]
@@ -89,38 +84,28 @@ def fetch_openf1_fallback(locality, race_date):
         
         valid_results = []
         for r in results:
-            pos = r.get("position")
-            if pos is None: pos = r.get("position_current")
+            pos = r.get("position") or r.get("position_current")
             if pos is not None and 1 <= pos <= 3:
                 valid_results.append((pos, r))
                 
-        # 🔥 위키피디아 URL 규칙 예외 사전 (특수문자 및 이름 표기법 보정)
         wiki_exceptions = {
-            "Sergio_Perez": "Sergio_Pérez",
-            "Nico_Hulkenberg": "Nico_Hülkenberg",
-            "Carlos_Sainz": "Carlos_Sainz_Jr.",
-            "Zhou_Guanyu": "Guanyu_Zhou",
-            "Alexander_Albon": "Alex_Albon",
-            "Nyck_De_Vries": "Nyck_de_Vries"
+            "Sergio_Perez": "Sergio_Pérez", "Nico_Hulkenberg": "Nico_Hülkenberg",
+            "Carlos_Sainz": "Carlos_Sainz_Jr.", "Zhou_Guanyu": "Guanyu_Zhou",
+            "Alexander_Albon": "Alex_Albon", "Nyck_De_Vries": "Nyck_de_Vries"
         }
                 
         podium = []
-        sorted_res = sorted(valid_results, key=lambda x: x[0])
-        for pos, r in sorted_res:
+        for pos, r in sorted(valid_results, key=lambda x: x[0]):
             d_info = next((d for d in drivers if d.get("driver_number") == r.get("driver_number")), {})
-            
             raw_name = d_info.get("full_name") or "Unknown"
-            base_wiki_title = "_".join([w.capitalize() for w in raw_name.split()])
-            wiki_title = wiki_exceptions.get(base_wiki_title, base_wiki_title)
-            
-            team_name = d_info.get("team_name") or "Unknown"
+            base_title = "_".join([w.capitalize() for w in raw_name.split()])
             
             podium.append({
                 "position": str(pos),
                 "familyName": d_info.get("last_name") or "Driver",
-                "constructorId": team_name.lower().replace(" ", ""),
-                "constructorName": team_name,
-                "wiki_title": wiki_title
+                "constructorId": (d_info.get("team_name") or "Unknown").lower().replace(" ", ""),
+                "constructorName": d_info.get("team_name") or "Unknown",
+                "wiki_title": wiki_exceptions.get(base_title, base_title)
             })
         return podium if len(podium) > 0 else None
     except Exception as e:
@@ -146,7 +131,6 @@ def standings():
 def api_calendar_list():
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
-    
     calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
     results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
     if not calendar_data: return jsonify({"error": "1차 소스 통신 실패"}), 500
@@ -160,7 +144,6 @@ def api_calendar_list():
         r_num = race["round"]
         c_date = race["date"]
         is_past = (c_date < today_str or r_num in results_map)
-        
         winner_name, team_color, winner_wiki = "", "#1a1c1e", ""
         
         podium = results_map.get(r_num)
@@ -171,11 +154,8 @@ def api_calendar_list():
             winner_wiki = w1["Driver"]["url"].split('/wiki/')[-1]
         elif is_past:
             if r_num not in OPENF1_PODIUM_CACHE:
-                print(f"🚨 [구멍 발견] Round {r_num} ({race['Circuit']['Location']['locality']}) 결과를 OpenF1에서 수집합니다.")
                 op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
-                if op_podium:
-                    OPENF1_PODIUM_CACHE[r_num] = op_podium
-            
+                if op_podium: OPENF1_PODIUM_CACHE[r_num] = op_podium
             if r_num in OPENF1_PODIUM_CACHE:
                 w1 = next((p for p in OPENF1_PODIUM_CACHE[r_num] if p["position"] == "1"), None)
                 if w1:
@@ -191,14 +171,12 @@ def api_calendar_list():
             "circuit_wiki_title": race["Circuit"]["url"].split('/wiki/')[-1],
             "circuit_name": race["Circuit"]["circuitName"]
         })
-
     return jsonify({"next_race_idx": next_race_idx, "races": list_payload})
 
 @app.route('/api/race-podium/<round_num>')
 def api_race_podium(round_num):
     if round_num in OPENF1_PODIUM_CACHE:
         return jsonify(OPENF1_PODIUM_CACHE[round_num])
-        
     results_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/results.json")
     if results_data and results_data["MRData"]["RaceTable"]["Races"]:
         podium_list = results_data["MRData"]["RaceTable"]["Races"][0]["Results"][:3]
@@ -207,19 +185,8 @@ def api_race_podium(round_num):
             "constructorId": p["Constructor"]["constructorId"], "constructorName": p["Constructor"]["name"],
             "wiki_title": p["Driver"]["url"].split('/wiki/')[-1]
         } for p in podium_list]
-        
         OPENF1_PODIUM_CACHE[round_num] = payload
         return jsonify(payload)
-    
-    calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
-    if calendar_data:
-        race = next((r for r in calendar_data["MRData"]["RaceTable"]["Races"] if r["round"] == round_num), None)
-        if race:
-            op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
-            if op_podium:
-                OPENF1_PODIUM_CACHE[round_num] = op_podium
-                return jsonify(op_podium)
-                
     return jsonify([])
 
 @app.route('/api/wiki-meta/<page_title>')
@@ -232,23 +199,12 @@ def api_wiki_meta(page_title):
         "image": data.get("originalimage", {}).get("source") or data.get("thumbnail", {}).get("source") or ""
     })
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
-
-# 🏛️ [라우트 4] 프랙티스 일정 및 스프린트/퀄리파잉/결승 결과를 일괄 수집하는 종합 세션 API
+# 🏛️ [통합 연동] 하단 세션 타임라인 분석용 신규 라우트 배치 완료
 @app.route('/api/race-sessions/<round_num>')
 def api_race_sessions(round_num):
-    # 프론트엔드가 넘겨준 조건(current 또는 2025)을 바인딩합니다.
     season = request.args.get('season', 'current')
+    payload = {"schedule": {}, "qualifying": [], "sprint": [], "race": []}
     
-    payload = {
-        "schedule": {},
-        "qualifying": [],
-        "sprint": [],
-        "race": []
-    }
-    
-    # 1. 주말 세션 공식 타임테이블/스케줄 수집 (프랙티스 포함)
     cal_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}.json")
     if cal_data and "MRData" in cal_data:
         races = cal_data["MRData"]["RaceTable"]["Races"]
@@ -263,40 +219,34 @@ def api_race_sessions(round_num):
                 "race": race.get("date", "-")
             }
             
-    # 2. 퀄리파잉 기록 수집 (Top 5)
     quali_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/qualifying.json")
-    if quali_data and "MRData" in quali_data:
+    if quali_data and "MRData" in quali_data and quali_data["MRData"]["RaceTable"]["Races"]:
         r_table = quali_data["MRData"]["RaceTable"]["Races"]
-        if r_table and "QualifyingResults" in r_table[0]:
+        if "QualifyingResults" in r_table[0]:
             payload["qualifying"] = [{
-                "position": q["position"],
-                "driver": f"{q['Driver']['givenName']} {q['Driver']['familyName']}",
-                "constructor": q["Constructor"]["name"],
-                "time": q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
+                "position": q["position"], "driver": f"{q['Driver']['givenName']} {q['Driver']['familyName']}",
+                "constructor": q["Constructor"]["name"], "time": q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
             } for q in r_table[0]["QualifyingResults"][:5]]
             
-    # 3. 스프린트 결과 수집 (스프린트 주말인 경우 Top 5 수집)
     sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/sprint.json")
-    if sprint_data and "MRData" in sprint_data:
+    if sprint_data and "MRData" in sprint_data and sprint_data["MRData"]["RaceTable"]["Races"]:
         r_table = sprint_data["MRData"]["RaceTable"]["Races"]
-        if r_table and "SprintResults" in r_table[0]:
+        if "SprintResults" in r_table[0]:
             payload["sprint"] = [{
-                "position": s["position"],
-                "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
-                "constructor": s["Constructor"]["name"],
-                "points": s.get("points", "0")
+                "position": s["position"], "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
+                "constructor": s["Constructor"]["name"], "points": s.get("points", "0")
             } for s in r_table[0]["SprintResults"][:5]]
             
-    # 4. 결승 레이스 결과 수집 (Top 5)
     race_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/results.json")
-    if race_data and "MRData" in race_data:
+    if race_data and "MRData" in race_data and race_data["MRData"]["RaceTable"]["Races"]:
         r_table = race_data["MRData"]["RaceTable"]["Races"]
-        if r_table and "Results" in r_table[0]:
+        if "Results" in r_table[0]:
             payload["race"] = [{
-                "position": r["position"],
-                "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
-                "constructor": r["Constructor"]["name"],
-                "points": r.get("points", "0")
+                "position": r["position"], "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
+                "constructor": r["Constructor"]["name"], "points": r.get("points", "0")
             } for r in r_table[0]["Results"][:5]]
             
     return jsonify(payload)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5001)
