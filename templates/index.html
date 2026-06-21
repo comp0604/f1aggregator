@@ -31,120 +31,31 @@
         .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* =========================================
-           ✨ BORDER GLOW EFFECT (순수 CSS 적용버전) 
-           ========================================= */
-        .border-glow-card {
-            /* JS가 제어할 기본 변수들 */
-            --edge-proximity: 0;
-            --cursor-angle: 45deg;
-            
-            /* 이펙트 강도 조절 (은은하게 커스텀) */
-            --edge-sensitivity: 40;
-            --color-sensitivity: calc(var(--edge-sensitivity) + 15);
-            --border-radius: 24px;
-            --glow-padding: 20px; /* 원래 40px에서 줄여서 은은하게 */
-            --cone-spread: 20;
-            --card-bg: transparent; /* 배경 블러를 통과시키기 위해 투명 처리 */
+        /* 🏆 랭킹 보드 기본 스타일 */
+        .row-content-rank { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; gap: 1.5rem; height: 100%; }
+        .dashboard-row-card { 
+            position: relative; border: none; border-radius: 24px; color: white; cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s; min-height: 340px; padding: 2rem !important; width: 100%; 
+        }
+        .dashboard-row-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(225, 6, 0, 0.25); }
 
-            position: relative;
-            border-radius: var(--border-radius);
-            isolation: isolate;
-            transform: translate3d(0, 0, 0.01px);
-            display: grid;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: none;
-            overflow: visible; /* 밖으로 뿜어나오는 빛을 자르지 않음 */
-            transition: transform 0.2s;
-            cursor: pointer;
+        /* 블러 처리된 카드 배경 (기존 ::before 대체) */
+        .card-bg-blur { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background-image: var(--bg-image, none); background-size: cover; background-position: center; 
+            filter: blur(20px) brightness(0.2); transform: scale(1.1); z-index: -2; 
+            transition: background-image 0.5s ease-in-out; border-radius: inherit; overflow: hidden;
         }
 
-        .border-glow-card:hover { transform: translateY(-3px); }
-
-        .border-glow-card::before,
-        .border-glow-card::after,
-        .border-glow-card > .edge-light {
-            content: ""; position: absolute; inset: 0;
-            border-radius: inherit; transition: opacity 0.25s ease-out; z-index: -1;
-        }
-
-        .border-glow-card:not(:hover)::before,
-        .border-glow-card:not(:hover)::after,
-        .border-glow-card:not(:hover) > .edge-light {
-            opacity: 0; transition: opacity 0.75s ease-in-out;
-        }
-
-        /* 1. 안쪽 Mesh Gradient 테두리 */
-        .border-glow-card::before {
-            border: 1.5px solid transparent; /* 테두리 굵기 */
-            background:
-                linear-gradient(var(--card-bg) 0 100%) padding-box,
-                linear-gradient(rgba(255, 255, 255, 0%) 0% 100%) border-box,
-                var(--gradient-one, radial-gradient(at 80% 55%, rgba(138, 43, 226, 0.8) 0px, transparent 50%)) border-box,
-                var(--gradient-two, radial-gradient(at 69% 34%, rgba(255, 105, 180, 0.8) 0px, transparent 50%)) border-box,
-                var(--gradient-three, radial-gradient(at 8% 6%, rgba(135, 206, 235, 0.8) 0px, transparent 50%)) border-box,
-                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
-
-            opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-            mask-image:
-                conic-gradient(
-                    from var(--cursor-angle) at center,
-                    black calc(var(--cone-spread) * 1%),
-                    transparent calc((var(--cone-spread) + 15) * 1%),
-                    transparent calc((100 - var(--cone-spread) - 15) * 1%),
-                    black calc((100 - var(--cone-spread)) * 1%)
-                );
-        }
-
-        /* 2. 바깥쪽 퍼지는 빛 (Edge Light) */
-        .border-glow-card > .edge-light {
-            inset: calc(var(--glow-padding) * -1); pointer-events: none; z-index: -2;
-            mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
-            opacity: calc(((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity))) * 0.7); /* 전체 불빛 70%로 은은하게 조절 */
-            mix-blend-mode: plus-lighter;
-        }
-
-        .border-glow-card > .edge-light::before {
-            content: ""; position: absolute; inset: var(--glow-padding); border-radius: inherit;
-            /* 빛 번짐 단계 최적화 */
-            box-shadow:
-                inset 0 0 0 1px var(--glow-color, rgba(255, 255, 255, 0.6)),
-                inset 0 0 4px 0 var(--glow-color, rgba(255, 255, 255, 0.4)),
-                inset 0 0 15px 0 var(--glow-color, rgba(255, 255, 255, 0.2)),
-                0 0 4px 0 var(--glow-color, rgba(255, 255, 255, 0.4)),
-                0 0 15px 0 var(--glow-color, rgba(255, 255, 255, 0.2)),
-                0 0 30px 2px var(--glow-color, rgba(255, 255, 255, 0.1));
-        }
-
-        /* 카드 내부 콘텐츠 래퍼 (배경 블러와 내용물이 들어감) */
-        .border-glow-inner {
-            display: flex; flex-direction: column; position: relative; z-index: 1;
-            border-radius: calc(var(--border-radius) - 1px);
-            overflow: hidden; /* 내부 블러 배경이 둥근 모서리를 뚫고 나가지 않게 함 */
-            background-color: #1f2124;
-            height: 100%; width: 100%;
-        }
-
-        /* 기존 pseudo-element를 대신하는 전용 배경 레이어 */
-        .bg-blur-layer {
-            position: absolute; inset: 0; z-index: 0;
-            background-image: var(--bg-image, none); background-size: cover; background-position: center;
-            filter: blur(25px) brightness(0.2); transform: scale(1.15); transition: background-image 0.5s ease-in-out;
-        }
-
-        /* 🏆 랭킹 보드 콘텐츠 디자인 */
-        .row-content-rank { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; gap: 1.5rem; height: 100%; position: relative; z-index: 1; padding: 2rem !important; }
-        
         .rank-container { width: 100%; max-width: 520px; display: flex; gap: 12px; align-items: flex-end; height: 250px; margin: 0 auto; }
         .podium-step { background-color: rgba(255, 255, 255, 0.08); border-radius: 16px 16px 8px 8px; padding: 15px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex: 1; position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .podium-1 { height: 100%; background: linear-gradient(to top, rgba(255, 215, 0, 0.18), rgba(255, 215, 0, 0.04)); border: 1px solid rgba(255, 215, 0, 0.4); }
         .podium-2 { height: 82%; background: linear-gradient(to top, rgba(192, 192, 192, 0.14), rgba(192, 192, 192, 0.03)); border: 1px solid rgba(192, 192, 192, 0.28); }
         .podium-3 { height: 70%; background: linear-gradient(to top, rgba(205, 127, 50, 0.12), rgba(205, 127, 50, 0.02)); border: 1px solid rgba(205, 127, 50, 0.22); }
-
         .podium-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; object-position: center 15%; margin-bottom: 8px; border: 3px solid rgba(255, 255, 255, 0.45); box-shadow: 0 6px 12px rgba(0,0,0,0.4); background-color: white; display: none; }
         .team-step .podium-img { border-radius: 14px; object-fit: contain; padding: 8px; }
         .podium-rank { font-size: 1.4rem; margin-bottom: 4px; line-height: 1; }
-        .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; color: white; }
+        .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; }
         .podium-pts { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
 
         /* 📰 초고밀도 뉴스 피드 */
@@ -159,6 +70,139 @@
         .news-title-text { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .news-meta-side { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font-size: 0.85rem; color: #6c757d; }
         .news-source-badge { background-color: #e3e6e9; color: #495057; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
+
+        /* =========================================
+           ✨ BORDER GLOW CSS 추가 영역 ✨ 
+           ========================================= */
+        .border-glow-card {
+            --edge-proximity: 0;
+            --cursor-angle: 45deg;
+            --edge-sensitivity: 25;
+            --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+            --border-radius: 24px;
+            --glow-padding: 35px;
+            --cone-spread: 30;
+            --card-bg: #1f2124;
+
+            position: relative;
+            border-radius: var(--border-radius);
+            isolation: isolate;
+            transform: translate3d(0, 0, 0.01px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            overflow: visible;
+        }
+
+        .border-glow-card::before,
+        .border-glow-card::after,
+        .border-glow-card > .edge-light {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            transition: opacity 0.25s ease-out;
+            z-index: -1;
+        }
+
+        .border-glow-card:not(:hover):not(.sweep-active)::before,
+        .border-glow-card:not(:hover):not(.sweep-active)::after,
+        .border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
+            opacity: 0;
+            transition: opacity 0.75s ease-in-out;
+        }
+
+        /* 메쉬 그라데이션 테두리 */
+        .border-glow-card::before {
+            border: 2px solid transparent;
+            background:
+                linear-gradient(var(--card-bg) 0 100%) padding-box,
+                linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+                var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
+
+            opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+
+            mask-image: conic-gradient(
+                from var(--cursor-angle) at center,
+                black calc(var(--cone-spread) * 1%),
+                transparent calc((var(--cone-spread) + 15) * 1%),
+                transparent calc((100 - var(--cone-spread) - 15) * 1%),
+                black calc((100 - var(--cone-spread)) * 1%)
+            );
+        }
+
+        /* 가장자리 안쪽 메쉬 그라데이션 채우기 */
+        .border-glow-card::after {
+            border: 2px solid transparent;
+            background:
+                var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-base, linear-gradient(#c299ff 0 100%)) padding-box;
+
+            mask-image:
+                linear-gradient(to bottom, black, black),
+                radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+                radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+                radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+                radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+                radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+                conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+
+            mask-composite: subtract, add, add, add, add, add;
+            opacity: calc(var(--fill-opacity, 0.6) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+            mix-blend-mode: soft-light;
+        }
+
+        /* 바깥쪽 빛 반사 (Glow Layer) */
+        .border-glow-card > .edge-light {
+            inset: calc(var(--glow-padding) * -1);
+            pointer-events: none;
+            z-index: 1;
+
+            mask-image: conic-gradient(
+                from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
+            );
+
+            opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+            mix-blend-mode: plus-lighter;
+        }
+
+        .border-glow-card > .edge-light::before {
+            content: "";
+            position: absolute;
+            inset: var(--glow-padding);
+            border-radius: inherit;
+            /* 튜닝된 더 확실한 형광 글로우 */
+            box-shadow:
+                inset 0 0 0 1px var(--glow-color, hsl(200 100% 70% / 100%)),
+                inset 0 0 1px 0 var(--glow-color-60, hsl(200 100% 70% / 60%)),
+                inset 0 0 3px 0 var(--glow-color-50, hsl(200 100% 70% / 50%)),
+                inset 0 0 6px 0 var(--glow-color-40, hsl(200 100% 70% / 40%)),
+                inset 0 0 15px 0 var(--glow-color-30, hsl(200 100% 70% / 30%)),
+                inset 0 0 25px 2px var(--glow-color-20, hsl(200 100% 70% / 20%)),
+                0 0 1px 0 var(--glow-color-60, hsl(200 100% 70% / 60%)),
+                0 0 3px 0 var(--glow-color-50, hsl(200 100% 70% / 50%)),
+                0 0 6px 0 var(--glow-color-40, hsl(200 100% 70% / 40%)),
+                0 0 15px 0 var(--glow-color-30, hsl(200 100% 70% / 30%)),
+                0 0 25px 2px var(--glow-color-20, hsl(200 100% 70% / 20%)),
+                0 0 50px 2px var(--glow-color-10, hsl(200 100% 70% / 10%));
+        }
+
+        .border-glow-inner {
+            position: relative;
+            z-index: 2; /* 텍스트 내용이 빛 위로 올라오게 고정 */
+        }
     </style>
 </head>
 <body>
@@ -194,38 +238,32 @@
         
         <div class="row g-4 mb-5">
             <div class="col-lg-6">
-                <div id="card-driver" class="border-glow-card h-100" style="--glow-color: rgba(13, 110, 253, 0.6);" onclick="location.href='/standings'">
+                <div id="card-driver" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
+                    <div class="card-bg-blur"></div>
                     <div class="edge-light"></div>
-                    
-                    <div class="border-glow-inner">
-                        <div class="bg-blur-layer"></div>
-                        <div class="row-content-rank">
-                            <div>
-                                <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
-                                <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
-                            </div>
-                            <div id="dash-drivers-box" class="rank-container">
-                                <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
-                            </div>
+                    <div class="row-content-rank border-glow-inner">
+                        <div>
+                            <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
+                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
+                        </div>
+                        <div id="dash-drivers-box" class="rank-container">
+                            <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-6">
-                <div id="card-team" class="border-glow-card h-100" style="--glow-color: rgba(25, 135, 84, 0.6);" onclick="location.href='/standings'">
+                <div id="card-team" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
+                    <div class="card-bg-blur"></div>
                     <div class="edge-light"></div>
-
-                    <div class="border-glow-inner">
-                        <div class="bg-blur-layer"></div>
-                        <div class="row-content-rank">
-                            <div>
-                                <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
-                                <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
-                            </div>
-                            <div id="dash-teams-box" class="rank-container">
-                                <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
-                            </div>
+                    <div class="row-content-rank border-glow-inner">
+                        <div>
+                            <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
+                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
+                        </div>
+                        <div id="dash-teams-box" class="rank-container">
+                            <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
                         </div>
                     </div>
                 </div>
@@ -268,46 +306,45 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-
-            /* ============================================================
-               ✨ Vanilla JS 기반 Border Glow 실시간 트래킹 (마우스 이벤트)
-               ============================================================ */
-            document.addEventListener('mousemove', (e) => {
-                document.querySelectorAll('.border-glow-card').forEach(card => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    
-                    // 카드 중앙 계산
-                    const cx = rect.width / 2;
-                    const cy = rect.height / 2;
-                    
-                    // 마우스 위치에 따른 빛의 각도 계산
-                    const angle = (Math.atan2(y - cy, x - cx) * 180 / Math.PI + 90 + 360) % 360;
-                    
-                    // 카드 가장자리로부터의 거리 측정 (마우스가 박스 바깥에 있을 경우를 위해)
-                    const dx = Math.max(0, Math.max(rect.left - e.clientX, e.clientX - rect.right));
-                    const dy = Math.max(0, Math.max(rect.top - e.clientY, e.clientY - rect.bottom));
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Proximity 계산 (100: 제일 밝음, 거리가 멀어질수록 0에 수렴)
-                    // 반응 반경을 120px 정도로 제한하여 은은함을 강조합니다.
-                    const proximity = Math.max(0, 100 - (distance / 1.2));
-
-                    // 실시간 CSS 변수 주입
-                    card.style.setProperty('--cursor-angle', `${angle}deg`);
-                    card.style.setProperty('--edge-proximity', proximity);
-                });
-            });
-
-
-            /* ============================================================
-               🏁 기존 F1 데이터 동기화 코드 
-               ============================================================ */
             const calendarUrl = "https://api.jolpi.ca/ergast/f1/current.json";
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
+            // 🌟 1. Border Glow 마우스 트래킹 로직 추가 🌟
+            const glowCards = document.querySelectorAll(".border-glow-card");
+            
+            document.addEventListener("mousemove", (e) => {
+                glowCards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // 각도(Angle) 계산
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    let angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                    angle = (angle + 90 + 360) % 360; // top 기준으로 90도 회전 보정
+                    
+                    // 박스 테두리까지의 거리 계산
+                    const dx = Math.max(0, -x, x - rect.width);
+                    const dy = Math.max(0, -y, y - rect.height);
+                    const distToEdge = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // 마우스 접근 거리 (Proximity) 계산: 반경 250px 내에서 반응
+                    const radius = 250; 
+                    let proximity = 100 - ((distToEdge / radius) * 100);
+                    
+                    // 범위 0~100으로 제한
+                    if (proximity < 0) proximity = 0;
+                    if (proximity > 100) proximity = 100;
+                    
+                    // CSS 변수 주입
+                    card.style.setProperty("--cursor-angle", `${angle}deg`);
+                    card.style.setProperty("--edge-proximity", proximity);
+                });
+            });
+
+            // 이하 기존 API 연동 로직...
             function getFlagUrl(countryName) {
                 const name = (countryName || "").toLowerCase().trim();
                 const mapping = {
@@ -331,7 +368,7 @@
                     .then(data => {
                         const imgUrl = data.originalimage?.source || data.thumbnail?.source;
                         if (imgUrl) {
-                            document.getElementById(elementId).style.setProperty('--bg-image', `url('${imgUrl}')`);
+                            document.getElementById(elementId).querySelector('.card-bg-blur').style.setProperty('--bg-image', `url('${imgUrl}')`);
                         }
                     }).catch(err => console.error(err));
             }
