@@ -62,13 +62,13 @@ def fetch_json_safely(url):
         return None
 
 # 💥 OpenF1 2차 피드 정밀 타격 함수 (API 간 지역명 불일치 및 예외 처리 완벽 방어)
+# 💥 OpenF1 2차 피드 정밀 타격 함수 (API 간 지역명 불일치 및 위키피디아 대소문자 완벽 방어)
 def fetch_openf1_fallback(locality, race_date):
     try:
         year = race_date.split("-")[0] if race_date else "2026"
         sessions = fetch_json_safely(f"https://api.openf1.org/v1/sessions?year={year}&session_name=Race")
         if not sessions: return None
         
-        # 🔥 Jolpi API와 OpenF1 API 간의 하드코딩 매핑 (바르셀로나, 모나코 등)
         loc_mapping = {
             "monte-carlo": "monaco",
             "montmeló": "barcelona",
@@ -89,17 +89,30 @@ def fetch_openf1_fallback(locality, race_date):
         
         valid_results = []
         for r in results:
-            # 🔥 OpenF1 API는 'position_current' 키를 사용할 때도 있음
             pos = r.get("position")
             if pos is None: pos = r.get("position_current")
             if pos is not None and 1 <= pos <= 3:
                 valid_results.append((pos, r))
                 
+        # 🔥 위키피디아 URL 규칙 예외 사전 (특수문자 및 이름 표기법 보정)
+        wiki_exceptions = {
+            "Sergio_Perez": "Sergio_Pérez",
+            "Nico_Hulkenberg": "Nico_Hülkenberg",
+            "Carlos_Sainz": "Carlos_Sainz_Jr.",
+            "Zhou_Guanyu": "Guanyu_Zhou",
+            "Alexander_Albon": "Alex_Albon",
+            "Nyck_De_Vries": "Nyck_de_Vries"
+        }
+                
         podium = []
         sorted_res = sorted(valid_results, key=lambda x: x[0])
         for pos, r in sorted_res:
             d_info = next((d for d in drivers if d.get("driver_number") == r.get("driver_number")), {})
-            wiki_title = (d_info.get("full_name") or "").replace(" ", "_")
+            
+            raw_name = d_info.get("full_name") or "Unknown"
+            base_wiki_title = "_".join([w.capitalize() for w in raw_name.split()])
+            wiki_title = wiki_exceptions.get(base_wiki_title, base_wiki_title)
+            
             team_name = d_info.get("team_name") or "Unknown"
             
             podium.append({

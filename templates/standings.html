@@ -11,64 +11,65 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
         .f1-logo:hover { color: rgba(255,255,255,0.8); }
 
-        /* 🏆 상단 탑 5 드라이버 카드 디자인 */
+        /* 🏆 상단 탑 5 포디움 컨테이너 */
+        .podium-top5-container {
+            height: 340px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 3rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .podium-top5-container::-webkit-scrollbar { height: 6px; }
+        .podium-top5-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
         .top-driver-card {
             background-color: #1f2124;
             border: none;
-            border-radius: 16px;
+            border-radius: 16px 16px 6px 6px;
             color: white;
-            padding: 1.25rem;
+            padding: 1.25rem 0.5rem;
             text-align: center;
             position: relative;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.12);
+            transition: transform 0.2s;
+            min-width: 130px;
+            width: 19%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .top-driver-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(225, 6, 0, 0.15);
-        }
-        
-        .rank-1 { border: 2px solid #ffc107; }
-        .rank-2 { border: 2px solid #c0c0c0; }
-        .rank-3 { border: 2px solid #cd7f32; }
 
-        .card-rank-badge {
-            position: absolute;
-            top: 10px;
-            left: 12px;
-            font-size: 1.5rem;
-            font-weight: 900;
-            font-style: italic;
-            opacity: 0.3;
-        }
-        .card-rank-badge.active-rank { opacity: 1; }
+        /* 🥇 순위별 배치(order) 및 단상 높이/크기 차등화 */
+        .rank-order-1 { order: 3; height: 100%; border: 2px solid #ffc107; background: linear-gradient(to top, rgba(255, 215, 0, 0.12), #1f2124); z-index: 5; }
+        .rank-order-2 { order: 2; height: 85%; border: 2px solid #c0c0c0; z-index: 4; }
+        .rank-order-3 { order: 4; height: 75%; border: 2px solid #cd7f32; z-index: 3; }
+        .rank-order-4 { order: 1; height: 62%; opacity: 0.9; z-index: 2; background-color: #2d3035; }
+        .rank-order-5 { order: 5; height: 55%; opacity: 0.85; z-index: 1; background-color: #2d3035; }
+
+        .card-rank-badge { position: absolute; top: 8px; left: 10px; font-size: 1.2rem; font-weight: 900; font-style: italic; opacity: 0.5; }
+        .rank-order-1 .card-rank-badge { font-size: 1.6rem; opacity: 1; text-shadow: 0 0 10px rgba(255,193,7,0.5); }
 
         .driver-avatar {
-            width: 85px;
-            height: 85px;
-            border-radius: 50%;
-            object-fit: cover;
-            object-position: center 15%;
-            border: 3px solid rgba(255,255,255,0.2);
-            background-color: #fff;
-            margin: 0 auto 10px auto;
-            display: none; 
+            width: 70px; height: 70px; border-radius: 50%; object-fit: cover; object-position: center 15%;
+            border: 3px solid rgba(255,255,255,0.2); background-color: #fff; margin: 0 auto 10px auto; display: none; 
         }
+        .rank-order-1 .driver-avatar { width: 95px; height: 95px; border-color: #ffc107; box-shadow: 0 4px 12px rgba(255,193,7,0.3); }
+        .rank-order-2 .driver-avatar, .rank-order-3 .driver-avatar { width: 80px; height: 80px; }
+        .rank-order-4 .driver-avatar, .rank-order-5 .driver-avatar { width: 60px; height: 60px; margin-bottom: 6px; }
 
-        .driver-name { font-size: 1.1rem; font-weight: bold; margin-bottom: 2px; }
-        .driver-team { font-size: 0.8rem; opacity: 0.7; margin-bottom: 8px; }
-        .driver-points { font-size: 1.2rem; font-weight: bold; color: #ffc107; }
+        .driver-name { font-size: 1rem; font-weight: bold; line-height: 1.2; margin-bottom: 4px; }
+        .rank-order-1 .driver-name { font-size: 1.25rem; color: #ffc107; }
+        .driver-team { font-size: 0.75rem; opacity: 0.7; }
+        .driver-points { font-size: 1.1rem; font-weight: bold; color: #ffc107; margin-top: auto; }
+        .rank-order-1 .driver-points { font-size: 1.4rem; }
 
-        /* 🏛️ 하단 테이블 디자인 */
-        .standings-box {
-            background-color: #1f2124;
-            border-radius: 20px;
-            padding: 1.5rem;
-            color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            margin-bottom: 2rem;
-        }
+        /* 하단 테이블 */
+        .standings-box { background-color: #1f2124; border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-bottom: 2rem; }
         .table-f1 { color: white !important; vertical-align: middle !important; }
         .table-f1 th { border-bottom: 2px solid #444 !important; font-weight: bold; color: #aaa; font-size: 0.9rem; }
         .table-f1 td { border-bottom: 1px solid #333 !important; font-size: 0.95rem; padding: 12px 8px !important; }
@@ -79,6 +80,10 @@
 
         .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
         .back-btn:hover { background-color: #e10600; color: white; }
+
+        @media (max-width: 768px) {
+            .podium-top5-container { justify-content: flex-start; } /* 모바일에서는 좌측 정렬 스크롤로 포디움 형태 유지 */
+        }
     </style>
 </head>
 <body>
@@ -91,9 +96,9 @@
 
     <div class="container mb-5">
         
-        <h3 class="fw-bold text-dark mb-3">🏆 Championship Leaders (Top 5)</h3>
-        <div class="row row-cols-2 row-cols-md-5 g-3 mb-5" id="top-drivers-cards-row">
-            <div class="w-100 text-center text-muted py-3">드라이버 리더보드 데이터 동기화 중...</div>
+        <h3 class="fw-bold text-dark mb-3">🏆 Championship Leaders</h3>
+        <div class="podium-top5-container" id="top-drivers-cards-row">
+            <div class="w-100 text-center text-muted align-self-center">드라이버 리더보드 데이터 동기화 중...</div>
         </div>
 
         <div class="row g-4">
@@ -108,7 +113,8 @@
                                     <th scope="col" class="text-center">순위</th>
                                     <th scope="col">드라이버</th>
                                     <th scope="col">팀</th>
-                                    <th scope="col" class="text-center">우승</th>
+                                    <th scope="col" class="text-center" title="Wins">우승</th>
+                                    <th scope="col" class="text-center text-info" title="Podiums">포디움</th>
                                     <th scope="col" class="text-end">포인트</th>
                                 </tr>
                             </thead>
@@ -127,7 +133,8 @@
                                 <tr>
                                     <th scope="col" class="text-center">순위</th>
                                     <th scope="col">컨스트럭터 팀</th>
-                                    <th scope="col" class="text-center">우승</th>
+                                    <th scope="col" class="text-center" title="Wins">우승</th>
+                                    <th scope="col" class="text-center text-info" title="Podiums">포디움</th>
                                     <th scope="col" class="text-end">포인트</th>
                                 </tr>
                             </thead>
@@ -143,102 +150,119 @@
 
     </div>
 
-<script>
+    <script>
         document.addEventListener("DOMContentLoaded", function() {
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const constructorsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
+            const resultsUrl = "https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000";
 
-            // 1. 드라이버 순위 바인딩
-            fetch(driversUrl)
-                .then(res => res.json())
-                .then(data => {
-                    const standingsList = data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
-                    
-                    const top5 = standingsList.slice(0, 5);
-                    let cardsHtml = "";
-                    const medals = { "1": "🥇", "2": "🥈", "3": "🥉" };
-
-                    top5.forEach(item => {
-                        const rank = item.position;
-                        const medalIcon = medals[rank] || "";
-                        const borderClass = rank <= 3 ? `rank-${rank}` : "";
-                        const badgeActive = rank <= 3 ? "active-rank" : "";
-                        
-                        // 🔥 [버그 수정] API가 배열(Constructors)로 내려주므로 첫 번째 팀 이름을 안전하게 추출합니다.
-                        const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
-
-                        // 안전한 위키 URL 파싱
-                        const wikiTitle = (item.Driver.url || "").split('/wiki/')[1] || "";
-
-                        cardsHtml += `
-                            <div class="col">
-                                <div class="top-driver-card ${borderClass}">
-                                    <div class="card-rank-badge ${badgeActive}">${medalIcon || rank}</div>
-                                    <img id="card-avatar-${rank}" class="driver-avatar" src="" alt="Driver">
-                                    <div class="driver-name">${item.Driver.givenName}<br>${item.Driver.familyName}</div>
-                                    <div class="driver-team text-truncate" title="${teamName}">${teamName}</div>
-                                    <div class="driver-points">${item.points} PTS</div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
-
-                    // 프로필 사진 순차 프록시 딜리버리
-                    top5.forEach(item => {
-                        const rank = item.position;
-                        const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
-                        if (wikiTitle) {
-                            fetch(`/api/wiki-meta/${wikiTitle}`)
-                                .then(r => r.json())
-                                .then(w => {
-                                    const img = document.getElementById(`card-avatar-${rank}`);
-                                    if (img && w.image) {
-                                        img.src = w.image; img.style.display = "block";
-                                    }
-                                });
+            // 🔥 3개의 API를 동시에 병렬 호출하여 포디움 데이터를 계산합니다.
+            Promise.all([
+                fetch(driversUrl).then(res => res.json()),
+                fetch(constructorsUrl).then(res => res.json()),
+                fetch(resultsUrl).then(res => res.json())
+            ]).then(([driversData, constructorsData, resultsData]) => {
+                
+                // --- 1. 포디움 횟수 전처리 연산 ---
+                const podiumMapDrivers = {};
+                const podiumMapConstructors = {};
+                const races = resultsData.MRData.RaceTable.Races;
+                
+                races.forEach(race => {
+                    race.Results.forEach(res => {
+                        if (parseInt(res.position) <= 3) {
+                            const dId = res.Driver.driverId;
+                            const cId = res.Constructor.constructorId;
+                            podiumMapDrivers[dId] = (podiumMapDrivers[dId] || 0) + 1;
+                            podiumMapConstructors[cId] = (podiumMapConstructors[cId] || 0) + 1;
                         }
                     });
+                });
 
-                    let tableHtml = "";
-                    standingsList.forEach(item => {
-                        // 🔥 [버그 수정] 하단 테이블 렌더링 시에도 Constructors 배열로 접근합니다.
-                        const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
-                        
-                        tableHtml += `
-                            <tr>
-                                <td class="text-center rank-num">${item.position}</td>
-                                <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
-                                <td class="text-white-50">${teamName}</td>
-                                <td class="text-center wins-num">${item.wins}</td>
-                                <td class="pts-num">${item.points} P</td>
-                            </tr>
-                        `;
-                    });
-                    document.getElementById("drivers-table-body").innerHTML = tableHtml;
-                })
-                .catch(err => console.error("Driver Standings Error:", err));
+                // --- 2. 상단 Top 5 포디움 렌더링 ---
+                const driverStandingsList = driversData.MRData.StandingsTable.StandingsLists[0].DriverStandings;
+                const top5 = driverStandingsList.slice(0, 5);
+                let cardsHtml = "";
+                const medals = { "1": "🥇", "2": "🥈", "3": "🥉" };
 
-            // 2. 팀 순위 바인딩
-            fetch(constructorsUrl)
-                .then(res => res.json())
-                .then(data => {
-                    const standingsList = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
-                    let tableHtml = "";
+                top5.forEach(item => {
+                    const rank = parseInt(item.position);
+                    const medalIcon = medals[rank] || rank;
+                    const orderClass = `rank-order-${rank}`;
+                    const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
 
-                    standingsList.forEach(item => {
-                        tableHtml += `
-                            <tr>
-                                <td class="text-center rank-num">${item.position}</td>
-                                <td><strong>${item.Constructor.name}</strong></td>
-                                <td class="text-center wins-num">${item.wins}</td>
-                                <td class="pts-num">${item.points} P</td>
-                            </tr>
-                        `;
-                    });
-                    document.getElementById("constructors-table-body").innerHTML = tableHtml;
-                })
-                .catch(err => console.error("Constructor Standings Error:", err));
+                    cardsHtml += `
+                        <div class="top-driver-card ${orderClass}">
+                            <div class="card-rank-badge">${medalIcon}</div>
+                            <div>
+                                <img id="card-avatar-${rank}" class="driver-avatar" src="" alt="Driver">
+                                <div class="driver-name">${item.Driver.givenName}<br>${item.Driver.familyName}</div>
+                                <div class="driver-team text-truncate" title="${teamName}">${teamName}</div>
+                            </div>
+                            <div class="driver-points">${item.points} PTS</div>
+                        </div>
+                    `;
+                });
+                document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
+
+                // 사진 동기화
+                top5.forEach(item => {
+                    const rank = item.position;
+                    const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
+                    if (wikiTitle) {
+                        fetch(`/api/wiki-meta/${wikiTitle}`)
+                            .then(r => r.json())
+                            .then(w => {
+                                const img = document.getElementById(`card-avatar-${rank}`);
+                                if (img && w.image) { img.src = w.image; img.style.display = "block"; }
+                            });
+                    }
+                });
+
+                // --- 3. 드라이버 순위 테이블 렌더링 ---
+                let driversTableHtml = "";
+                driverStandingsList.forEach(item => {
+                    const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
+                    const dId = item.Driver.driverId;
+                    const podiums = podiumMapDrivers[dId] || 0;
+                    
+                    driversTableHtml += `
+                        <tr>
+                            <td class="text-center rank-num">${item.position}</td>
+                            <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
+                            <td class="text-white-50">${teamName}</td>
+                            <td class="text-center wins-num">${item.wins}</td>
+                            <td class="text-center text-info fw-bold">${podiums}</td>
+                            <td class="pts-num">${item.points} P</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById("drivers-table-body").innerHTML = driversTableHtml;
+
+                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 ---
+                const constStandingsList = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
+                let constTableHtml = "";
+                
+                constStandingsList.forEach(item => {
+                    const cId = item.Constructor.constructorId;
+                    const podiums = podiumMapConstructors[cId] || 0;
+
+                    constTableHtml += `
+                        <tr>
+                            <td class="text-center rank-num">${item.position}</td>
+                            <td><strong>${item.Constructor.name}</strong></td>
+                            <td class="text-center wins-num">${item.wins}</td>
+                            <td class="text-center text-info fw-bold">${podiums}</td>
+                            <td class="pts-num">${item.points} P</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById("constructors-table-body").innerHTML = constTableHtml;
+
+            }).catch(err => {
+                console.error("통합 데이터 로드 실패:", err);
+                document.getElementById("top-drivers-cards-row").innerHTML = `<div class="w-100 text-center text-danger">데이터를 불러오는 중 오류가 발생했습니다.</div>`;
+            });
         });
     </script>
 </body>
