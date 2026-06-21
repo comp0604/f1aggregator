@@ -11,14 +11,10 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
         .f1-logo:hover { color: rgba(255,255,255,0.8); }
 
-        /* 🔥 [신규] 상단 Top 5 독립형 블랙 래퍼 */
+        /* 🔥 상단 Top 5 독립형 블랙 래퍼 */
         .top5-wrapper {
-            background-color: #0a0b0c; /* 깊고 세련된 블랙 */
-            border-radius: 24px;
-            padding: 2.5rem 1.5rem 1rem 1.5rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-            margin-bottom: 3rem;
-            border: 1px solid rgba(255,255,255,0.05);
+            background-color: #0a0b0c; border-radius: 24px; padding: 2.5rem 1.5rem 1rem 1.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25); margin-bottom: 3rem; border: 1px solid rgba(255,255,255,0.05);
         }
 
         /* 🏆 상단 탑 5 포디움 컨테이너 */
@@ -56,18 +52,24 @@
         .driver-points { font-size: 1.1rem; font-weight: bold; color: #ffc107; margin-top: auto; }
         .rank-order-1 .driver-points { font-size: 1.4rem; }
 
-        /* 하단 테이블 */
+        /* 하단 테이블 설정 */
         .standings-box { background-color: #1f2124; border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-bottom: 2rem; }
-        .table-f1 { color: white !important; vertical-align: middle !important; border-collapse: separate; border-spacing: 0 4px; }
-        .table-f1 th { border-bottom: 2px solid #444 !important; font-weight: bold; color: #aaa; font-size: 0.9rem; border-top: none !important; }
-        .table-f1 td { border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-top: none !important; font-size: 0.95rem; padding: 12px 8px !important; }
+        .table-f1 { color: white !important; vertical-align: middle !important; border-collapse: separate; border-spacing: 0 6px; }
+        .table-f1 th { border-bottom: 2px solid #444 !important; font-weight: bold; color: #aaa; font-size: 0.9rem; border-top: none !important; padding-bottom: 10px; }
         
-        /* 🔥 행 색상 적용을 위한 스타일 */
-        .color-row { transition: background-color 0.2s, transform 0.2s; border-radius: 6px; }
-        .color-row:hover { transform: translateX(4px); }
-
-        .rank-num { font-weight: bold; font-style: italic; font-size: 1.1rem; width: 50px; }
-        .pts-num { font-weight: bold; color: #ffc107; text-align: right; }
+        /* 🔥 부트스트랩 셀 배경 강제 투명화 및 테두리 정리 */
+        .table-f1 td { 
+            background-color: transparent !important; 
+            border-bottom: none !important; border-top: none !important; 
+            font-size: 0.95rem; padding: 12px 8px !important; 
+        }
+        
+        /* 🔥 색상 행 전용 클래스 */
+        .color-row { transition: transform 0.2s, box-shadow 0.2s; border-radius: 8px; }
+        .color-row:hover { transform: translateX(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        
+        .rank-num { font-weight: bold; font-style: italic; font-size: 1.1rem; width: 50px; border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        .pts-num { font-weight: bold; color: #ffc107; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
         .wins-num { text-align: center; color: #aaa; font-size: 0.85rem; }
 
         .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
@@ -153,7 +155,7 @@
             if(!cid) return "#1a1c1e";
             const key = cid.toLowerCase().replace(/[^a-z]/g, '');
             for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
-            return "#333333"; // 기본색
+            return "#444444"; // 기본색
         }
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -209,7 +211,6 @@
                 });
                 document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
 
-                // 프로필 사진 동기화
                 top5.forEach(item => {
                     const rank = item.position;
                     const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
@@ -223,7 +224,7 @@
                     }
                 });
 
-                // --- 3. 드라이버 순위 테이블 렌더링 (팀 컬러 적용) ---
+                // --- 3. 드라이버 순위 테이블 렌더링 (해결된 팀 컬러 그라데이션) ---
                 let driversTableHtml = "";
                 driverStandingsList.forEach(item => {
                     const cId = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].constructorId : "";
@@ -233,10 +234,10 @@
                     const dId = item.Driver.driverId;
                     const podiums = podiumMapDrivers[dId] || 0;
                     
-                    // 🎨 스타일 속성으로 팀 컬러 반투명 그라데이션 주입
+                    // 🎨 <tr> 배경에 그라데이션 삽입, 첫 <td>에 테두리 적용
                     driversTableHtml += `
-                        <tr class="color-row" style="border-left: 4px solid ${teamHex}; background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%);">
-                            <td class="text-center rank-num">${item.position}</td>
+                        <tr class="color-row" style="background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="text-center rank-num" style="border-left: 5px solid ${teamHex};">${item.position}</td>
                             <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
                             <td class="text-white-50">${teamName}</td>
                             <td class="text-center wins-num">${item.wins}</td>
@@ -247,7 +248,7 @@
                 });
                 document.getElementById("drivers-table-body").innerHTML = driversTableHtml;
 
-                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 (팀 컬러 적용) ---
+                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 (해결된 팀 컬러 그라데이션) ---
                 const constStandingsList = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
                 let constTableHtml = "";
                 
@@ -257,8 +258,8 @@
                     const podiums = podiumMapConstructors[cId] || 0;
 
                     constTableHtml += `
-                        <tr class="color-row" style="border-left: 4px solid ${teamHex}; background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%);">
-                            <td class="text-center rank-num">${item.position}</td>
+                        <tr class="color-row" style="background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="text-center rank-num" style="border-left: 5px solid ${teamHex};">${item.position}</td>
                             <td><strong>${item.Constructor.name}</strong></td>
                             <td class="text-center wins-num">${item.wins}</td>
                             <td class="text-center text-info fw-bold">${podiums}</td>

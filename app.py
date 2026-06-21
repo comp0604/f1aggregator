@@ -84,7 +84,7 @@ def fetch_openf1_fallback(locality, race_date):
         
         valid_results = []
         for r in results:
-            pos = r.get("position") or r.get("position_current")
+            pos = r.get("position") if r.get("position") is not None else r.get("position_current")
             if pos is not None and 1 <= pos <= 3:
                 valid_results.append((pos, r))
                 
@@ -155,9 +155,10 @@ def api_calendar_list():
         elif is_past:
             if r_num not in OPENF1_PODIUM_CACHE:
                 op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
-                if op_podium: OPENF1_PODIUM_CACHE[r_num] = op_podium
+                if op_podium: OPENF1_PODIUM_CACHE[r_num] = {"podium": op_podium, "pole": "", "fastest_lap": "", "sprint_winner": ""}
             if r_num in OPENF1_PODIUM_CACHE:
-                w1 = next((p for p in OPENF1_PODIUM_CACHE[r_num] if p["position"] == "1"), None)
+                pod_data = OPENF1_PODIUM_CACHE[r_num].get("podium", [])
+                w1 = next((p for p in pod_data if p["position"] == "1"), None)
                 if w1:
                     winner_name = w1["familyName"]
                     team_color = get_team_color(w1["constructorId"], w1["constructorName"])
@@ -173,21 +174,45 @@ def api_calendar_list():
         })
     return jsonify({"next_race_idx": next_race_idx, "races": list_payload})
 
+# 🔥 [구조 고도화] 백엔드에서 칭호(폴포지션, 패스티스트랩, 스프린트) 데이터를 일괄 정제하여 반환
 @app.route('/api/race-podium/<round_num>')
 def api_race_podium(round_num):
-    if round_num in OPENF1_PODIUM_CACHE:
+    if round_num in OPENF1_PODIUM_CACHE and "pole" in OPENF1_PODIUM_CACHE[round_num]:
         return jsonify(OPENF1_PODIUM_CACHE[round_num])
+        
+    payload = {"podium": [], "pole": "", "fastest_lap": "", "sprint_winner": ""}
+    
     results_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/results.json")
     if results_data and results_data["MRData"]["RaceTable"]["Races"]:
-        podium_list = results_data["MRData"]["RaceTable"]["Races"][0]["Results"][:3]
-        payload = [{
+        race_info = results_data["MRData"]["RaceTable"]["Races"][0]
+        podium_list = race_info["Results"][:3]
+        payload["podium"] = [{
             "position": p["position"], "familyName": p["Driver"]["familyName"],
             "constructorId": p["Constructor"]["constructorId"], "constructorName": p["Constructor"]["name"],
             "wiki_title": p["Driver"]["url"].split('/wiki/')[-1]
         } for p in podium_list]
-        OPENF1_PODIUM_CACHE[round_num] = payload
-        return jsonify(payload)
-    return jsonify([])
+        
+        all_res = race_info["Results"]
+        pole_driver = next((r for r in all_res if r.get("grid") == "1"), None)
+        fl_driver = next((r for r in all_res if r.get("FastestLap", {}).get("rank") == "1"), None)
+        if pole_driver: payload["pole"] = pole_driver["Driver"]["familyName"]
+        if fl_driver: payload["fastest_lap"] = fl_driver["Driver"]["familyName"]
+    else:
+        calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
+        if calendar_data:
+            race = next((r for r in calendar_data["MRData"]["RaceTable"]["Races"] if r["round"] == round_num), None)
+            if race:
+                op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
+                if op_podium: payload["podium"] = op_podium
+
+    sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/sprint.json")
+    if sprint_data and sprint_data["MRData"]["RaceTable"]["Races"]:
+        sprint_info = sprint_data["MRData"]["RaceTable"]["Races"][0]
+        if sprint_info.get("SprintResults"):
+            payload["sprint_winner"] = sprint_info["SprintResults"][0]["Driver"]["familyName"]
+
+    OPENF1_PODIUM_CACHE[round_num] = payload
+    return jsonify(payload)
 
 @app.route('/api/wiki-meta/<page_title>')
 def api_wiki_meta(page_title):
@@ -199,7 +224,6 @@ def api_wiki_meta(page_title):
         "image": data.get("originalimage", {}).get("source") or data.get("thumbnail", {}).get("source") or ""
     })
 
-# 🏛️ [통합 연동] 하단 세션 타임라인 분석용 신규 라우트 배치 완료
 @app.route('/api/race-sessions/<round_num>')
 def api_race_sessions(round_num):
     season = request.args.get('season', 'current')
