@@ -32,65 +32,18 @@
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
         /* =========================================
-           ✨ 추가된 기능 1: Animated Gradient Text ✨
+           ✨ 수정된 기능: 퓨어 애니메이티드 그라데이션 텍스트
            ========================================= */
-        .animated-gradient-text {
-            position: relative;
-            margin: 0 auto;
-            display: flex;
-            max-width: fit-content;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            border-radius: 1.25rem;
-            font-weight: 800;
-            backdrop-filter: blur(10px);
-            transition: box-shadow 0.5s ease-out;
-            overflow: hidden;
-            cursor: pointer;
-            /* 테두리를 따라 흐르는 배경 그라데이션 */
-            background: linear-gradient(90deg, #ff0000, #ff8700, #ffcc00, #ff0000);
-            background-size: 300% 100%;
-            animation: gradient-shift 4s infinite linear;
-        }
-
-        .animated-gradient-text.with-border {
-            padding: 0.35rem 1.2rem; /* 알약 형태 유지를 위해 좌우 패딩 증가 */
-        }
-
-        .gradient-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: inherit;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* 2px 테두리 두께를 제외하고 파내는 영역 (배경색과 동일하게) */
-        .gradient-overlay::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: calc(100% - 4px); /* 선 굵기 조절 (현재 2px) */
-            height: calc(100% - 4px);
-            background-color: #1f2124; /* 배너 배경색으로 투명한 듯 연출 */
-            border-radius: inherit;
-            z-index: -1;
-        }
-
-        .text-content {
+        .gradient-text-only {
             display: inline-block;
-            position: relative;
-            z-index: 2;
-            /* 글씨 자체에도 흐르는 황금/오렌지 빛 적용 */
+            /* 까만 배경 상자 없이, 글씨에만 F1 스타일의 황금/오렌지 빛이 흐릅니다 */
             background: linear-gradient(90deg, #ffffff, #ffcc00, #ff6600, #ffffff);
             background-size: 300% 100%;
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
             animation: gradient-shift 4s infinite linear;
+            text-shadow: 0 4px 15px rgba(255, 136, 0, 0.3); /* 은은한 텍스트 글로우 추가 */
         }
 
         @keyframes gradient-shift {
@@ -106,11 +59,17 @@
         }
         .dashboard-row-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(225, 6, 0, 0.25); }
 
+        /* 🔥 핵심 수정: 배경 이미지 블러가 바깥으로 새지 않도록 완벽히 가두는 래퍼 */
+        .bg-blur-wrapper {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit; overflow: hidden; z-index: -2;
+        }
+
         .card-bg-blur { 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            width: 100%; height: 100%;
             background-image: var(--bg-image, none); background-size: cover; background-position: center; 
-            filter: blur(20px) brightness(0.2); transform: scale(1.1); z-index: -2; 
-            transition: background-image 0.5s ease-in-out; border-radius: inherit; overflow: hidden;
+            filter: blur(20px) brightness(0.2); transform: scale(1.15); /* 스케일을 살짝 키워 테두리 빈틈 방지 */
+            transition: background-image 0.5s ease-in-out;
         }
 
         .rank-container { width: 100%; max-width: 520px; display: flex; gap: 12px; align-items: flex-end; height: 250px; margin: 0 auto; }
@@ -138,7 +97,7 @@
         .news-source-badge { background-color: #e3e6e9; color: #495057; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
 
         /* =========================================
-           ✨ 수정된 기능 2: 덜 퍼지는 단정한 BORDER GLOW ✨ 
+           ✨ BORDER GLOW (단정하게 정돈됨) ✨ 
            ========================================= */
         .border-glow-card {
             --edge-proximity: 0;
@@ -146,7 +105,7 @@
             --edge-sensitivity: 25;
             --color-sensitivity: calc(var(--edge-sensitivity) + 20);
             --border-radius: 24px;
-            --glow-padding: 10px; /* 💡 번짐 영역 대폭 축소 */
+            --glow-padding: 10px; /* 번짐 축소 */
             --cone-spread: 30;
             --card-bg: #1f2124;
 
@@ -155,8 +114,8 @@
             isolation: isolate;
             transform: translate3d(0, 0, 0.01px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--card-bg);
-            overflow: visible;
+            background: transparent; /* 배경 래퍼를 사용하므로 투명 처리 */
+            overflow: visible; /* 밖으로 퍼지는 빛만 허용 */
         }
 
         .border-glow-card::before,
@@ -246,7 +205,7 @@
             position: absolute;
             inset: var(--glow-padding);
             border-radius: inherit;
-            /* 💡 바깥으로 붕 뜨는 블러를 대폭 날리고 선명하게 밀착시켰습니다. */
+            /* 더 날렵하고 타이트한 테두리 글로우 */
             box-shadow:
                 inset 0 0 0 1px var(--glow-color, hsl(200 100% 70% / 100%)),
                 inset 0 0 2px 0 var(--glow-color-60, hsl(200 100% 70% / 60%)),
@@ -276,10 +235,7 @@
             <div class="d-flex flex-column align-items-center text-center gap-2 mx-auto">
                 <span class="badge bg-danger px-3 py-1.5 mt-2">NEXT GRAND PRIX</span>
                 
-                <div class="animated-gradient-text with-border my-2">
-                    <div class="gradient-overlay"></div>
-                    <h1 id="dash-race-name" class="text-content fs-2 m-0 fw-bold">로딩 중...</h1>
-                </div>
+                <h1 id="dash-race-name" class="fs-1 m-0 my-2 gradient-text-only">로딩 중...</h1>
 
                 <p id="dash-race-circuit" class="fs-6 text-white-50 m-0 mb-2">연동 중...</p>
                 
@@ -302,7 +258,9 @@
         <div class="row g-4 mb-5">
             <div class="col-lg-6">
                 <div id="card-driver" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
-                    <div class="card-bg-blur"></div>
+                    <div class="bg-blur-wrapper">
+                        <div class="card-bg-blur"></div>
+                    </div>
                     <div class="edge-light"></div>
                     <div class="row-content-rank border-glow-inner">
                         <div>
@@ -318,7 +276,9 @@
 
             <div class="col-lg-6">
                 <div id="card-team" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
-                    <div class="card-bg-blur"></div>
+                    <div class="bg-blur-wrapper">
+                        <div class="card-bg-blur"></div>
+                    </div>
                     <div class="edge-light"></div>
                     <div class="row-content-rank border-glow-inner">
                         <div>
@@ -425,6 +385,7 @@
                     .then(data => {
                         const imgUrl = data.originalimage?.source || data.thumbnail?.source;
                         if (imgUrl) {
+                            // 💡 이미지가 할당되는 타겟을 .card-bg-blur 로 명확히 지정
                             document.getElementById(elementId).querySelector('.card-bg-blur').style.setProperty('--bg-image', `url('${imgUrl}')`);
                         }
                     }).catch(err => console.error(err));
@@ -455,7 +416,6 @@
                     let nextRace = races.find(r => new Date(r.date + (r.time ? 'T' + r.time : '')) > new Date());
                     if (!nextRace) nextRace = races[races.length - 1];
 
-                    // ✨ 그랑프리 이름 업데이트
                     document.getElementById("dash-race-name").innerText = nextRace.raceName.replace("Grand Prix", "GP");
                     document.getElementById("dash-race-circuit").innerText = nextRace.Circuit.Location.locality;
 
