@@ -201,7 +201,7 @@
 
                     localRacesArray.forEach(race => {
                         let cardClass = race.is_past ? "past-race" : "";
-                        let cardStyle = race.winner_name ? `style="background: ${race.team_color}; border-color: ${race.team_color};"` : "";
+                        let cardStyle = race.winner_name ? `style="background-color: ${race.team_color} !important; border-color: ${race.team_color} !important;"` : "";
                         let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
                         
                         if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
