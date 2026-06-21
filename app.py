@@ -270,10 +270,7 @@ def api_wiki_meta(page_title):
 @app.route('/api/race-sessions/<round_num>')
 def api_race_sessions(round_num):
     season = request.args.get('season', 'current')
-    payload = {
-        "schedule": {}, "qualifying": [], "sprint": [], "race": [],
-        "qualifying_full": [], "sprint_full": [], "race_full": []
-    }
+    payload = {"schedule": {}, "qualifying": [], "sprint": [], "race": []}
     
     cal_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}.json")
     if cal_data and "MRData" in cal_data:
@@ -311,8 +308,7 @@ def api_race_sessions(round_num):
                 else:
                     item["gap"] = format_gap_seconds(item["_secs"] - leader_secs)
                 del item["_secs"]
-            payload["qualifying_full"] = q_full
-            payload["qualifying"] = q_full[:5]
+            payload["qualifying"] = q_full
  
     sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/sprint.json")
     if sprint_data and "MRData" in sprint_data and sprint_data["MRData"]["RaceTable"]["Races"]:
@@ -330,8 +326,7 @@ def api_race_sessions(round_num):
                     "position": s["position"], "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
                     "constructor": s["Constructor"]["name"], "points": s.get("points", "0"), "gap": gap
                 })
-            payload["sprint_full"] = s_full
-            payload["sprint"] = s_full[:5]
+            payload["sprint"] = s_full
  
     race_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/results.json")
     if race_data and "MRData" in race_data and race_data["MRData"]["RaceTable"]["Races"]:
@@ -349,8 +344,7 @@ def api_race_sessions(round_num):
                     "position": r["position"], "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
                     "constructor": r["Constructor"]["name"], "points": r.get("points", "0"), "gap": gap
                 })
-            payload["race_full"] = r_full
-            payload["race"] = r_full[:5]
+            payload["race"] = r_full
             
     return jsonify(payload)
  
