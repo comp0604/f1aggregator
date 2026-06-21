@@ -36,18 +36,25 @@
             z-index: 6; width: 100%;
         }
 
-        /* ⏱️ 간격이 타이트하게 좁혀진 콤팩트 타이머 */
-        .timer-num { font-size: 2.1rem !important; font-weight: 800; line-height: 1; }
-        .timer-label { font-size: 0.7rem; letter-spacing: 1px; margin-top: 4px; opacity: 0.75; }
+        /* ⏱️ 겹침 방지를 위해 각 상자의 가로길이를 62px로 타이트하게 깎아낸 미니멀 타이머 */
+        .timer-grid-container {
+            display: flex; justify-content: center; align-items: center; gap: 5px !important; margin: 0 auto;
+        }
+        .timer-mini-box {
+            background-color: #212529; width: 62px; height: 60px; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .timer-num { font-size: 1.7rem !important; font-weight: 800; line-height: 1.1; }
+        .timer-label { font-size: 0.62rem; letter-spacing: 0.5px; margin-top: 2px; opacity: 0.7; }
 
         /* 🗺️ 우측 서킷 지도 컴포넌트 */
         .circuit-img-wrapper { 
             width: 220px; height: 170px; display: flex; align-items: center; justify-content: center; 
-            opacity: 0.9; margin-top: 1rem;
+            opacity: 0.9; margin-top: 1.2rem;
         }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* ⏱️ 모바일/데스크톱 하이브리드 세션 시간표 컴포넌트 */
+        /* ⏱️ 좌측 세션 시간표 컴포넌트 */
         .sessions-left-wrapper {
             display: flex; flex-direction: column; background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(8px); border-radius: 14px;
@@ -57,7 +64,7 @@
         }
         .sessions-left-wrapper:hover { background: rgba(0, 0, 0, 0.75); }
 
-        /* 📱 모바일 전용 토글 버튼 디자인 */
+        /* 모바일 토글 탭 */
         .mobile-session-toggle-btn {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 14px; font-weight: bold; color: #fff; font-size: 0.8rem;
@@ -65,39 +72,32 @@
         .mobile-session-toggle-btn .arrow-icon {
             font-size: 0.65rem; transition: transform 0.3s ease; color: #ffcc00;
         }
-        
-        /* 세션 리스트 내용 본문 (기본값: 모바일에선 접힘) */
-        .sessions-list-content {
-            display: none; padding: 0 14px 12px 14px;
-        }
+        .sessions-list-content { display: none; padding: 0 14px 12px 14px; }
 
-        /* 자바스크립트로 open 클래스가 붙었을 때 모바일 처리 */
         .sessions-left-wrapper.open .sessions-list-content { display: block; }
         .sessions-left-wrapper.open .arrow-icon { transform: rotate(180deg); }
 
-        /* 💡 핵심 수정: 데스크톱 화면에서 타이틀 본진을 침범하지 않고 화면 크기에 맞춰 안쪽으로 점진 밀착 */
+        /* 💡 미디어 쿼리: 데스크톱 크기별 여백 자동 밀착 제어 시스템 */
         @media (min-width: 992px) {
             .row-content-race { min-height: 240px; }
-            
-            /* 데스크톱에선 버튼 숨기고 본문 항시 오픈 */
             .mobile-session-toggle-btn { display: none !important; }
             .sessions-list-content { display: block !important; padding: 0; }
 
+            /* 데스크톱 환경에서는 정중앙 타이틀 양옆에 자석처럼 밀착 안착 */
             .sessions-left-wrapper {
-                position: absolute; left: 3rem; top: 50%; transform: translateY(-50%); margin-top: 0; padding: 12px 16px; cursor: default;
+                position: absolute; left: 3.5rem; top: 50%; transform: translateY(-50%); margin-top: 0; padding: 12px 16px; cursor: default;
             }
             .circuit-img-wrapper { 
-                position: absolute; right: 3rem; top: 50%; transform: translateY(-50%); margin-top: 0;
+                position: absolute; right: 3.5rem; top: 50%; transform: translateY(-50%); margin-top: 0;
             }
         }
-        /* 와이드 모니터 대응: 화면이 커질수록 중앙으로 더 전진하여 황금 여백 유지 */
         @media (min-width: 1200px) {
-            .sessions-left-wrapper { left: 11.5rem; }
-            .circuit-img-wrapper { right: 11.5rem; }
+            .sessions-left-wrapper { left: 11rem; }
+            .circuit-img-wrapper { right: 11rem; }
         }
         @media (min-width: 1450px) {
-            .sessions-left-wrapper { left: 15rem; }
-            .circuit-img-wrapper { right: 15rem; }
+            .sessions-left-wrapper { left: 15.5rem; }
+            .circuit-img-wrapper { right: 15.5rem; }
         }
 
         .session-time-item {
@@ -166,110 +166,6 @@
         .news-feed-list::-webkit-scrollbar-track { background: transparent; }
         .news-feed-list::-webkit-scrollbar-thumb { background: #dcdcdc; border-radius: 10px; }
         .news-feed-list::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
-
-        /* ✨ BORDER GLOW ✨ */
-        .border-glow-card {
-            --edge-proximity: 0;
-            --cursor-angle: 45deg;
-            --edge-sensitivity: 25;
-            --color-sensitivity: calc(var(--edge-sensitivity) + 20);
-            --border-radius: 24px;
-            --glow-padding: 10px; 
-            --cone-spread: 30;
-            --card-bg: #1f2124;
-
-            position: relative;
-            border-radius: var(--border-radius);
-            isolation: isolate;
-            transform: translate3d(0, 0, 0.01px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: transparent; 
-            overflow: visible; 
-        }
-
-        .border-glow-card::before,
-        .border-glow-card::after,
-        .border-glow-card > .edge-light {
-            content: ""; position: absolute; inset: 0; border-radius: inherit; transition: opacity 0.25s ease-out; z-index: -1;
-        }
-
-        .border-glow-card:not(:hover):not(.sweep-active)::before,
-        .border-glow-card:not(:hover):not(.sweep-active)::after,
-        .border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
-            opacity: 0; transition: opacity 0.75s ease-in-out;
-        }
-
-        .border-glow-card::before {
-            border: 2px solid transparent;
-            background:
-                linear-gradient(var(--card-bg) 0 100%) padding-box,
-                linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-                var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
-
-            opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-
-            mask-image: conic-gradient(
-                from var(--cursor-angle) at center,
-                black calc(var(--cone-spread) * 1%),
-                transparent calc((var(--cone-spread) + 15) * 1%),
-                transparent calc((100 - var(--cone-spread) - 15) * 1%),
-                black calc((100 - var(--cone-spread)) * 1%)
-            );
-        }
-
-        .border-glow-card::after {
-            border: 2px solid transparent;
-            background:
-                var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
-
-            mask-image:
-                linear-gradient(to bottom, black, black),
-                radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
-                radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
-                radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
-                radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
-                radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
-                conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
-
-            mask-composite: subtract, add, add, add, add, add;
-            opacity: calc(var(--fill-opacity, 0.6) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-            mix-blend-mode: soft-light;
-        }
-
-        .border-glow-card > .edge-light {
-            inset: calc(var(--glow-padding) * -1); pointer-events: none; z-index: 1;
-            mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
-            opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
-            mix-blend-mode: plus-lighter;
-        }
-
-        .border-glow-card > .edge-light::before {
-            content: ""; position: absolute; inset: var(--glow-padding); border-radius: inherit;
-            box-shadow:
-                inset 0 0 0 1px var(--glow-color, hsl(200 100% 70% / 100%)),
-                inset 0 0 2px 0 var(--glow-color-60, hsl(200 100% 70% / 60%)),
-                inset 0 0 6px 0 var(--glow-color-40, hsl(200 100% 70% / 40%)),
-                inset 0 0 12px 0 var(--glow-color-20, hsl(200 100% 70% / 20%)),
-                0 0 2px 0 var(--glow-color-80, hsl(200 100% 70% / 80%)),
-                0 0 4px 0 var(--glow-color-50, hsl(200 100% 70% / 50%)),
-                0 0 8px 0 var(--glow-color-20, hsl(200 100% 70% / 20%));
-        }
-
-        .border-glow-inner { position: relative; z-index: 2; }
     </style>
 </head>
 <body>
@@ -282,6 +178,19 @@
 
     <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
         <div class="row-content-race">
+
+            <div class="main-race-center-block">
+                <span class="badge bg-danger px-3 py-1.5 mt-2">NEXT GRAND PRIX</span>
+                <h1 id="dash-race-name" class="fs-1 m-0 my-2 gradient-text-only fw-bold">로딩 중...</h1>
+                <p id="dash-race-circuit" class="fs-6 text-white-50 m-0 mb-3">연동 중...</p>
+                
+                <div class="timer-grid-container">
+                    <div class="timer-mini-box"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
+                    <div class="timer-mini-box"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
+                    <div class="timer-mini-box"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
+                    <div class="timer-mini-box"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
+                </div>
+            </div>
             
             <div id="dash-sessions-left" class="sessions-left-wrapper" onclick="toggleMobileSessions(event)">
                 <div class="mobile-session-toggle-btn">
@@ -290,19 +199,6 @@
                 </div>
                 <div id="sessions-list-content" class="sessions-list-content">
                     <div class="text-white-50 small w-100 text-center py-2">세션 일정 조율 중...</div>
-                </div>
-            </div>
-
-            <div class="main-race-center-block">
-                <span class="badge bg-danger px-3 py-1.5 mt-2">NEXT GRAND PRIX</span>
-                <h1 id="dash-race-name" class="fs-1 m-0 my-2 gradient-text-only fw-bold">로딩 중...</h1>
-                <p id="dash-race-circuit" class="fs-6 text-white-50 m-0 mb-2">연동 중...</p>
-                
-                <div class="d-flex text-center mx-auto" style="max-width: 440px; width: 100%; gap: 6px !important;">
-                    <div class="bg-dark p-2 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
-                    <div class="bg-dark p-2 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
-                    <div class="bg-dark p-2 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
-                    <div class="bg-dark p-2 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
                 </div>
             </div>
             
@@ -318,10 +214,9 @@
             
             <div class="col-xl-5 col-lg-6 d-flex flex-column gap-4">
                 
-                <div id="card-driver" class="card dashboard-row-card border-glow-card flex-fill" onclick="location.href='/standings'">
+                <div id="card-driver" class="card dashboard-row-card flex-fill" onclick="location.href='/standings'">
                     <div class="bg-blur-wrapper"><div class="card-bg-blur"></div></div>
-                    <div class="edge-light"></div>
-                    <div class="row-content-rank border-glow-inner">
+                    <div class="row-content-rank">
                         <div>
                             <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
                             <h3 class="fw-bold text-white m-0 fs-5">Current Top 3</h3>
@@ -332,10 +227,9 @@
                     </div>
                 </div>
 
-                <div id="card-team" class="card dashboard-row-card border-glow-card flex-fill" onclick="location.href='/standings'">
+                <div id="card-team" class="card dashboard-row-card flex-fill" onclick="location.href='/standings'">
                     <div class="bg-blur-wrapper"><div class="card-bg-blur"></div></div>
-                    <div class="edge-light"></div>
-                    <div class="row-content-rank border-glow-inner">
+                    <div class="row-content-rank">
                         <div>
                             <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
                             <h3 class="fw-bold text-white m-0 fs-5">Current Top 3</h3>
@@ -364,7 +258,7 @@
                                 {% else %}
                                 <div class="news-thumbnail d-flex align-items-center justify-content-center" style="font-size:0.65rem; color:#aaa; font-weight:bold;">F1</div>
                                 {% endif %}
-                                <div class="news-title-text" title="${{ article.title }}">{{ article.title }}</div>
+                                <div class="news-title-text" title="{{ article.title }}">{{ article.title }}</div>
                             </div>
                             <div class="news-meta-side">
                                 <span class="news-source-badge">Formula 1</span>
@@ -383,10 +277,8 @@
     </div>
 
     <script>
-        // 🌟 모바일 전용 수동 아코디언 토글 스크립트 엔진
         function toggleMobileSessions(event) {
             if (window.innerWidth < 992) {
-                // 부모 배너 카드의 링크 이동 이벤트 버블링 차단
                 event.stopPropagation(); 
                 const wrapper = document.getElementById("dash-sessions-left");
                 wrapper.classList.toggle("open");
@@ -397,35 +289,6 @@
             const calendarUrl = "https://api.jolpi.ca/ergast/f1/current.json";
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
-
-            // Border Glow 마우스 트래킹
-            const glowCards = document.querySelectorAll(".border-glow-card");
-            
-            document.addEventListener("mousemove", (e) => {
-                glowCards.forEach(card => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    let angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
-                    angle = (angle + 90 + 360) % 360;
-                    
-                    const dx = Math.max(0, -x, x - rect.width);
-                    const dy = Math.max(0, -y, y - rect.height);
-                    const distToEdge = Math.sqrt(dx * dx + dy * dy);
-                    
-                    const radius = 250; 
-                    let proximity = 100 - ((distToEdge / radius) * 100);
-                    
-                    if (proximity < 0) proximity = 0;
-                    if (proximity > 100) proximity = 100;
-                    
-                    card.style.setProperty("--cursor-angle", `${angle}deg`);
-                    card.style.setProperty("--edge-proximity", proximity);
-                });
-            });
 
             function formatToLocal(dateStr, timeStr) {
                 if (!dateStr || !timeStr) return "-";
@@ -505,7 +368,7 @@
                     
                     fetchForegroundImage(nextRace.Circuit.url, "dash-circuit-map");
 
-                    // 세션 일정 분기 처리 및 알맹이 바인딩
+                    // 세션 일정 컴포넌트 실시간 바인딩
                     const sessionsContent = document.getElementById("sessions-list-content");
                     if (sessionsContent) {
                         const isSprintWeekend = !!nextRace.Sprint;
