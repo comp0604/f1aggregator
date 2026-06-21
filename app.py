@@ -1,26 +1,33 @@
+
 from flask import Flask, render_template, jsonify, request
 import sqlite3
 import os
 import urllib.request
 import json
 import ssl
+import time
 from datetime import datetime
-
+from concurrent.futures import ThreadPoolExecutor
+ 
 from dotenv import load_dotenv
 load_dotenv()  
-
+ 
 app = Flask(__name__)
-
+ 
 # 💾 2차 소스(OpenF1) 데이터 구멍 메우기용 서버 메모리 캐시
 OPENF1_PODIUM_CACHE = {}
-
+ 
+# 💾 /api/calendar-list 전체 응답 캐시 (외부 API가 느리거나 죽었을 때 매 요청마다 재호출 방지)
+CALENDAR_LIST_CACHE = {"payload": None, "ts": 0}
+CALENDAR_LIST_TTL_SECONDS = 60
+ 
 def get_db_connection():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     db_path = os.path.join(base_dir, 'f1_news.db')
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
-
+ 
 # 🎨 2026 규정 반영 11개 팀 컬러 매핑
 def get_team_color(constructor_id, constructor_name):
     c_id = (constructor_id or "").lower().replace(" ", "").replace("_", "").replace("-", "")
@@ -37,7 +44,7 @@ def get_team_color(constructor_id, constructor_name):
     if "cadillac" in c_id or "cadillac" in name or "andretti" in c_id or "andretti" in name: return "#243345"
     if "rb" in c_id or "rb" in name or "racingbulls" in c_id or "racingbulls" in name: return "#002fa7"
     return "#1a1c1e"
-
+ 
 def get_flag_url(country_name):
     name = (country_name or "").lower().strip()
     mapping = {
@@ -48,7 +55,7 @@ def get_flag_url(country_name):
         "mexico": "mx", "brazil": "br", "qatar": "qa", "uae": "ae", "united arab emirates": "ae"
     }
     return f"https://flagcdn.com/w1280/{mapping.get(name, 'un')}.png"
-
+ 
 def fetch_json_safely(url):
     try:
         ssl_context = ssl._create_unverified_context()
@@ -61,7 +68,7 @@ def fetch_json_safely(url):
     except Exception as e:
         print(f"⚠️ API 통신 지연/실패 ({url}): {e}")
         return None
-
+ 
 # OpenF1 2차 피드 정밀 타격 함수
 def fetch_openf1_fallback(locality, race_date):
     try:
@@ -111,58 +118,88 @@ def fetch_openf1_fallback(locality, race_date):
     except Exception as e:
         print(f"🚨 OpenF1 Fallback Error: {e}")
         return None
-
+ 
 @app.route('/')
 def index():
     conn = get_db_connection()
     articles = conn.execute('SELECT title, link, summary_ko, image_url, published_at FROM articles ORDER BY published_at DESC LIMIT 10').fetchall()
     conn.close()
     return render_template('index.html', articles=articles)
-
+ 
 @app.route('/calendar')
 def calendar_page():
     return render_template('calendar.html')
-
+ 
 @app.route('/standings')
 def standings():
     return render_template('standings.html')
-
+ 
 @app.route('/api/calendar-list')
 def api_calendar_list():
+    # 1) 짧은 TTL 캐시: 외부 API가 느리거나 죽어 있어도 매 새로고침마다 재호출하지 않음
+    cached = CALENDAR_LIST_CACHE["payload"]
+    if cached and (time.time() - CALENDAR_LIST_CACHE["ts"] < CALENDAR_LIST_TTL_SECONDS):
+        return jsonify(cached)
+ 
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
     calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
     results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
-    if not calendar_data: return jsonify({"error": "1차 소스 통신 실패"}), 500
-    
+    if not calendar_data:
+        # 1차 소스 실패 시, 직전에 성공했던 캐시가 있다면 그거라도 내려준다 (프론트가 무한로딩에 빠지지 않도록)
+        if cached:
+            return jsonify(cached)
+        return jsonify({"error": "1차 소스 통신 실패"}), 500
+ 
     races = calendar_data["MRData"]["RaceTable"]["Races"]
     results_map = {r["round"]: r["Results"] for r in results_data["MRData"]["RaceTable"]["Races"]} if results_data else {}
     next_race_idx = next((i for i, r in enumerate(races) if r["date"] >= today_str), len(races) - 1)
-    
+ 
+    # 2) jolpi 결과가 없는 과거 라운드만 모아서, OpenF1 fallback을 "순차"가 아니라 "병렬"로 호출
+    #    (라운드가 여러 개 비어 있을 때 응답이 N배로 느려지는 게 체감 무한로딩의 핵심 원인)
+    rounds_needing_fallback = []
+    for race in races:
+        r_num = race["round"]
+        c_date = race["date"]
+        is_past = (c_date < today_str or r_num in results_map)
+        if is_past and r_num not in results_map and r_num not in OPENF1_PODIUM_CACHE:
+            rounds_needing_fallback.append(race)
+ 
+    if rounds_needing_fallback:
+        with ThreadPoolExecutor(max_workers=min(8, len(rounds_needing_fallback))) as executor:
+            future_map = {
+                executor.submit(fetch_openf1_fallback, race["Circuit"]["Location"]["locality"], race["date"]): race["round"]
+                for race in rounds_needing_fallback
+            }
+            for future in future_map:
+                r_num = future_map[future]
+                try:
+                    op_podium = future.result(timeout=10)
+                    if op_podium:
+                        OPENF1_PODIUM_CACHE[r_num] = op_podium
+                except Exception as e:
+                    print(f"🚨 OpenF1 병렬 fallback 실패 (round {r_num}): {e}")
+ 
     list_payload = []
     for idx, race in enumerate(races):
         r_num = race["round"]
         c_date = race["date"]
         is_past = (c_date < today_str or r_num in results_map)
         winner_name, team_color, winner_wiki = "", "#1a1c1e", ""
-        
+ 
         podium = results_map.get(r_num)
         if podium:
             w1 = podium[0]
             winner_name = w1["Driver"]["familyName"]
             team_color = get_team_color(w1["Constructor"]["constructorId"], w1["Constructor"]["name"])
             winner_wiki = w1["Driver"]["url"].split('/wiki/')[-1]
-        elif is_past:
-            if r_num not in OPENF1_PODIUM_CACHE:
-                op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
-                if op_podium: OPENF1_PODIUM_CACHE[r_num] = op_podium
-            if r_num in OPENF1_PODIUM_CACHE:
-                w1 = next((p for p in OPENF1_PODIUM_CACHE[r_num] if p["position"] == "1"), None)
-                if w1:
-                    winner_name = w1["familyName"]
-                    team_color = get_team_color(w1["constructorId"], w1["constructorName"])
-                    winner_wiki = w1["wiki_title"]
-
+        elif is_past and r_num in OPENF1_PODIUM_CACHE:
+            w1 = next((p for p in OPENF1_PODIUM_CACHE[r_num] if p["position"] == "1"), None)
+            if w1:
+                winner_name = w1["familyName"]
+                team_color = get_team_color(w1["constructorId"], w1["constructorName"])
+                winner_wiki = w1["wiki_title"]
+ 
         list_payload.append({
             "idx": idx, "round": r_num, "raceName": race["raceName"], "locality": race["Circuit"]["Location"]["locality"],
             "date": c_date, "is_past": is_past, "is_next": (idx == next_race_idx),
@@ -171,8 +208,12 @@ def api_calendar_list():
             "circuit_wiki_title": race["Circuit"]["url"].split('/wiki/')[-1],
             "circuit_name": race["Circuit"]["circuitName"]
         })
-    return jsonify({"next_race_idx": next_race_idx, "races": list_payload})
-
+ 
+    payload = {"next_race_idx": next_race_idx, "races": list_payload}
+    CALENDAR_LIST_CACHE["payload"] = payload
+    CALENDAR_LIST_CACHE["ts"] = time.time()
+    return jsonify(payload)
+ 
 @app.route('/api/race-podium/<round_num>')
 def api_race_podium(round_num):
     if round_num in OPENF1_PODIUM_CACHE:
@@ -188,7 +229,7 @@ def api_race_podium(round_num):
         OPENF1_PODIUM_CACHE[round_num] = payload
         return jsonify(payload)
     return jsonify([])
-
+ 
 @app.route('/api/wiki-meta/<page_title>')
 def api_wiki_meta(page_title):
     fallback = {"extract": "요약 정보를 불러올 수 없습니다.", "image": ""}
@@ -198,7 +239,7 @@ def api_wiki_meta(page_title):
         "extract": data.get("extract", "설명이 비어 있습니다."),
         "image": data.get("originalimage", {}).get("source") or data.get("thumbnail", {}).get("source") or ""
     })
-
+ 
 # 🏛️ [통합 연동] 하단 세션 타임라인 분석용 신규 라우트 배치 완료
 @app.route('/api/race-sessions/<round_num>')
 def api_race_sessions(round_num):

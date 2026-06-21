@@ -10,7 +10,7 @@
         .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
         .f1-logo:hover { color: rgba(255,255,255,0.8); }
-
+ 
         .calendar-scroll-wrapper {
             background-color: #1f2124; padding: 1.2rem 1rem; display: flex; overflow-x: auto; gap: 1rem; scroll-behavior: smooth; border-bottom: 5px solid #e10600; min-height: 175px; align-items: center;
         }
@@ -18,41 +18,41 @@
         .calendar-scroll-wrapper::-webkit-scrollbar-track { background: #1f2124; }
         .calendar-scroll-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
         .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #e10600; }
-
+ 
         .mini-race-card {
             flex: 0 0 240px; background-color: #2d3035; border-radius: 12px; padding: 1rem; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid transparent; cursor: pointer; min-height: 145px;
         }
         .mini-race-card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.2); }
-
+ 
         .mini-race-card.current-race {
             background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important; color: #1f2124 !important; font-weight: bold; box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4); border: 2px solid #ffffff !important; opacity: 1 !important;
         }
         .mini-race-card.current-race .race-round, .mini-race-card.current-race .race-loc, .mini-race-card.current-race .race-date, .mini-race-card.current-race .scroll-winner-name { color: rgba(31, 33, 36, 0.75) !important; }
-
+ 
         .mini-race-card.has-team-color { color: #ffffff !important; }
         .mini-race-card.has-team-color .race-round { color: rgba(255, 255, 255, 0.6) !important; }
         .mini-race-card.has-team-color .race-date { color: #ffffff !important; opacity: 0.9; }
         .mini-race-card.has-team-color .scroll-winner-name { color: #ffeb3b !important; }
         .mini-race-card.selected-card { border: 2px solid #e10600 !important; box-shadow: 0 0 12px rgba(225, 6, 0, 0.6); }
         .mini-race-card.past-race { opacity: 0.85; background-color: #1a1c1e; }
-
+ 
         .race-round { font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; }
         .race-title { font-size: 1.1rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .race-loc { font-size: 0.8rem; margin-top: 2px; }
         .race-date { font-size: 0.9rem; font-weight: bold; margin-top: 6px; text-align: right; }
-
+ 
         .scroll-winner-container { display: flex; align-items: center; gap: 8px; margin-top: 8px; background-color: rgba(255,255,255,0.12); padding: 4px 8px; border-radius: 6px; }
         .mini-race-card.current-race .scroll-winner-container { background-color: rgba(0, 0, 0, 0.06); }
         .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center 15%; background-color: white; border: 1px solid rgba(255,255,255,0.3); display: none; }
         .scroll-winner-name { font-size: 0.75rem; font-weight: bold; color: #ffc107; }
-
+ 
         /* 🏁 디테일 섹션 배경 */
         .race-detail-section { position: relative; background-color: #1f2124; color: white; min-height: 400px; border-radius: 24px; overflow: hidden; padding: 2.5rem !important; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
         .race-detail-section::before {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--detail-bg, none); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); transform: scale(1.1); z-index: 0; transition: background-image 0.4s ease-in-out;
         }
         .race-detail-section > * { position: relative; z-index: 1; }
-
+ 
         /* 🏆 중앙 집중형 자이언트 포디움 디자인 */
         .huge-podium-container { display: flex; justify-content: center; gap: 25px; align-items: flex-end; height: 350px; margin-top: 20px; width: 100%; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 0; }
         .huge-podium-step {
@@ -72,14 +72,14 @@
         .huge-p-1 .huge-rank-icon { font-size: 2.8rem; }
         .huge-driver-name { font-size: 1.1rem; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .huge-p-1 .huge-driver-name { font-size: 1.5rem; color: #ffc107; }
-
+ 
         /* 🎖️ 부가 칭호 뱃지 (스프린트, 폴포지션, 패스티스트랩) */
         .accolade-badges { display: flex; flex-direction: column; gap: 6px; margin-top: 15px; width: 100%; align-items: center; }
         .accolade-badge { font-size: 0.75rem; font-weight: bold; padding: 5px 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: 85%; text-align: center; letter-spacing: -0.5px; }
         .badge-sprint { background-color: #0dcaf0; color: #000; }     /* 하늘색 */
         .badge-fastest { background-color: #800080; color: #fff; }    /* 보라색 */
         .badge-pole { background-color: #dc3545; color: #fff; }       /* 빨간색 */
-
+ 
         /* 기타 스타일 */
         .detail-img-wrapper { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
         .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
@@ -91,20 +91,20 @@
     </style>
 </head>
 <body>
-
+ 
     <header class="f1-header text-center">
         <div class="container">
             <h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1>
         </div>
     </header>
-
+ 
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
             <div class="spinner-border text-danger spinner-border-sm"></div>
             <span>대시보드 라이브 데이터 로드 중...</span>
         </div>
     </div>
-
+ 
     <div class="content-container">
         <div class="card race-detail-section mb-4" id="detail-panel">
             <div class="container-fluid p-0">
@@ -117,13 +117,13 @@
                         <p id="detail-location" class="fs-5 text-muted m-0">📍 위치 로딩 중... | 📅 <span id="detail-date" class="text-danger">0000-00-00</span></p>
                     </div>
                 </div>
-
+ 
                 <div class="row d-none" id="main-podium-row">
                     <div class="col-12">
                         <div class="huge-podium-container" id="huge-podium-box"></div>
                     </div>
                 </div>
-
+ 
                 <div class="row mt-4 g-4 align-items-stretch" id="bottom-info-row">
                     <div class="col-md-8">
                         <div id="detail-wiki" class="wiki-extract-box">레이스를 동기화하는 중입니다.</div>
@@ -134,20 +134,20 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <div id="weekend-sessions-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
                     <div class="col-12 px-0">
                         <h5 class="text-warning fw-bold mb-3">📋 그랑프리 세션 리포트 (<span id="session-season-tag" class="text-white-50"></span>)</h5>
                         <div class="row g-3" id="session-tables-container"></div>
                     </div>
                 </div>
-
+ 
             </div>
         </div>
-
+ 
         <div class="text-center mt-4"><button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button></div>
     </div>
-
+ 
     <script>
         const TEAM_COLORS = {
             "ferrari": "#cc0000", "mclaren": "#ff8700", "redbull": "#061043", "mercedes": "#00a19c",
@@ -160,11 +160,11 @@
             for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
             return "#1a1c1e";
         }
-
+ 
         document.addEventListener("DOMContentLoaded", function() {
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
-
+ 
             function loadWeekendSessions(round, isPast) {
                 const sessionRow = document.getElementById("weekend-sessions-row");
                 const tablesContainer = document.getElementById("session-tables-container");
@@ -233,7 +233,7 @@
                         if(wiki && wiki.image) { mapImg.src = wiki.image; mapImg.style.display = "block"; } 
                         else { mapImg.style.display = "none"; }
                     }).catch(() => { document.getElementById("detail-wiki").innerText = "위키 백과 피드 연동 지연 발생."; });
-
+ 
                 const podiumRow = document.getElementById("main-podium-row");
                 
                 if (race.is_past) {
@@ -264,11 +264,11 @@
                                 if (familyName === flDriver) b += `<span class="accolade-badge badge-fastest">⏱️ Fastest Lap</span>`;
                                 return b ? `<div class="accolade-badges">${b}</div>` : '';
                             };
-
+ 
                             const d1 = podium.find(p => p.position === "1");
                             const d2 = podium.find(p => p.position === "2");
                             const d3 = podium.find(p => p.position === "3");
-
+ 
                             if(d1 && d2 && d3) {
                                 const c1 = getTeamHex(d1.constructorId), c2 = getTeamHex(d2.constructorId), c3 = getTeamHex(d3.constructorId);
                                 document.getElementById("huge-podium-box").innerHTML = `
@@ -303,7 +303,13 @@
                 loadWeekendSessions(race.round, race.is_past);
             }
 
-            fetch("/api/calendar-list").then(res => res.json()).then(data => {
+            fetch("/api/calendar-list")
+                .then(res => {
+                    if (!res.ok) throw new Error(`calendar-list HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                if (!data || !Array.isArray(data.races)) throw new Error("invalid calendar-list payload");
                 localRacesArray = data.races;
                 let html = "";
                 localRacesArray.forEach(race => {
@@ -316,13 +322,13 @@
                     html += `<div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}"><div><div class="race-round text-danger text-uppercase">${race.round} ROUND</div><div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div><div class="race-loc text-white-50">📍 ${race.locality}</div></div>${winnerBadge}<div class="race-date text-warning">${race.date}</div></div>`;
                 });
                 scrollBox.innerHTML = html;
-
+ 
                 localRacesArray.forEach(race => {
                     if (race.winner_wiki) {
                         fetch(`/api/wiki-meta/${race.winner_wiki}`).then(r=>r.json()).then(w => { const t = document.getElementById(`win-thumb-${race.round}`); if(t && w?.image) { t.src = w.image; t.style.display = "block"; } });
                     }
                 });
-
+ 
                 if(data.next_race_idx !== -1) {
                     const defRace = localRacesArray[data.next_race_idx];
                     const defCard = document.querySelector(`[data-idx="${data.next_race_idx}"]`);
@@ -330,6 +336,11 @@
                     renderDetailPanel(defRace);
                 }
                 setTimeout(() => { const t = document.getElementById("next-active-race"); if (t) t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 200);
+            }).catch(err => {
+                console.error("캘린더 데이터 로드 실패:", err);
+                scrollBox.innerHTML = `<div class="text-white-50 mx-auto d-flex align-items-center gap-2 py-4"><span>⚠️ 캘린더 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</span></div>`;
+                document.getElementById("detail-wiki").innerText = "레이스 일정을 불러오지 못했습니다. 새로고침 해주세요.";
+                document.getElementById("detail-circuit-name").innerText = "데이터 로드 실패";
             });
 
             scrollBox.addEventListener("click", function(e) {
