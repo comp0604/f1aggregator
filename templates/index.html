@@ -12,25 +12,46 @@
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 미니멀 대시보드 카드 */
+        /* 미니멀 대시보드 카드 설정 */
         .dashboard-card { 
-            background: linear-gradient(135deg, #1f2124 0%, #0b0c10 100%); 
+            position: relative; 
+            background-color: #1f2124; 
             border: none; 
             border-radius: 12px; 
             color: white; 
             cursor: pointer; 
             transition: transform 0.2s, box-shadow 0.2s; 
             min-height: 180px;
+            overflow: hidden; 
         }
         .dashboard-card:hover { 
             transform: translateY(-4px); 
             box-shadow: 0 8px 20px rgba(225, 6, 0, 0.15); 
         }
+
+        /* 📸 흐릿한 배경 사진을 위한 가상 요소 레이어 (AVIF 지원) */
+        .dashboard-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: var(--bg-image, none); 
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px) brightness(0.35); 
+            transform: scale(1.05); 
+            z-index: 0;
+            transition: background-image 0.6s ease-in-out;
+        }
+
+        .dashboard-card > * {
+            position: relative;
+            z-index: 1;
+        }
         
         .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 12px 15px; border-radius: 0 8px 8px 0; }
         .summary-line { margin-bottom: 6px; font-size: 0.95rem; color: #333; line-height: 1.5; }
-        .mini-rank-row { background-color: rgba(255,255,255,0.06); border-radius: 6px; padding: 5px 12px; margin-bottom: 5px; font-size: 0.85rem; }
+        .mini-rank-row { background-color: rgba(255,255,255,0.08); border-radius: 6px; padding: 5px 12px; margin-bottom: 5px; font-size: 0.85rem; }
         a { text-decoration: none; }
     </style>
 </head>
@@ -48,7 +69,7 @@
         
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/calendar'">
+                <div id="card-race" class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/calendar'">
                     <div>
                         <h4 id="dash-race-name" class="fw-bold text-truncate text-warning mb-1">로딩 중...</h4>
                         <p id="dash-race-circuit" class="text-white-50 small mb-0">연동 중...</p>
@@ -63,7 +84,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/standings'">
+                <div id="card-driver" class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/standings'">
                     <h6 class="fw-bold text-white-50 mb-2">Driver Top 3</h6>
                     <div id="dash-drivers-box" class="flex-grow-1 d-flex flex-column justify-content-center">
                         <div class="text-center text-muted small">동기화 중...</div>
@@ -72,7 +93,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/standings'">
+                <div id="card-team" class="card dashboard-card p-4 d-flex flex-column justify-content-between" onclick="location.href='/standings'">
                     <h6 class="fw-bold text-white-50 mb-2">Team Top 3</h6>
                     <div id="dash-teams-box" class="flex-grow-1 d-flex flex-column justify-content-center">
                         <div class="text-center text-muted small">동기화 중...</div>
@@ -105,7 +126,7 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-
+                        
                         <div class="d-flex justify-content-between align-items-center mt-3 pt-2 text-muted" style="font-size: 0.8rem;">
                             <span>{{ article.published_at }}</span>
                             <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-danger">원문 보기 ↗️</a>
@@ -121,12 +142,34 @@
         </div>
     </main>
 
-    <script>
+<script>
         document.addEventListener("DOMContentLoaded", function() {
             const calendarUrl = "https://api.jolpi.ca/ergast/f1/current.json";
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
+            // 헬퍼 함수: 위키피디아 링크에서 제목을 추출해 메인 이미지를 가져오는 함수
+            function fetchWikiImage(wikiUrl, elementId) {
+                if (!wikiUrl) return;
+                // URL에서 페이지 제목 추출 (예: Charles_Leclerc)
+                const pageTitle = wikiUrl.split('/wiki/')[1]; 
+                if (!pageTitle) return;
+
+                const wikiApiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${pageTitle}`;
+                
+                fetch(wikiApiUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        // 고화질 원본 이미지가 있으면 사용, 없으면 썸네일 사용
+                        const imgUrl = data.originalimage?.source || data.thumbnail?.source;
+                        if (imgUrl) {
+                            document.getElementById(elementId).style.setProperty('--bg-image', `url('${imgUrl}')`);
+                        }
+                    })
+                    .catch(err => console.error("위키 이미지 로드 실패:", err));
+            }
+
+            // 1. 레이스 캘린더 및 서킷 배경 매칭 (자동)
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
@@ -136,6 +179,9 @@
 
                     document.getElementById("dash-race-name").innerText = nextRace.raceName.replace("Grand Prix", "GP");
                     document.getElementById("dash-race-circuit").innerText = nextRace.Circuit.Location.locality;
+
+                    // 위키피디아 실시간 이미지 연동
+                    fetchWikiImage(nextRace.Circuit.url, "card-race");
 
                     const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
                     function updateClock() {
@@ -149,19 +195,29 @@
                     updateClock(); setInterval(updateClock, 1000);
                 });
 
+            // 2. 드라이버 현 시즌 1위 배경 매칭 (자동)
             fetch(driversUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
                 let html = ""; const medals = ["🥇", "🥈", "🥉"];
                 list.forEach((item, idx) => {
+                    if (idx === 0) {
+                        // 1위 드라이버 위키피디아 이미지 실시간 연동
+                        fetchWikiImage(item.Driver.url, "card-driver");
+                    }
                     html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Driver.familyName}</span><span class="text-warning fw-bold">${item.points}</span></div>`;
                 });
                 document.getElementById("dash-drivers-box").innerHTML = html;
             });
 
+            // 3. 컨스트럭터 팀 현 시즌 1위 배경 매칭 (자동)
             fetch(teamsUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
                 let html = ""; const medals = ["🥇", "🥈", "🥉"];
                 list.forEach((item, idx) => {
+                    if (idx === 0) {
+                        // 1위 팀 위키피디아 이미지 실시간 연동
+                        fetchWikiImage(item.Constructor.url, "card-team");
+                    }
                     html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Constructor.name.split(" ")[0]}</span><span class="text-success fw-bold">${item.points}</span></div>`;
                 });
                 document.getElementById("dash-teams-box").innerHTML = html;
