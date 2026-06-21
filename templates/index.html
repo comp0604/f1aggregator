@@ -11,10 +11,10 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
 
-        /* 🏁 그랑프리 배너 */
+        /* 🏁 그랑프리 배너 (배경은 꽉 차게 유지) */
         .grandprix-full-banner {
             position: relative; background-color: #1f2124; color: white; cursor: pointer; min-height: 240px; 
-            overflow: hidden; padding: 1.5rem 2rem !important; width: 100%; border-radius: 0 !important;
+            overflow: hidden; padding: 1.5rem 1rem !important; width: 100%; border-radius: 0 !important;
             display: flex; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin-top: 0; margin-bottom: 2.5rem;
         }
         .grandprix-full-banner::before {
@@ -23,22 +23,43 @@
             filter: blur(25px) brightness(0.22); transform: scale(1.1); z-index: 0; transition: background-image 0.5s ease-in-out;
         }
         .grandprix-full-banner > * { position: relative; z-index: 1; }
-        .row-content-race { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        
+        /* 💡 핵심 수정: 양옆 요소가 찢어지지 않도록 내부 핵심 콘텐츠를 가로 1280px 박스로 가두고 가운데 정렬 */
+        .row-content-race { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            width: 100%; height: 100%; gap: 1rem; 
+            position: relative; max-width: 1280px; margin: 0 auto; padding: 0 1rem;
+        }
+        @media (min-width: 992px) { 
+            .row-content-race { flex-direction: row; gap: 0; } 
+        }
         
         .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
         .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
 
-        .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
+        /* 💡 서킷 지도 위치 조정: 1280px 컨테이너의 오른쪽 끝(right: 1rem)에 밀착 */
+        .circuit-img-wrapper { 
+            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); 
+            width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; 
+        }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* ⏱️ 새로 추가된 좌측 세션 시간표 레이아웃 */
+        /* ⏱️ 좌측 세션 시간표 컴포넌트 */
         .sessions-left-wrapper {
-            position: absolute; left: 2rem; top: 50%; transform: translateY(-50%);
-            display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(8px); padding: 14px 18px; border-radius: 16px;
-            border-left: 4px solid #e10600; font-size: 0.8rem; min-width: 240px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 5;
+            display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px); padding: 10px 14px; border-radius: 16px;
+            border-left: 4px solid #e10600; font-size: 0.72rem; 
+            width: 100%; max-width: 270px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 5;
+            margin-bottom: 0.5rem;
         }
+        /* 💡 시간표 위치 조정: 1280px 컨테이너의 왼쪽 끝(left: 1rem)에 밀착 */
+        @media (min-width: 992px) {
+            .sessions-left-wrapper {
+                position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+                font-size: 0.8rem; min-width: 250px; margin-bottom: 0;
+            }
+        }
+
         .session-time-item {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding: 4px 0;
@@ -222,7 +243,7 @@
     <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
         <div class="row-content-race">
             
-            <div id="dash-sessions-left" class="sessions-left-wrapper d-none d-lg-flex">
+            <div id="dash-sessions-left" class="sessions-left-wrapper">
                 <div class="text-white-50 small w-100 text-center py-2">세션 일정 조율 중...</div>
             </div>
 
@@ -352,10 +373,8 @@
                 });
             });
 
-            // 🌟 사용자 시간대 계산 헬퍼 함수
             function formatToLocal(dateStr, timeStr) {
                 if (!dateStr || !timeStr) return "-";
-                // Z가 유실되었을 경우를 대비해 처리 후 디바이스 현지시각 계산
                 const utcIso = timeStr.includes('Z') ? `${dateStr}T${timeStr}` : `${dateStr}T${timeStr}Z`;
                 const d = new Date(utcIso);
                 if (isNaN(d.getTime())) return "-";
@@ -432,19 +451,24 @@
                     
                     fetchForegroundImage(nextRace.Circuit.url, "dash-circuit-map");
 
-                    // 🌟 좌측 세션 시간표 컴포넌트 실시간 바인딩
+                    // 세션 일정 컴포넌트 실시간 바인딩 (스프린트 유무 자동 분기)
                     const sessionsBox = document.getElementById("dash-sessions-left");
                     if (sessionsBox) {
-                        let sHtml = `
-                            <div class="session-time-item"><span class="session-name">FP1 연습</span><span class="session-time">${formatToLocal(nextRace.FirstPractice?.date, nextRace.FirstPractice?.time)}</span></div>
-                            <div class="session-time-item"><span class="session-name">FP2 연습</span><span class="session-time">${formatToLocal(nextRace.SecondPractice?.date, nextRace.SecondPractice?.time)}</span></div>
-                        `;
-                        if (nextRace.ThirdPractice) {
-                            sHtml += `<div class="session-time-item"><span class="session-name">FP3 연습</span><span class="session-time">${formatToLocal(nextRace.ThirdPractice?.date, nextRace.ThirdPractice?.time)}</span></div>`;
+                        const isSprintWeekend = !!nextRace.Sprint;
+                        let sHtml = "";
+
+                        if (isSprintWeekend) {
+                            sHtml += `<div class="session-time-item"><span class="session-name">FP1 연습</span><span class="session-time">${formatToLocal(nextRace.FirstPractice?.date, nextRace.FirstPractice?.time)}</span></div>`;
+                            sHtml += `<div class="session-time-item" style="color:#0dcaf0;"><span class="session-name" style="color:#0dcaf0;">⏱️ 스프린트 예선</span><span class="session-time">${formatToLocal(nextRace.SecondPractice?.date, nextRace.SecondPractice?.time)}</span></div>`;
+                            sHtml += `<div class="session-time-item" style="color:#0dcaf0;"><span class="session-name" style="color:#0dcaf0;">🏃‍♂️ 스프린트 결승</span><span class="session-time">${formatToLocal(nextRace.Sprint?.date, nextRace.Sprint?.time)}</span></div>`;
+                        } else {
+                            sHtml += `<div class="session-time-item"><span class="session-name">FP1 연습</span><span class="session-time">${formatToLocal(nextRace.FirstPractice?.date, nextRace.FirstPractice?.time)}</span></div>`;
+                            sHtml += `<div class="session-time-item"><span class="session-name">FP2 연습</span><span class="session-time">${formatToLocal(nextRace.SecondPractice?.date, nextRace.SecondPractice?.time)}</span></div>`;
+                            if (nextRace.ThirdPractice) {
+                                sHtml += `<div class="session-time-item"><span class="session-name">FP3 연습</span><span class="session-time">${formatToLocal(nextRace.ThirdPractice?.date, nextRace.ThirdPractice?.time)}</span></div>`;
+                            }
                         }
-                        if (nextRace.Sprint) {
-                            sHtml += `<div class="session-time-item" style="color:#0dcaf0;"><span class="session-name" style="color:#0dcaf0;">Sprint 스프린트</span><span class="session-time">${formatToLocal(nextRace.Sprint?.date, nextRace.Sprint?.time)}</span></div>`;
-                        }
+                        
                         sHtml += `
                             <div class="session-time-item"><span class="session-name text-info">Quali 예선</span><span class="session-time text-info">${formatToLocal(nextRace.Qualifying?.date, nextRace.Qualifying?.time)}</span></div>
                             <div class="session-time-item"><span class="session-name text-warning">Race 결승</span><span class="session-time text-warning">${formatToLocal(nextRace.date, nextRace.time)}</span></div>
