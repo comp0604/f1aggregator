@@ -31,76 +31,164 @@
         .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* 🏆 랭킹 보드 공통 레이아웃 */
-        .row-content-rank { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; gap: 1.5rem; height: 100%; }
-        
-        /* ✨ Border Glow 래퍼 영역 (빛나는 테두리를 만들어주는 바깥 컨테이너) */
-        .glow-wrapper {
-            position: relative;
-            border-radius: 26px; /* 안쪽 카드보다 둥글기를 살짝 크게 설정 */
-            padding: 3px; /* 💡 이 패딩 값이 곧 빛나는 테두리의 두께가 됩니다 */
-            z-index: 0;
-            overflow: hidden;
-            display: flex;
-            height: 100%;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            background-color: #1a1c1e; /* 그라데이션 바탕색 */
-        }
-        .glow-wrapper:hover {
-            transform: translateY(-4px);
-        }
-        /* 드라이버/팀별 호버 시 글로우 섀도우 색상 분리 */
-        .glow-driver:hover { box-shadow: 0 10px 25px rgba(13, 110, 253, 0.4); }
-        .glow-team:hover { box-shadow: 0 10px 25px rgba(25, 135, 84, 0.4); }
-
-        /* 빙글빙글 도는 그라데이션 애니메이션 */
-        .glow-wrapper::before,
-        .glow-wrapper::after {
-            content: ''; position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            z-index: -2;
-            animation: rotate-glow 4s linear infinite;
-        }
-        /* 애프터 요소에 블러를 주어 빛 번짐 효과 부여 */
-        .glow-wrapper::after { filter: blur(15px); }
-
-        /* 드라이버 카드의 테두리 색상 (파랑/하늘빛) */
-        .glow-driver::before, .glow-driver::after {
-            background: conic-gradient(transparent, transparent, transparent, #0d6efd, #00e6ff);
-        }
-        /* 팀 카드의 테두리 색상 (초록/형광빛) */
-        .glow-team::before, .glow-team::after {
-            background: conic-gradient(transparent, transparent, transparent, #198754, #20c997);
-        }
-
-        @keyframes rotate-glow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* 래퍼 안쪽의 진짜 카드 영역 (호버와 그림자는 래퍼가 담당하므로 제거) */
-        .dashboard-row-card { 
-            position: relative; background-color: #1f2124; border: none; border-radius: 24px; color: white; min-height: 340px; overflow: hidden; padding: 2rem !important; width: 100%; height: 100%;
-        }
-        .dashboard-row-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--bg-image, none); background-size: cover; background-position: center; filter: blur(20px) brightness(0.2); transform: scale(1.1); z-index: 0; transition: background-image 0.5s ease-in-out; }
-        .dashboard-row-card > * { position: relative; z-index: 1; }
-
-        /* 포디움 스타일링 */
+        /* 🏆 기존 랭킹 보드 베이스 스타일 */
+        .row-content-rank { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; gap: 1.5rem; height: 100%; position: relative; z-index: 1; }
         .rank-container { width: 100%; max-width: 520px; display: flex; gap: 12px; align-items: flex-end; height: 250px; margin: 0 auto; }
         .podium-step { background-color: rgba(255, 255, 255, 0.08); border-radius: 16px 16px 8px 8px; padding: 15px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex: 1; position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .podium-1 { height: 100%; background: linear-gradient(to top, rgba(255, 215, 0, 0.18), rgba(255, 215, 0, 0.04)); border: 1px solid rgba(255, 215, 0, 0.4); }
         .podium-2 { height: 82%; background: linear-gradient(to top, rgba(192, 192, 192, 0.14), rgba(192, 192, 192, 0.03)); border: 1px solid rgba(192, 192, 192, 0.28); }
         .podium-3 { height: 70%; background: linear-gradient(to top, rgba(205, 127, 50, 0.12), rgba(205, 127, 50, 0.02)); border: 1px solid rgba(205, 127, 50, 0.22); }
-
         .podium-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; object-position: center 15%; margin-bottom: 8px; border: 3px solid rgba(255, 255, 255, 0.45); box-shadow: 0 6px 12px rgba(0,0,0,0.4); background-color: white; display: none; }
         .team-step .podium-img { border-radius: 14px; object-fit: contain; padding: 8px; }
         .podium-rank { font-size: 1.4rem; margin-bottom: 4px; line-height: 1; }
         .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; }
         .podium-pts { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
 
-        /* 📰 초고밀도 뉴스 피드 */
+        /* ✨ React Bits: Border Glow Effect 적용 */
+        .dashboard-row-card {
+            /* 기존 카드 속성 및 Glow를 위한 변수 세팅 */
+            --border-radius: 24px;
+            --card-bg: #1f2124;
+            position: relative;
+            cursor: pointer;
+            min-height: 340px;
+            width: 100%;
+            border: none;
+            padding: 0 !important; /* 내부 패딩은 border-glow-inner로 이관 */
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .dashboard-row-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(225, 6, 0, 0.22); }
+
+        .border-glow-card {
+            --edge-proximity: 0;
+            --cursor-angle: 45deg;
+            --edge-sensitivity: 30;
+            --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+            --glow-padding: 30px; /* 빛 번짐 범위 조정 */
+            --cone-spread: 25;
+
+            isolation: isolate;
+            display: grid;
+            border: 1px solid rgb(255 255 255 / 15%);
+            background: var(--card-bg, #1f2124);
+            border-radius: var(--border-radius);
+            overflow: visible; /* 빛이 카드 밖으로 퍼지도록 허용 */
+        }
+
+        .border-glow-card::before,
+        .border-glow-card::after,
+        .border-glow-card > .edge-light {
+            content: ""; position: absolute; inset: 0; border-radius: inherit; transition: opacity 0.25s ease-out; z-index: -1;
+        }
+
+        .border-glow-card:not(:hover):not(.sweep-active)::before,
+        .border-glow-card:not(:hover):not(.sweep-active)::after,
+        .border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
+            opacity: 0; transition: opacity 0.75s ease-in-out;
+        }
+
+        /* colored mesh-gradient border */
+        .border-glow-card::before {
+            border: 1px solid transparent;
+            background:
+                linear-gradient(var(--card-bg) 0 100%) padding-box,
+                linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+                var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
+
+            opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+
+            mask-image:
+                conic-gradient(
+                from var(--cursor-angle) at center,
+                black calc(var(--cone-spread) * 1%),
+                transparent calc((var(--cone-spread) + 15) * 1%),
+                transparent calc((100 - var(--cone-spread) - 15) * 1%),
+                black calc((100 - var(--cone-spread)) * 1%)
+                );
+        }
+
+        /* colored mesh-gradient background fill near edges */
+        .border-glow-card::after {
+            border: 1px solid transparent;
+            background:
+                var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) padding-box,
+                var(--gradient-base, linear-gradient(#c299ff 0 100%)) padding-box;
+
+            mask-image:
+                linear-gradient(to bottom, black, black),
+                radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+                radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+                radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+                radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+                radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+                conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+
+            mask-composite: subtract, add, add, add, add, add;
+            opacity: calc(var(--fill-opacity, 0.5) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+            mix-blend-mode: soft-light;
+        }
+
+        /* outer glow layer */
+        .border-glow-card > .edge-light {
+            inset: calc(var(--glow-padding) * -1);
+            pointer-events: none;
+            z-index: 1;
+
+            mask-image:
+                conic-gradient(
+                from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
+                );
+
+            opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+            mix-blend-mode: plus-lighter;
+        }
+
+        .border-glow-card > .edge-light::before {
+            content: ""; position: absolute; inset: var(--glow-padding); border-radius: inherit;
+            box-shadow:
+                inset 0 0 0 1px var(--glow-color, hsl(40deg 80% 80% / 100%)),
+                inset 0 0 1px 0 var(--glow-color-60, hsl(40deg 80% 80% / 60%)),
+                inset 0 0 3px 0 var(--glow-color-50, hsl(40deg 80% 80% / 50%)),
+                inset 0 0 6px 0 var(--glow-color-40, hsl(40deg 80% 80% / 40%)),
+                inset 0 0 15px 0 var(--glow-color-30, hsl(40deg 80% 80% / 30%)),
+                inset 0 0 25px 2px var(--glow-color-20, hsl(40deg 80% 80% / 20%)),
+                inset 0 0 50px 2px var(--glow-color-10, hsl(40deg 80% 80% / 10%)),
+                0 0 1px 0 var(--glow-color-60, hsl(40deg 80% 80% / 60%)),
+                0 0 3px 0 var(--glow-color-50, hsl(40deg 80% 80% / 50%)),
+                0 0 6px 0 var(--glow-color-40, hsl(40deg 80% 80% / 40%)),
+                0 0 15px 0 var(--glow-color-30, hsl(40deg 80% 80% / 30%)),
+                0 0 25px 2px var(--glow-color-20, hsl(40deg 80% 80% / 20%)),
+                0 0 50px 2px var(--glow-color-10, hsl(40deg 80% 80% / 10%));
+        }
+
+        /* 🖼️ 기존 흐릿한 배경(위키피디아 배경)을 담당할 내부 래퍼 */
+        .border-glow-inner {
+            display: flex; flex-direction: column; position: relative; overflow: hidden; z-index: 1;
+            padding: 2rem; width: 100%; height: 100%; border-radius: inherit;
+        }
+
+        .border-glow-inner::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background-image: var(--bg-image, none); background-size: cover; background-position: center; 
+            filter: blur(20px) brightness(0.2); transform: scale(1.1); z-index: 0; transition: background-image 0.5s ease-in-out;
+        }
+
+        /* 📰 초고밀도 뉴스 피드 (기존 동일) */
         .dense-news-container { background-color: #ffffff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 1.5rem !important; }
         .dense-news-header { font-size: 1.15rem; font-weight: bold; border-bottom: 2px solid #1f2124; padding-bottom: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         .news-feed-list { display: flex; flex-direction: column; }
@@ -147,8 +235,8 @@
         
         <div class="row g-4 mb-5">
             <div class="col-lg-6">
-                <div class="glow-wrapper glow-driver" onclick="location.href='/standings'">
-                    <div id="card-driver" class="card dashboard-row-card">
+                <div id="card-driver" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
+                    <div class="edge-light"></div> <div class="border-glow-inner">
                         <div class="row-content-rank">
                             <div>
                                 <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
@@ -163,8 +251,8 @@
             </div>
 
             <div class="col-lg-6">
-                <div class="glow-wrapper glow-team" onclick="location.href='/standings'">
-                    <div id="card-team" class="card dashboard-row-card">
+                <div id="card-team" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
+                    <div class="edge-light"></div> <div class="border-glow-inner">
                         <div class="row-content-rank">
                             <div>
                                 <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
@@ -215,6 +303,35 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
+            // ✨ Border Glow 마우스 트래킹 로직 추가
+            document.querySelectorAll('.border-glow-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    // 마우스 좌표 계산
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // 카드의 중심점 계산
+                    const cx = rect.width / 2;
+                    const cy = rect.height / 2;
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    
+                    // 중심점 대비 마우스 위치의 각도(Angle) 계산
+                    const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+                    
+                    // 계산된 값을 CSS 변수로 주입 (이 변수가 React Bits CSS를 작동시킵니다)
+                    card.style.setProperty('--cursor-angle', `${angle}deg`);
+                    card.style.setProperty('--edge-proximity', '100'); // 활성화 상태 (최대 밝기)
+                });
+                
+                // 마우스가 카드를 벗어나면 불빛 끄기
+                card.addEventListener('mouseleave', () => {
+                    card.style.setProperty('--edge-proximity', '0');
+                });
+            });
+
             const calendarUrl = "https://api.jolpi.ca/ergast/f1/current.json";
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
