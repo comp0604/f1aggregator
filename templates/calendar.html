@@ -3,56 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Race Calendar</title>
+    <title>🏎️ LecLovF1 - Race Calendar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
-        .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .f1-logo { color: white; text-decoration: none; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .table-f1 th { background-color: #212529; color: white; text-align: center; font-size: 0.9rem; }
-        .table-f1 td { vertical-align: middle; text-align: center; font-size: 0.9rem; }
-        .past-race { color: #adb5bd; background-color: #f1f3f5 !important; }
+        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
+        .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
+        .f1-logo:hover { color: rgba(255,255,255,0.8); }
+
+        /* 🔄 사이트 맨 위 가로 스크롤 캘린더 컨테이너 */
+        .calendar-scroll-wrapper {
+            background-color: #1f2124;
+            padding: 1.2rem 1rem;
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            scroll-behavior: smooth;
+            border-bottom: 5px solid #e10600;
+        }
+        /* 스크롤바 디자인 슬림 최적화 */
+        .calendar-scroll-wrapper::-webkit-scrollbar { height: 6px; }
+        .calendar-scroll-wrapper::-webkit-scrollbar-track { background: #1f2124; }
+        .calendar-scroll-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #e10600; }
+
+        /* 🎫 가로형 레이스 일정 카드 */
+        .mini-race-card {
+            flex: 0 0 240px; /* 카드별 가로 폭 고정 */
+            background-color: #2d3035;
+            border-radius: 12px;
+            padding: 1rem;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .mini-race-card:hover { transform: translateY(-2px); }
+
+        /* 🟡 다음/현재 그랑프리 강조 스타일 (노란색) */
+        .mini-race-card.current-race {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+            color: #1f2124 !important;
+            font-weight: bold;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+        }
+        .mini-race-card.current-race .race-round,
+        .mini-race-card.current-race .race-loc,
+        .mini-race-card.current-race .race-date {
+            color: rgba(31, 33, 36, 0.75) !important;
+        }
+
+        /* ⚪ 지난 그랑프리 스타일 (흐리게 처리) */
+        .mini-race-card.past-race {
+            opacity: 0.4;
+            background-color: #1a1c1e;
+        }
+
+        .race-round { font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; }
+        .race-title { font-size: 1.1rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .race-loc { font-size: 0.8rem; margin-top: 2px; }
+        .race-date { font-size: 0.9rem; font-weight: bold; margin-top: 12px; text-align: right; }
+
+        /* 하단 메인 바로가기 버튼 구역 */
+        .content-container { max-width: 1200px; margin: 3rem auto; padding: 0 1rem; }
+        .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
+        .back-btn:hover { background-color: #e10600; color: white; }
     </style>
 </head>
 <body>
 
     <header class="f1-header text-center">
         <div class="container">
-            <h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1>
+            <h1 class="fw-bold m-0">
+                <a href="/" class="f1-logo">🏎️ LecLovF1</a>
+            </h1>
         </div>
     </header>
 
-    <main class="container">
-        <div class="row">
-            <div class="col-lg-9 mx-auto">
-                <div class="card p-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered table-f1 mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 15%;">라운드</th>
-                                    <th style="width: 35%;">그랑프리</th>
-                                    <th style="width: 32%;">서킷 위치</th>
-                                    <th style="width: 18%;">결승 일자</th>
-                                </tr>
-                            </thead>
-                            <tbody id="calendar-rows">
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">로드 중...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         </div>
-    </main>
+
+    <div class="content-container text-center">
+        <button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button>
+    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const apiUrl = "https://api.jolpi.ca/ergast/f1/current.json";
-            const tableBody = document.getElementById("calendar-rows");
+            const scrollBox = document.getElementById("calendar-scroll-box");
             const today = new Date();
 
             fetch(apiUrl)
@@ -60,21 +102,53 @@
                 .then(data => {
                     const races = data.MRData.RaceTable.Races;
                     let htmlContent = "";
+                    let nextRaceFound = false;
 
-                    races.forEach(race => {
-                        const raceDate = new Date(race.date);
-                        let rowClass = raceDate < today ? "past-race" : "";
+                    races.forEach((race, idx) => {
+                        // 날짜 및 시간 파싱 결합 데이터 생성
+                        const raceDateTimeStr = race.date + (race.time ? 'T' + race.time : 'T23:59:59');
+                        const raceDate = new Date(raceDateTimeStr);
+                        
+                        let cardClass = "";
+                        let cardIdAttr = "";
+
+                        // 1. 지난 경기 체크
+                        if (raceDate < today) {
+                            cardClass = "past-race";
+                        } 
+                        // 2. 다가올 가장 가까운 경기를 노란색 활성화 카드로 칠하기
+                        else if (!nextRaceFound) {
+                            cardClass = "current-race";
+                            nextRaceFound = true;
+                            cardIdAttr = 'id="next-active-race"'; // 포커싱용 ID 부여
+                        }
 
                         htmlContent += `
-                            <tr class="${rowClass}">
-                                <td class="fw-bold text-secondary">${race.round} Rd</td>
-                                <td class="text-start ps-3 fw-bold">${race.raceName}</td>
-                                <td class="text-start ps-3 small text-muted">📍 ${race.Circuit.Location.locality}, ${race.Circuit.Location.country}</td>
-                                <td class="fw-bold">${race.date}</td>
-                            </tr>
+                            <div ${cardIdAttr} class="mini-race-card ${cardClass}">
+                                <div>
+                                    <div class="race-round text-danger text-uppercase">${race.round} ROUND</div>
+                                    <div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div>
+                                    <div class="race-loc text-white-50">📍 ${race.Circuit.Location.locality}, ${race.Circuit.Location.country}</div>
+                                </div>
+                                <div class="race-date text-warning">${race.date}</div>
+                            </div>
                         `;
                     });
-                    tableBody.innerHTML = htmlContent;
+                    
+                    // 시즌이 완전히 종료되었을 경우 예외처리로 마지막 라운드 활성화
+                    if (!nextRaceFound && races.length > 0) {
+                        htmlContent = htmlContent.replace(`class="mini-race-card past-race"`, `id="next-active-race" class="mini-race-card current-race"`);
+                    }
+
+                    scrollBox.innerHTML = htmlContent;
+
+                    // ✨ [UX 핵심] 현재 활성화된 노란색 그랑프리 카드를 화면 정중앙으로 스무스하게 자동 스크롤 이동
+                    setTimeout(() => {
+                        const activeCard = document.getElementById("next-active-race");
+                        if (activeCard) {
+                            activeCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        }
+                    }, 250);
                 });
         });
     </script>
