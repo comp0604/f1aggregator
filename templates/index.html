@@ -7,20 +7,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
-        .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; z-index: 10; }
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
-        
-        /* 네비게이션 바 */
-        .f1-nav-links { display: flex; justify-content: center; gap: 20px; background-color: #1f2124; padding: 0.6rem 0; border-bottom: 3px solid #e10600; margin-bottom: 2rem; }
-        .f1-nav-links a { color: #fff; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: color 0.2s; }
-        .f1-nav-links a:hover { color: #ffc107; }
 
-        /* 🏁 그랑프리 배너 (복구됨) */
+        /* 🏁 그랑프리 배너 (상단 완전히 밀착 및 가로 100% 엣지투엣지 구조) */
         .grandprix-full-banner {
             position: relative; background-color: #1f2124; color: white; cursor: pointer; min-height: 240px; 
-            overflow: hidden; padding: 1.5rem 2rem !important; width: 100%; border-radius: 20px;
-            display: flex; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden; padding: 1.5rem 2rem !important; width: 100%; border-radius: 0 !important; /* 각진 모서리로 가로 확장 극대화 */
+            display: flex; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin-top: 0; margin-bottom: 2.5rem;
         }
         .grandprix-full-banner::before {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -37,7 +32,7 @@
         .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* 🏆 랭킹 보드 (복구됨) */
+        /* 🏆 랭킹 보드 */
         .row-content-rank { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; gap: 1.5rem; height: 100%; }
         .dashboard-row-card { position: relative; background-color: #1f2124; border: none; border-radius: 24px; color: white; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; min-height: 340px; overflow: hidden; padding: 2rem !important; width: 100%; }
         .dashboard-row-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(225, 6, 0, 0.22); }
@@ -56,7 +51,7 @@
         .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; }
         .podium-pts { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
 
-        /* 📰 초고밀도 뉴스 피드 ("다다닥") */
+        /* 📰 초고밀도 뉴스 피드 */
         .dense-news-container { background-color: #ffffff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 1.5rem !important; }
         .dense-news-header { font-size: 1.15rem; font-weight: bold; border-bottom: 2px solid #1f2124; padding-bottom: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         .news-feed-list { display: flex; flex-direction: column; }
@@ -78,39 +73,29 @@
         </div>
     </header>
 
-    <nav class="f1-nav-links">
-        <a href="/">🏠 홈 대시보드</a>
-        <a href="/calendar">📅 경기 달력</a>
-        <a href="/standings">🏆 챔피언십 순위</a>
-    </nav>
+    <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
+        <div class="row-content-race">
+            <div class="d-flex flex-column align-items-center text-center gap-3 mx-auto">
+                <div>
+                    <span class="badge bg-danger px-3 py-1.5 mb-2">NEXT GRAND PRIX</span>
+                    <h1 id="dash-race-name" class="fs-2 fw-bold text-warning m-0">로딩 중...</h1>
+                    <p id="dash-race-circuit" class="fs-6 text-white-50 m-0">연동 중...</p>
+                </div>
+                <div class="d-flex gap-3 text-center" style="max-width: 460px; width: 100%;">
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
+                </div>
+            </div>
+            <div class="circuit-img-wrapper d-none d-md-flex">
+                <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
+            </div>
+        </div>
+    </div>
 
     <div class="container-fluid px-lg-5 mb-5">
         
-        <div class="row mb-4">
-            <div class="col-12">
-                <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
-                    <div class="row-content-race">
-                        <div class="d-flex flex-column align-items-center text-center gap-3 mx-auto">
-                            <div>
-                                <span class="badge bg-danger px-3 py-1.5 mb-2">NEXT GRAND PRIX</span>
-                                <h1 id="dash-race-name" class="fs-2 fw-bold text-warning m-0">로딩 중...</h1>
-                                <p id="dash-race-circuit" class="fs-6 text-white-50 m-0">연동 중...</p>
-                            </div>
-                            <div class="d-flex gap-3 text-center" style="max-width: 460px; width: 100%;">
-                                <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
-                                <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
-                                <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
-                                <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
-                            </div>
-                        </div>
-                        <div class="circuit-img-wrapper d-none d-md-flex">
-                            <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="row g-4 mb-5">
             <div class="col-lg-6">
                 <div id="card-driver" class="card dashboard-row-card h-100" onclick="location.href='/standings'">
