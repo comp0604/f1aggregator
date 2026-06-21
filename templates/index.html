@@ -11,7 +11,7 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
 
-        /* 🏁 그랑프리 배너 (전체 배경) */
+        /* 🏁 그랑프리 배너 */
         .grandprix-full-banner {
             position: relative; background-color: #1f2124; color: white; cursor: pointer; min-height: 240px; 
             overflow: hidden; padding: 1.5rem 0 !important; width: 100%; border-radius: 0 !important;
@@ -24,21 +24,22 @@
         }
         .grandprix-full-banner > * { position: relative; z-index: 1; }
         
-        /* 💡 핵심 구조 수정: 하단 카드 컴포넌트들과 대칭을 맞추기 위해 최대 가로폭 가두기 및 절대좌표 기준점 설정 */
+        /* 배너 내부 핵심 폭 제한 영역 */
         .row-content-race { 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 2rem;
             position: relative;
         }
         
-        /* 🎯 중앙 메인 블록: 양옆 컴포넌트에 방해받지 않고 언제나 화면 정중앙 배치 보장 */
+        /* 🎯 중앙 메인 블록 */
         .main-race-center-block {
             display: flex; flex-direction: column; align-items: center; text-align: center;
             z-index: 6; width: 100%;
         }
 
-        .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
-        .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
+        /* ⏱️ 콤팩트하게 축소된 타이머 디자인 */
+        .timer-num { font-size: 2.1rem !important; font-weight: 800; line-height: 1; }
+        .timer-label { font-size: 0.7rem; letter-spacing: 1px; margin-top: 4px; opacity: 0.75; }
 
         /* 🗺️ 우측 서킷 지도 컴포넌트 */
         .circuit-img-wrapper { 
@@ -56,24 +57,24 @@
             margin-top: 1rem;
         }
 
-        /* 💡 미디어 쿼리: 데스크톱 화면에서 타이틀 독립 정렬 및 양끝 가두리 밀착 배치 */
+        /* 💡 미디어 쿼리: 데스크톱 화면에서 중앙 본진 자리를 침범하지 않고 보기 좋게 안쪽으로 집결 */
         @media (min-width: 992px) {
             .row-content-race {
                 min-height: 240px;
             }
-            /* 시간표를 타이틀 왼쪽에 침범 없이 밀착 */
+            /* 시간표를 중앙 쪽으로 조금 더 전진 밀착 (2rem -> 7.5rem) */
             .sessions-left-wrapper {
                 position: absolute;
-                left: 2rem; 
+                left: 7.5rem; 
                 top: 50%;
                 transform: translateY(-50%);
                 margin-top: 0;
                 font-size: 0.78rem;
             }
-            /* 서킷 지도를 타이틀 오른쪽에 침범 없이 밀착 */
+            /* 서킷 지도를 중앙 쪽으로 조금 더 전진 밀착 (2rem -> 7.5rem) */
             .circuit-img-wrapper { 
                 position: absolute;
-                right: 2rem; 
+                right: 7.5rem; 
                 top: 50%;
                 transform: translateY(-50%);
                 margin-top: 0;
