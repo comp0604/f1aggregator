@@ -2,162 +2,45 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏎️ LecLovF1 - Championship Standings</title>
+    <title>🏎️ Standings</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
-        .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
-
-        /* 🔥 Top 5 블랙 배경 명확하게 복구 */
-        .top5-wrapper {
-            background-color: #111315;
-            border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 3rem;
-        }
-
-        .podium-top5-container { display: flex; justify-content: center; align-items: flex-end; gap: 12px; height: 280px; overflow-x: auto; padding-bottom: 10px; }
-        .top-driver-card {
-            background-color: #1f2124; border-radius: 12px; color: white; padding: 1.25rem 0.5rem; text-align: center; position: relative; 
-            display: flex; flex-direction: column; justify-content: space-between; min-width: 130px; width: 19%;
-        }
-
-        .rank-order-1 { order: 3; height: 100%; border: 2px solid #ffc107; z-index: 5; }
-        .rank-order-2 { order: 2; height: 85%; border: 2px solid #c0c0c0; z-index: 4; }
-        .rank-order-3 { order: 4; height: 75%; border: 2px solid #cd7f32; z-index: 3; }
-        .rank-order-4 { order: 1; height: 60%; background-color: #2d3035; z-index: 2; }
-        .rank-order-5 { order: 5; height: 50%; background-color: #2d3035; z-index: 1; }
-
-        .card-rank-badge { position: absolute; top: 8px; left: 10px; font-size: 1.2rem; font-weight: 900; opacity: 0.5; }
-        .rank-order-1 .card-rank-badge { font-size: 1.6rem; opacity: 1; color: #ffc107; }
-
-        .driver-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid rgba(255,255,255,0.2); background-color: #fff; margin: 0 auto 10px auto; display: none; }
-        .rank-order-1 .driver-avatar { width: 90px; height: 90px; border-color: #ffc107; }
-        
-        .driver-name { font-size: 1rem; font-weight: bold; line-height: 1.2; margin-bottom: 5px; color: white;}
-        .rank-order-1 .driver-name { font-size: 1.25rem; color: #ffc107; }
-        .driver-team { font-size: 0.8rem; opacity: 0.7; color: white;}
-        .driver-points { font-size: 1.1rem; font-weight: bold; color: #ffc107; margin-top: auto; }
-
-        /* 하단 테이블 - 글씨 가리지 않는 심플한 스타일 */
-        .standings-box { background-color: #1f2124; border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-bottom: 2rem; }
-        .table-f1 { color: white !important; vertical-align: middle !important; margin-bottom: 0; }
-        .table-f1 th { border-bottom: 1px solid #444 !important; color: #aaa; }
-        .table-f1 td { border-bottom: 1px solid #333 !important; font-size: 0.95rem; padding: 12px 8px !important; }
-        
-        .rank-num { font-weight: bold; font-size: 1.1rem; width: 60px; }
-        .pts-num { font-weight: bold; color: #ffc107; text-align: right; }
-        .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; }
+        body { background-color: #121212; color: white; }
+        .top5-wrapper { background: #1f2124; border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+        .standings-box { background-color: #1f2124; border-radius: 20px; padding: 1.5rem; }
+        .table-f1 { color: white; }
+        .color-row { border-left: 5px solid #555; }
+        .back-btn { background: #e10600; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <header class="f1-header text-center">
-        <div class="container"><h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1></div>
-    </header>
-
-    <div class="container mb-5">
-        <div class="top5-wrapper">
-            <h3 class="fw-bold text-white mb-4 text-center">🏆 Championship Leaders</h3>
-            <div class="podium-top5-container" id="top-drivers-cards-row">
-                <div class="w-100 text-center text-muted align-self-center">데이터를 불러오고 있습니다...</div>
-            </div>
+    <div class="container py-4">
+        <div class="top5-wrapper" id="top5-block">
+            <h3 class="text-center mb-4">Championship Leaders</h3>
+            <div class="d-flex justify-content-center gap-3" id="top-drivers-row"></div>
         </div>
-
         <div class="row g-4">
-            <div class="col-xl-6">
-                <div class="standings-box">
-                    <h4 class="fw-bold text-warning mb-3">🏁 Driver Standings</h4>
-                    <div class="table-responsive">
-                        <table class="table table-f1">
-                            <thead><tr><th class="text-center">순위</th><th>드라이버</th><th>팀</th><th class="text-center">우승</th><th class="text-end">포인트</th></tr></thead>
-                            <tbody id="drivers-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-6">
-                <div class="standings-box">
-                    <h4 class="fw-bold text-success mb-3">🏢 Constructor Standings</h4>
-                    <div class="table-responsive">
-                        <table class="table table-f1">
-                            <thead><tr><th class="text-center">순위</th><th>컨스트럭터 팀</th><th class="text-center">우승</th><th class="text-end">포인트</th></tr></thead>
-                            <tbody id="constructors-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <div class="col-md-6"><div class="standings-box"><table class="table table-f1"><tbody id="d-body"></tbody></table></div></div>
+            <div class="col-md-6"><div class="standings-box"><table class="table table-f1"><tbody id="c-body"></tbody></table></div></div>
         </div>
-        <div class="text-center mt-4"><button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button></div>
+        <button class="back-btn" onclick="location.href='/'">메인으로</button>
     </div>
-
     <script>
-        const TEAM_COLORS = { "ferrari": "#cc0000", "mclaren": "#ff8700", "red bull": "#061043", "mercedes": "#00a19c", "aston martin": "#006f62", "alpine": "#0090ff", "williams": "#005aff", "haas": "#787878", "kick sauber": "#c41130", "rb": "#002fa7" };
-        function getTeamHex(name) {
-            const key = (name||"").toLowerCase();
-            for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
-            return "#444";
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            // 프론트엔드에서 직접 가볍게 호출 (무한 로딩의 주범이었던 results.json 연산 완전 제거)
-            fetch("https://api.jolpi.ca/ergast/f1/current/driverStandings.json").then(r => r.json()).then(data => {
-                const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
-                
-                // Top 5 렌더링
-                let cardsHtml = "";
-                const medals = { "1": "🥇", "2": "🥈", "3": "🥉" };
-                list.slice(0, 5).forEach(item => {
-                    const rank = parseInt(item.position);
-                    const teamName = item.Constructors[0]?.name || "Unknown";
-                    cardsHtml += `
-                        <div class="top-driver-card rank-order-${rank}">
-                            <div class="card-rank-badge">${medals[rank] || rank}</div>
-                            <div>
-                                <img id="c-ava-${rank}" class="driver-avatar">
-                                <div class="driver-name">${item.Driver.givenName}<br>${item.Driver.familyName}</div>
-                                <div class="driver-team">${teamName}</div>
-                            </div>
-                            <div class="driver-points">${item.points} PTS</div>
-                        </div>`;
-                });
-                document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
-
-                // 사진 동기화 (천천히 로드되어도 깨지지 않게)
-                list.slice(0, 5).forEach(item => {
-                    const title = (item.Driver.url || "").split('/wiki/')[1];
-                    if(title) fetch(`/api/wiki-meta/${title}`).then(r=>r.json()).then(w => { if(w.image) { const i=document.getElementById(`c-ava-${item.position}`); i.src=w.image; i.style.display="block"; } });
-                });
-
-                // 드라이버 테이블 렌더링
-                let dHtml = "";
-                list.forEach(item => {
-                    const teamName = item.Constructors[0]?.name || "Unknown";
-                    const color = getTeamHex(teamName);
-                    dHtml += `<tr>
-                        <td class="text-center rank-num" style="border-left: 4px solid ${color};">${item.position}</td>
-                        <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong></td>
-                        <td class="text-white-50">${teamName}</td>
-                        <td class="text-center text-secondary">${item.wins}</td>
-                        <td class="pts-num">${item.points} P</td>
-                    </tr>`;
-                });
-                document.getElementById("drivers-table-body").innerHTML = dHtml;
+        fetch("/api/driver-standings").then(r=>r.json()).then(data => {
+            const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
+            let dHtml = "";
+            list.forEach(item => {
+                dHtml += `<tr class="color-row"><td>${item.position}</td><td>${item.Driver.familyName}</td><td>${item.points} P</td></tr>`;
             });
-
-            fetch("https://api.jolpi.ca/ergast/f1/current/constructorStandings.json").then(r => r.json()).then(data => {
-                const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
-                let cHtml = "";
-                list.forEach(item => {
-                    const color = getTeamHex(item.Constructor.name);
-                    cHtml += `<tr>
-                        <td class="text-center rank-num" style="border-left: 4px solid ${color};">${item.position}</td>
-                        <td><strong>${item.Constructor.name}</strong></td>
-                        <td class="text-center text-secondary">${item.wins}</td>
-                        <td class="pts-num">${item.points} P</td>
-                    </tr>`;
-                });
-                document.getElementById("constructors-table-body").innerHTML = cHtml;
+            document.getElementById("d-body").innerHTML = dHtml;
+        });
+        fetch("/api/constructor-standings").then(r=>r.json()).then(data => {
+            const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
+            let cHtml = "";
+            list.forEach(item => {
+                cHtml += `<tr class="color-row"><td>${item.position}</td><td>${item.Constructor.name}</td><td>${item.points} P</td></tr>`;
             });
+            document.getElementById("c-body").innerHTML = cHtml;
         });
     </script>
 </body>
