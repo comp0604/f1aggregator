@@ -60,7 +60,7 @@
         .driver-team { font-size: 0.8rem; opacity: 0.7; margin-bottom: 8px; }
         .driver-points { font-size: 1.2rem; font-weight: bold; color: #ffc107; }
 
-        /* 🏛 {하단 테이블} */
+        /* 🏛️ 하단 테이블 디자인 */
         .standings-box {
             background-color: #1f2124;
             border-radius: 20px;
@@ -145,6 +145,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // 💥 순수 1차 소스(Jolpi Ergast 엔드포인트)만 활용
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const constructorsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
@@ -164,7 +165,7 @@
                         const borderClass = rank <= 3 ? `rank-${rank}` : "";
                         const badgeActive = rank <= 3 ? "active-rank" : "";
                         
-                        // 💥 오타 유발 요소를 제거하고 정상적인 위키 키값 슬라이싱으로 복구 완료
+                        // 💥 오타 유발 파편을 완전히 청소하고 위키 제목 파싱부 재정돈
                         const wikiTitle = item.Driver.url.split('/wiki/')[1];
 
                         cardsHtml += `
@@ -181,7 +182,7 @@
                     });
                     document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
 
-                    // 프로필 사진 순차 프록시 딜리버리
+                    // 백엔드 위키 프록시 API를 연동한 드라이버 프로필 사진 레이지 로드
                     top5.forEach(item => {
                         const rank = item.position;
                         const wikiTitle = item.Driver.url.split('/wiki/')[1];
@@ -210,7 +211,8 @@
                         `;
                     });
                     document.getElementById("drivers-table-body").innerHTML = tableHtml;
-                });
+                })
+                .catch(err => console.error("드라이버 데이터 로드 오류:", err));
 
             // 2. 팀 순위 바인딩
             fetch(constructorsUrl)
@@ -230,7 +232,8 @@
                         `;
                     });
                     document.getElementById("constructors-table-body").innerHTML = tableHtml;
-                });
+                })
+                .catch(err => console.error("컨스트럭터 데이터 로드 오류:", err));
         });
     </script>
 </body>
