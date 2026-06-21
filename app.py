@@ -21,7 +21,6 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# 🎨 2026 규정 반영 11개 팀 컬러 매핑
 def get_team_color(constructor_id, constructor_name):
     c_id = (constructor_id or "").lower().replace(" ", "").replace("_", "").replace("-", "")
     name = (constructor_name or "").lower().replace(" ", "").replace("_", "").replace("-", "")
@@ -62,13 +61,25 @@ def fetch_json_safely(url):
         print(f"⚠️ API 통신 지연/실패 ({url}): {e}")
         return None
 
-# 💥 OpenF1 2차 피드 정밀 타격 함수 (구멍 난 라운드 요청 시에만 딱 1번 기동)
+# 💥 OpenF1 2차 피드 정밀 타격 함수 (API 간 지역명 불일치 및 예외 처리 완벽 방어)
 def fetch_openf1_fallback(locality, race_date):
     try:
-        sessions = fetch_json_safely("https://api.openf1.org/v1/sessions?year=2026&session_name=Race")
+        year = race_date.split("-")[0] if race_date else "2026"
+        sessions = fetch_json_safely(f"https://api.openf1.org/v1/sessions?year={year}&session_name=Race")
         if not sessions: return None
         
-        matched = next((s for s in sessions if locality.lower() in s.get("location", "").lower() or s.get("date_start", "").startswith(race_date)), None)
+        # 🔥 Jolpi API와 OpenF1 API 간의 하드코딩 매핑 (바르셀로나, 모나코 등)
+        loc_mapping = {
+            "monte-carlo": "monaco",
+            "montmeló": "barcelona",
+            "marina bay": "singapore",
+            "abu dhabi": "yas island",
+            "são paulo": "sao paulo",
+            "mexico city": "mexico city"
+        }
+        mapped_loc = loc_mapping.get(locality.lower(), locality.lower())
+        
+        matched = next((s for s in sessions if mapped_loc in s.get("location", "").lower() or s.get("date_start", "").startswith(race_date)), None)
         if not matched: return None
         session_key = matched["session_key"]
         
@@ -76,20 +87,31 @@ def fetch_openf1_fallback(locality, race_date):
         drivers = fetch_json_safely(f"https://api.openf1.org/v1/drivers?session_key={session_key}")
         if not results or not drivers: return None
         
+        valid_results = []
+        for r in results:
+            # 🔥 OpenF1 API는 'position_current' 키를 사용할 때도 있음
+            pos = r.get("position")
+            if pos is None: pos = r.get("position_current")
+            if pos is not None and 1 <= pos <= 3:
+                valid_results.append((pos, r))
+                
         podium = []
-        sorted_res = sorted([r for r in results if 1 <= r.get("position", 99) <= 3], key=lambda x: x["position"])
-        for r in sorted_res:
+        sorted_res = sorted(valid_results, key=lambda x: x[0])
+        for pos, r in sorted_res:
             d_info = next((d for d in drivers if d.get("driver_number") == r.get("driver_number")), {})
             wiki_title = (d_info.get("full_name") or "").replace(" ", "_")
+            team_name = d_info.get("team_name") or "Unknown"
+            
             podium.append({
-                "position": str(r["position"]),
+                "position": str(pos),
                 "familyName": d_info.get("last_name") or "Driver",
-                "constructorId": d_info.get("team_name", "").lower().replace(" ", ""),
-                "constructorName": d_info.get("team_name") or "Unknown",
+                "constructorId": team_name.lower().replace(" ", ""),
+                "constructorName": team_name,
                 "wiki_title": wiki_title
             })
-        return podium
-    except:
+        return podium if len(podium) > 0 else None
+    except Exception as e:
+        print(f"🚨 OpenF1 Fallback Error: {e}")
         return None
 
 @app.route('/')
@@ -107,7 +129,6 @@ def calendar_page():
 def standings():
     return render_template('standings.html')
 
-# 🏛️ [라우트 1] 1차 소스 조회 및 구멍 난 과거 경기는 2차 소스로 즉시 대체하는 API
 @app.route('/api/calendar-list')
 def api_calendar_list():
     now = datetime.now()
@@ -136,9 +157,8 @@ def api_calendar_list():
             team_color = get_team_color(w1["Constructor"]["constructorId"], w1["Constructor"]["name"])
             winner_wiki = w1["Driver"]["url"].split('/wiki/')[-1]
         elif is_past:
-            # 1차 소스에 구멍이 났고 과거 경기라면 리스트 구성 단계에서 바로 2차 소스 가동
             if r_num not in OPENF1_PODIUM_CACHE:
-                print(f"🚨 [리스트 로드 중 구멍 발견] Round {r_num} 결과를 OpenF1에서 자동 대체 수집합니다.")
+                print(f"🚨 [구멍 발견] Round {r_num} ({race['Circuit']['Location']['locality']}) 결과를 OpenF1에서 수집합니다.")
                 op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
                 if op_podium:
                     OPENF1_PODIUM_CACHE[r_num] = op_podium
@@ -161,7 +181,6 @@ def api_calendar_list():
 
     return jsonify({"next_race_idx": next_race_idx, "races": list_payload})
 
-# 🏛️ [라우트 2] 클릭 시 실행되며, 1차 소스에 구멍이 났을 때만 2차 소스로 자동 대처하는 포디움 API
 @app.route('/api/race-podium/<round_num>')
 def api_race_podium(round_num):
     if round_num in OPENF1_PODIUM_CACHE:
@@ -183,7 +202,6 @@ def api_race_podium(round_num):
     if calendar_data:
         race = next((r for r in calendar_data["MRData"]["RaceTable"]["Races"] if r["round"] == round_num), None)
         if race:
-            print(f"🚨 [1차 구멍 발견] {race['raceName']} 결과를 OpenF1에서 자동 대체 수집합니다.")
             op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
             if op_podium:
                 OPENF1_PODIUM_CACHE[round_num] = op_podium
@@ -191,7 +209,6 @@ def api_race_podium(round_num):
                 
     return jsonify([])
 
-# 🏛️ [라우트 3] 위키피디아 403 차단 우회용 프록시 API
 @app.route('/api/wiki-meta/<page_title>')
 def api_wiki_meta(page_title):
     fallback = {"extract": "요약 정보를 불러올 수 없습니다.", "image": ""}
