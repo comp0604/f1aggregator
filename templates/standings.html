@@ -11,40 +11,31 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
         .f1-logo:hover { color: rgba(255,255,255,0.8); }
 
+        /* 🔥 [신규] 상단 Top 5 독립형 블랙 래퍼 */
+        .top5-wrapper {
+            background-color: #0a0b0c; /* 깊고 세련된 블랙 */
+            border-radius: 24px;
+            padding: 2.5rem 1.5rem 1rem 1.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            margin-bottom: 3rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
         /* 🏆 상단 탑 5 포디움 컨테이너 */
         .podium-top5-container {
-            height: 340px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 12px;
-            margin-bottom: 3rem;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding-bottom: 10px;
+            height: 340px; display: flex; justify-content: center; align-items: flex-end; gap: 12px;
+            margin-bottom: 1rem; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 10px;
         }
-
         .podium-top5-container::-webkit-scrollbar { height: 6px; }
-        .podium-top5-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        .podium-top5-container::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .podium-top5-container::-webkit-scrollbar-track { background: #1a1c1e; border-radius: 3px; }
 
         .top-driver-card {
-            background-color: #1f2124;
-            border: none;
-            border-radius: 16px 16px 6px 6px;
-            color: white;
-            padding: 1.25rem 0.5rem;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.12);
-            transition: transform 0.2s;
-            min-width: 130px;
-            width: 19%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            background-color: #1f2124; border: none; border-radius: 16px 16px 6px 6px; color: white;
+            padding: 1.25rem 0.5rem; text-align: center; position: relative; box-shadow: 0 -4px 15px rgba(0,0,0,0.4);
+            transition: transform 0.2s; min-width: 130px; width: 19%; display: flex; flex-direction: column; justify-content: space-between;
         }
 
-        /* 🥇 순위별 배치(order) 및 단상 높이/크기 차등화 */
         .rank-order-1 { order: 3; height: 100%; border: 2px solid #ffc107; background: linear-gradient(to top, rgba(255, 215, 0, 0.12), #1f2124); z-index: 5; }
         .rank-order-2 { order: 2; height: 85%; border: 2px solid #c0c0c0; z-index: 4; }
         .rank-order-3 { order: 4; height: 75%; border: 2px solid #cd7f32; z-index: 3; }
@@ -54,10 +45,7 @@
         .card-rank-badge { position: absolute; top: 8px; left: 10px; font-size: 1.2rem; font-weight: 900; font-style: italic; opacity: 0.5; }
         .rank-order-1 .card-rank-badge { font-size: 1.6rem; opacity: 1; text-shadow: 0 0 10px rgba(255,193,7,0.5); }
 
-        .driver-avatar {
-            width: 70px; height: 70px; border-radius: 50%; object-fit: cover; object-position: center 15%;
-            border: 3px solid rgba(255,255,255,0.2); background-color: #fff; margin: 0 auto 10px auto; display: none; 
-        }
+        .driver-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 3px solid rgba(255,255,255,0.2); background-color: #fff; margin: 0 auto 10px auto; display: none; }
         .rank-order-1 .driver-avatar { width: 95px; height: 95px; border-color: #ffc107; box-shadow: 0 4px 12px rgba(255,193,7,0.3); }
         .rank-order-2 .driver-avatar, .rank-order-3 .driver-avatar { width: 80px; height: 80px; }
         .rank-order-4 .driver-avatar, .rank-order-5 .driver-avatar { width: 60px; height: 60px; margin-bottom: 6px; }
@@ -70,10 +58,14 @@
 
         /* 하단 테이블 */
         .standings-box { background-color: #1f2124; border-radius: 20px; padding: 1.5rem; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.08); margin-bottom: 2rem; }
-        .table-f1 { color: white !important; vertical-align: middle !important; }
-        .table-f1 th { border-bottom: 2px solid #444 !important; font-weight: bold; color: #aaa; font-size: 0.9rem; }
-        .table-f1 td { border-bottom: 1px solid #333 !important; font-size: 0.95rem; padding: 12px 8px !important; }
+        .table-f1 { color: white !important; vertical-align: middle !important; border-collapse: separate; border-spacing: 0 4px; }
+        .table-f1 th { border-bottom: 2px solid #444 !important; font-weight: bold; color: #aaa; font-size: 0.9rem; border-top: none !important; }
+        .table-f1 td { border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-top: none !important; font-size: 0.95rem; padding: 12px 8px !important; }
         
+        /* 🔥 행 색상 적용을 위한 스타일 */
+        .color-row { transition: background-color 0.2s, transform 0.2s; border-radius: 6px; }
+        .color-row:hover { transform: translateX(4px); }
+
         .rank-num { font-weight: bold; font-style: italic; font-size: 1.1rem; width: 50px; }
         .pts-num { font-weight: bold; color: #ffc107; text-align: right; }
         .wins-num { text-align: center; color: #aaa; font-size: 0.85rem; }
@@ -82,7 +74,8 @@
         .back-btn:hover { background-color: #e10600; color: white; }
 
         @media (max-width: 768px) {
-            .podium-top5-container { justify-content: flex-start; } /* 모바일에서는 좌측 정렬 스크롤로 포디움 형태 유지 */
+            .podium-top5-container { justify-content: flex-start; }
+            .top5-wrapper { padding: 1.5rem 1rem; }
         }
     </style>
 </head>
@@ -96,18 +89,19 @@
 
     <div class="container mb-5">
         
-        <h3 class="fw-bold text-dark mb-3">🏆 Championship Leaders</h3>
-        <div class="podium-top5-container" id="top-drivers-cards-row">
-            <div class="w-100 text-center text-muted align-self-center">드라이버 리더보드 데이터 동기화 중...</div>
+        <div class="top5-wrapper">
+            <h3 class="fw-bold text-white mb-4 text-center">🏆 Championship Leaders</h3>
+            <div class="podium-top5-container" id="top-drivers-cards-row">
+                <div class="w-100 text-center text-muted align-self-center">드라이버 리더보드 데이터 동기화 중...</div>
+            </div>
         </div>
 
         <div class="row g-4">
-            
             <div class="col-xl-6">
                 <div class="standings-box">
                     <h4 class="fw-bold text-warning mb-3">🏁 Driver Standings</h4>
                     <div class="table-responsive">
-                        <table class="table table-f1 table-hover m-0">
+                        <table class="table table-f1 m-0">
                             <thead>
                                 <tr>
                                     <th scope="col" class="text-center">순위</th>
@@ -128,7 +122,7 @@
                 <div class="standings-box">
                     <h4 class="fw-bold text-success mb-3">🏢 Constructor Standings</h4>
                     <div class="table-responsive">
-                        <table class="table table-f1 table-hover m-0">
+                        <table class="table table-f1 m-0">
                             <thead>
                                 <tr>
                                     <th scope="col" class="text-center">순위</th>
@@ -143,20 +137,30 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <div class="text-center mt-4"><button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button></div>
-
     </div>
 
     <script>
+        // 🎨 팀 고유 컬러 헥사코드 매핑기
+        const TEAM_COLORS = {
+            "ferrari": "#cc0000", "mclaren": "#ff8700", "redbull": "#061043", "mercedes": "#00a19c",
+            "astonmartin": "#006f62", "aston": "#006f62", "alpine": "#0090ff", "williams": "#005aff",
+            "haas": "#787878", "audi": "#c41130", "sauber": "#c41130", "rb": "#002fa7", "racingbulls": "#002fa7"
+        };
+        function getTeamHex(cid) {
+            if(!cid) return "#1a1c1e";
+            const key = cid.toLowerCase().replace(/[^a-z]/g, '');
+            for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
+            return "#333333"; // 기본색
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const constructorsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
             const resultsUrl = "https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000";
 
-            // 🔥 3개의 API를 동시에 병렬 호출하여 포디움 데이터를 계산합니다.
             Promise.all([
                 fetch(driversUrl).then(res => res.json()),
                 fetch(constructorsUrl).then(res => res.json()),
@@ -205,7 +209,7 @@
                 });
                 document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
 
-                // 사진 동기화
+                // 프로필 사진 동기화
                 top5.forEach(item => {
                     const rank = item.position;
                     const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
@@ -219,15 +223,19 @@
                     }
                 });
 
-                // --- 3. 드라이버 순위 테이블 렌더링 ---
+                // --- 3. 드라이버 순위 테이블 렌더링 (팀 컬러 적용) ---
                 let driversTableHtml = "";
                 driverStandingsList.forEach(item => {
+                    const cId = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].constructorId : "";
                     const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
+                    const teamHex = getTeamHex(cId);
+                    
                     const dId = item.Driver.driverId;
                     const podiums = podiumMapDrivers[dId] || 0;
                     
+                    // 🎨 스타일 속성으로 팀 컬러 반투명 그라데이션 주입
                     driversTableHtml += `
-                        <tr>
+                        <tr class="color-row" style="border-left: 4px solid ${teamHex}; background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%);">
                             <td class="text-center rank-num">${item.position}</td>
                             <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
                             <td class="text-white-50">${teamName}</td>
@@ -239,16 +247,17 @@
                 });
                 document.getElementById("drivers-table-body").innerHTML = driversTableHtml;
 
-                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 ---
+                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 (팀 컬러 적용) ---
                 const constStandingsList = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
                 let constTableHtml = "";
                 
                 constStandingsList.forEach(item => {
                     const cId = item.Constructor.constructorId;
+                    const teamHex = getTeamHex(cId);
                     const podiums = podiumMapConstructors[cId] || 0;
 
                     constTableHtml += `
-                        <tr>
+                        <tr class="color-row" style="border-left: 4px solid ${teamHex}; background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%);">
                             <td class="text-center rank-num">${item.position}</td>
                             <td><strong>${item.Constructor.name}</strong></td>
                             <td class="text-center wins-num">${item.wins}</td>
