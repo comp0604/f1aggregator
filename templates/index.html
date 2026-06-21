@@ -12,27 +12,27 @@
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 📦 화면 절반을 채우는 초대형 슬라이더 컨테이너 */
+        /* 📦 초대형 슬라이더 컨테이너 */
         .dashboard-slider-wrapper {
             position: relative;
-            max-width: 1100px; /* 가로폭 대폭 확장 */
+            max-width: 1100px; 
             margin: 0 auto 3rem auto;
-            padding: 0 60px; /* 화살표 버튼 공간 확대 */
+            padding: 0 60px; 
         }
 
-        /* 🏎️ 초대형 대시보드 카드 (화면 높이의 45% 수준으로 고정) */
+        /* 🏎️ 초대형 대시보드 카드 */
         .dashboard-card { 
             position: relative; 
             background-color: #1f2124; 
             border: none; 
-            border-radius: 24px; /* 더 커진 크기에 맞게 라운드 확장 */
+            border-radius: 24px; 
             color: white; 
             cursor: pointer; 
             transition: transform 0.2s, box-shadow 0.2s; 
-            min-height: 460px; /* 💥 박스 높이를 화면 반을 채우도록 대폭 확대 */
+            min-height: 460px; /* 화면 절반 수준의 높이 */
             overflow: hidden; 
             display: none; 
-            padding: 2.5rem !important; /* 내부 여유 공간 대폭 확대 */
+            padding: 2.5rem !important; 
         }
         .dashboard-card.active {
             display: flex;
@@ -44,7 +44,7 @@
             box-shadow: 0 15px 35px rgba(225, 6, 0, 0.25); 
         }
 
-        /* 흐릿한 배경 사진 (대형 화면에 맞게 블러 최적화) */
+        /* 🌌 분위기용 흐릿한 배경 레이어 */
         .dashboard-card::before {
             content: "";
             position: absolute;
@@ -52,8 +52,8 @@
             background-image: var(--bg-image, none); 
             background-size: cover;
             background-position: center;
-            filter: blur(8px) brightness(0.3); /* 대형 화면에서 눈이 아프지 않게 약간 더 어둡게 조절 */
-            transform: scale(1.08); 
+            filter: blur(12px) brightness(0.25); /* 블러를 더 주어 몽환적인 분위기 연출 */
+            transform: scale(1.1); 
             z-index: 0;
             transition: background-image 0.5s ease-in-out;
         }
@@ -63,12 +63,12 @@
             z-index: 1;
         }
 
-        /* ◀ ▶ 초대형 화살표 버튼 */
+        /* ◀ ▶ 화살표 버튼 */
         .slider-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 56px; /* 버튼 크기 확대 */
+            width: 56px; 
             height: 56px;
             background-color: rgba(33, 37, 41, 0.85);
             color: white;
@@ -79,35 +79,56 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
+            transition: background-color 0.2s;
             z-index: 10;
         }
-        .slider-arrow:hover {
-            background-color: #e10600;
-        }
+        .slider-arrow:hover { background-color: #e10600; }
         .slider-arrow.prev-btn { left: 0; }
         .slider-arrow.next-btn { right: 0; }
         
-        /* ⏰ 디데이 타이머 서체 초대형화 (전광판 스타일) */
-        .timer-num {
-            font-size: 3.5rem !important; /* 숫자 크기 대폭 폭발 */
-            font-weight: 800;
-            line-height: 1;
-        }
-        .timer-label {
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            margin-top: 5px;
-        }
+        /* ⏰ 디데이 타이머 */
+        .timer-num { font-size: 3.5rem !important; font-weight: 800; line-height: 1; }
+        .timer-label { font-size: 0.85rem; letter-spacing: 2px; margin-top: 5px; }
 
-        /* 🏆 순위 박스 가독성 및 크기 확장 */
+        /* 🏆 랭킹 리스트 레이아웃 구조 */
+        .rank-container { flex-grow: 1; max-width: 550px; }
         .mini-rank-row { 
             background-color: rgba(255,255,255,0.09); 
             border-radius: 10px; 
-            padding: 12px 24px; /* 더 시원시원하게 배치 */
+            padding: 14px 24px; 
             margin-bottom: 10px; 
-            font-size: 1.15rem; /* 글자 크기 업그레이드 */
+            font-size: 1.2rem; 
             font-weight: bold;
+        }
+
+        /* ✨ 짤림 방지용 전면 실시간 이미지 오버레이 스펙 */
+        .fg-image-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 220px;
+            height: 220px;
+        }
+        .dash-foreground-img {
+            width: 100%;
+            height: 100%;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            display: none; /* 이미지 로드 전 임시 숨김 */
+        }
+        /* 드라이버: 인물 중심이므로 원형 크롭 및 상단 고정 조절 */
+        #driver-avatar {
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center 15%; 
+        }
+        /* 팀 로고: 투명하거나 짤리면 안 되므로 흰 배경 베이스에 안쪽 여백 배치 */
+        #team-logo {
+            border-radius: 20px;
+            object-fit: contain;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border: none;
         }
         
         /* 하단 뉴스 영역 */
@@ -151,8 +172,13 @@
                     <span class="badge bg-primary px-3 py-2 fs-6 mb-3">CHAMPIONSHIP LEADER</span>
                     <h2 class="display-5 fw-bold text-white mb-1">Driver Top 3</h2>
                 </div>
-                <div id="dash-drivers-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto mt-3" style="max-width: 650px;">
-                    <div class="text-center text-muted">동기화 중...</div>
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-5 w-100 mt-2">
+                    <div id="dash-drivers-box" class="rank-container">
+                        <div class="text-muted">동기화 중...</div>
+                    </div>
+                    <div class="fg-image-wrapper">
+                        <img id="driver-avatar" class="dash-foreground-img" src="" alt="Driver Face">
+                    </div>
                 </div>
             </div>
 
@@ -161,8 +187,13 @@
                     <span class="badge bg-success px-3 py-2 fs-6 mb-3">CONSTRUCTOR LEADER</span>
                     <h2 class="display-5 fw-bold text-white mb-1">Team Top 3</h2>
                 </div>
-                <div id="dash-teams-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto mt-3" style="max-width: 650px;">
-                    <div class="text-center text-muted">동기화 중...</div>
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-5 w-100 mt-2">
+                    <div id="dash-teams-box" class="rank-container">
+                        <div class="text-muted">동기화 중...</div>
+                    </div>
+                    <div class="fg-image-wrapper">
+                        <img id="team-logo" class="dash-foreground-img" src="" alt="Team Logo">
+                    </div>
                 </div>
             </div>
 
@@ -215,7 +246,8 @@
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
-            function fetchWikiImage(wikiUrl, elementId) {
+            // 🛠️ 위키피디아에서 배경 이미지와 전면 선명한 이미지를 동시에 처리하도록 확장
+            function fetchWikiImage(wikiUrl, elementId, foregroundId = null) {
                 if (!wikiUrl) return;
                 const pageTitle = wikiUrl.split('/wiki/')[1]; 
                 if (!pageTitle) return;
@@ -227,13 +259,21 @@
                     .then(data => {
                         const imgUrl = data.originalimage?.source || data.thumbnail?.source;
                         if (imgUrl) {
+                            // 1. 대형 블러 처리용 배경 이미지 세팅
                             document.getElementById(elementId).style.setProperty('--bg-image', `url('${imgUrl}')`);
+                            
+                            // 2. 우측 전면 프레임용 선명한 원본 이미지 매핑
+                            if (foregroundId) {
+                                const fgElement = document.getElementById(foregroundId);
+                                fgElement.src = imgUrl;
+                                fgElement.style.display = "block";
+                            }
                         }
                     })
                     .catch(err => console.error("위키 이미지 로드 실패:", err));
             }
 
-            // 1. 레이스 캘린더 데이터 연동
+            // 1. 레이스 캘린더 연동
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
@@ -258,33 +298,33 @@
                     updateClock(); setInterval(updateClock, 1000);
                 });
 
-            // 2. 드라이버 랭킹 데이터 연동
+            // 2. 드라이버 랭킹 연동 (배경 + 원형 전면 프로필 매칭)
             fetch(driversUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
                 let html = ""; const medals = ["🥇", "🥈", "🥉"];
                 list.forEach((item, idx) => {
                     if (idx === 0) {
-                        fetchWikiImage(item.Driver.url, "card-driver");
+                        fetchWikiImage(item.Driver.url, "card-driver", "driver-avatar");
                     }
                     html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Driver.givenName} ${item.Driver.familyName}</span><span class="text-warning">${item.points} P</span></div>`;
                 });
                 document.getElementById("dash-drivers-box").innerHTML = html;
             });
 
-            // 3. 팀 랭킹 데이터 연동
+            // 3. 팀 랭킹 연동 (배경 + 스퀘어 화이트 액자형 로고 매칭)
             fetch(teamsUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
                 let html = ""; const medals = ["🥇", "🥈", "🥉"];
                 list.forEach((item, idx) => {
                     if (idx === 0) {
-                        fetchWikiImage(item.Constructor.url, "card-team");
+                        fetchWikiImage(item.Constructor.url, "card-team", "team-logo");
                     }
                     html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Constructor.name}</span><span class="text-success">${item.points} P</span></div>`;
                 });
                 document.getElementById("dash-teams-box").innerHTML = html;
             });
 
-            // 캐러셀 제어 로직
+            // 캐러셀 컨트롤러
             const slides = [
                 document.getElementById("card-race"),
                 document.getElementById("card-driver"),
