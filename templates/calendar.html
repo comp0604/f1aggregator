@@ -216,15 +216,16 @@
                         tablesContainer.innerHTML = html;
                     }).catch(() => { tablesContainer.innerHTML = `<div class="text-danger text-center w-100 py-3" style="font-size:0.8rem;">데이터 동기화 실패</div>`; });
             }
-
+ 
             function renderDetailPanel(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
                 document.getElementById("detail-circuit-name").innerText = race.circuit_name;
-                document.getElementById("detail-location").innerText = `📍 ${race.locality}`;
-                document.getElementById("detail-date").innerText = race.date;
+                // detail-location 안에는 detail-date span이 중첩되어 있으므로 innerText로 통째로 덮으면 안 됨(자식 노드 파괴 → 다음 줄에서 null 참조 크래시).
+                // innerHTML로 span을 포함해 한 번에 재생성한다.
+                document.getElementById("detail-location").innerHTML = `📍 ${race.locality} | 📅 <span id="detail-date" class="text-danger">${race.date}</span>`;
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
-
+ 
                 fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
                     .then(res => res.ok ? res.json() : null)
                     .then(wiki => {
@@ -256,7 +257,7 @@
                                 const sw = jolpiSprint.MRData.RaceTable.Races[0].SprintResults[0];
                                 if (sw) sprintWinner = sw.Driver.familyName;
                             }
-
+ 
                             const getBadges = (familyName) => {
                                 let b = '';
                                 if (familyName === poleDriver) b += `<span class="accolade-badge badge-pole">🎯 Pole Position</span>`;
@@ -291,7 +292,7 @@
                                         ${getBadges(d3.familyName)}
                                     </div>
                                 `;
-
+ 
                                 fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w?.image) { const i=document.getElementById("huge-ava-1"); i.src=w.image; i.style.display="block"; } });
                                 fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w?.image) { const i=document.getElementById("huge-ava-2"); i.src=w.image; i.style.display="block"; } });
                                 fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w?.image) { const i=document.getElementById("huge-ava-3"); i.src=w.image; i.style.display="block"; } });
@@ -299,10 +300,10 @@
                         } else { podiumRow.classList.add("d-none"); }
                     }).catch(() => { podiumRow.classList.add("d-none"); });
                 } else { podiumRow.classList.add("d-none"); }
-
+ 
                 loadWeekendSessions(race.round, race.is_past);
             }
-
+ 
             fetch("/api/calendar-list")
                 .then(res => {
                     if (!res.ok) throw new Error(`calendar-list HTTP ${res.status}`);
@@ -342,7 +343,7 @@
                 document.getElementById("detail-wiki").innerText = "레이스 일정을 불러오지 못했습니다. 새로고침 해주세요.";
                 document.getElementById("detail-circuit-name").innerText = "데이터 로드 실패";
             });
-
+ 
             scrollBox.addEventListener("click", function(e) {
                 const card = e.target.closest(".mini-race-card");
                 if (!card) return;
