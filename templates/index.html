@@ -3,434 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>🏎️ LecLovF1</title>
+    <title>🏎️ LecLovF1 - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
-        .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
-        .f1-logo:hover { opacity: 0.8; color: white; }
+        .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
+        .f1-logo:hover { color: rgba(255,255,255,0.8); }
+
+        /* 💥 상단 내비게이션 바 컴팩트화 */
+        .f1-nav-links { display: flex; justify-content: center; gap: 20px; background-color: #1f2124; padding: 0.6rem 0; border-bottom: 3px solid #e10600; }
+        .f1-nav-links a { color: #fff; text-decoration: none; font-weight: bold; font-size: 0.95rem; transition: color 0.2s; }
+        .f1-nav-links a:hover { color: #ffc107; }
+
+        /* 📰 초고밀도 압축 뉴스 피드 스타일 ("다다닥") */
+        .dense-news-container { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 1rem !important; }
+        .dense-news-header { font-size: 1.15rem; font-weight: bold; border-bottom: 2px solid #1f2124; padding-bottom: 8px; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
         
-        /* 💥 [그랑프리 배너] 국기 배색이 은은하게 번지도록 블러 레이어 최적화 */
-        .grandprix-full-banner {
-            position: relative;
-            background-color: #1f2124;
-            color: white;
-            cursor: pointer;
-            min-height: 240px; 
-            overflow: hidden;
-            padding: 1.5rem 2rem !important; 
-            width: 100%;
-            margin-bottom: 2.5rem; 
-            border: none;
-            display: flex;
-            align-items: center;
+        .news-feed-list { display: flex; flex-direction: column; margin-top: 4px; }
+        .news-feed-item { 
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 8px 10px; border-bottom: 1px solid #edf0f2; text-decoration: none; color: #212529;
+            transition: background-color 0.15s, padding-left 0.15s; font-size: 0.92rem;
         }
+        .news-feed-item:last-child { border-bottom: none; }
+        .news-feed-item:hover { background-color: #f8f9fa; padding-left: 14px; color: #e10600; }
 
-        .grandprix-full-banner::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: var(--bg-image, none); 
-            background-size: cover;
-            background-position: center;
-            filter: blur(25px) brightness(0.22); /* 💥 국기 고유의 다채로운 색감이 완벽히 녹아들도록 블러 가중치 상승 */
-            transform: scale(1.1); 
-            z-index: 0;
-            transition: background-image 0.5s ease-in-out;
-        }
-
-        .grandprix-full-banner > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* 타이머 가로 정렬 컨테이너 */
-        .row-content-race {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center; 
-            width: 100%;
-            height: 100%;
-        }
+        .news-main-side { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .news-thumbnail { width: 44px; height: 30px; object-fit: cover; border-radius: 4px; background-color: #eaeaea; flex-shrink: 0; border: 1px solid #e2e8f0; }
+        .news-title-text { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* ⏰ 타이머 디자인 */
-        .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
-        .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
+        .news-meta-side { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font-size: 0.82rem; color: #6c757d; }
+        .news-source-badge { background-color: #e3e6e9; color: #495057; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
 
-        /* 서킷 지도 프레임 */
-        .circuit-img-wrapper {
-            position: absolute;
-            right: 2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 240px; 
-            height: 190px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .dash-circuit-map {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; 
-            border-radius: 12px;
-            padding: 8px;
-            background-color: rgba(255, 255, 255, 0.95); 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-            display: none; 
-        }
-
-        /* 🏛️ 랭킹 보드용 스타일 */
-        .row-content-rank {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            text-align: center;
-            gap: 1.5rem;
-            height: 100%;
-        }
-
-        .dashboard-row-card { 
-            position: relative; 
-            background-color: #1f2124; 
-            border: none; 
-            border-radius: 24px; 
-            color: white; 
-            cursor: pointer; 
-            transition: transform 0.2s, box-shadow 0.2s; 
-            min-height: 340px; 
-            overflow: hidden; 
-            padding: 2rem !important; 
-            width: 100%;
-        }
-        .dashboard-row-card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: 0 10px 25px rgba(225, 6, 0, 0.22); 
-        }
-
-        .dashboard-row-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: var(--bg-image, none); 
-            background-size: cover;
-            background-position: center;
-            filter: blur(20px) brightness(0.2); 
-            transform: scale(1.1); 
-            z-index: 0;
-            transition: background-image 0.5s ease-in-out;
-        }
-
-        .dashboard-row-card > * { position: relative; z-index: 1; }
-
-        .rank-container { 
-            width: 100%;
-            max-width: 520px; 
-            display: flex; 
-            gap: 12px;
-            align-items: flex-end; 
-            height: 250px; 
-            margin: 0 auto; 
-        }
-
-        .podium-step {
-            background-color: rgba(255, 255, 255, 0.08);
-            border-radius: 16px 16px 8px 8px;
-            padding: 15px 8px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; 
-            flex: 1;
-            position: relative;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        .podium-1 {
-            height: 100%; 
-            background: linear-gradient(to top, rgba(255, 215, 0, 0.18), rgba(255, 215, 0, 0.04));
-            border: 1px solid rgba(255, 215, 0, 0.4);
-        }
-        .podium-2 {
-            height: 82%; 
-            background: linear-gradient(to top, rgba(192, 192, 192, 0.14), rgba(192, 192, 192, 0.03));
-            border: 1px solid rgba(192, 192, 192, 0.28);
-        }
-        .podium-3 {
-            height: 70%; 
-            background: linear-gradient(to top, rgba(205, 127, 50, 0.12), rgba(205, 127, 50, 0.02));
-            border: 1px solid rgba(205, 127, 50, 0.22);
-        }
-
-        .podium-img {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            object-position: center 15%;
-            margin-bottom: 8px;
-            border: 3px solid rgba(255, 255, 255, 0.45);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-            background-color: white;
-            display: none; 
-        }
-        .team-step .podium-img {
-            border-radius: 14px;
-            object-fit: contain;
-            padding: 8px;
-        }
-
-        .podium-rank { font-size: 1.4rem; margin-bottom: 4px; line-height: 1; }
-        .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; }
-        .podium-pts { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
-
-        /* 하단 뉴스 영역 */
-        .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 12px 15px; border-radius: 0 8px 8px 0; }
-        .summary-line { margin-bottom: 6px; font-size: 0.95rem; color: #333; line-height: 1.5; }
-        a { text-decoration: none; }
+        /* 팀 챔피언십 대시보드 미니 보드 */
+        .dash-board-box { background-color: #1f2124; border-radius: 12px; padding: 1.2rem; color: white; height: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .podium-wrapper { display: flex; justify-content: center; align-items: flex-end; gap: 8px; height: 130px; margin-top: 15px; }
+        .podium-step { background-color: rgba(255,255,255,0.06); border-radius: 6px 6px 3px 3px; padding: 6px 2px; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; font-size: 0.8rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .podium-1 { height: 100%; border: 1px solid rgba(255,215,0,0.3); }
+        .podium-2 { height: 80%; border: 1px solid rgba(192,192,192,0.2); }
+        .podium-3 { height: 65%; border: 1px solid rgba(205,127,50,0.15); }
+        .podium-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: white; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.3); }
+        .podium-name { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .podium-pts { font-size: 0.72rem; opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <header class="f1-header text-center">
         <div class="container">
-            <h1 class="fw-bold m-0">
-                <a href="/" class="f1-logo">🏎️ LecLovF1</a>
-            </h1>
+            <h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1>
         </div>
     </header>
 
-    <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
-        <div class="row-content-race">
-            
-            <div class="d-flex flex-column align-items-center text-center gap-3 mx-auto">
-                <div>
-                    <span class="badge bg-danger px-3 py-1.5 mb-2">NEXT GRAND PRIX</span>
-                    <h1 id="dash-race-name" class="fs-2 fw-bold text-warning m-0">로딩 중...</h1>
-                    <p id="dash-race-circuit" class="fs-6 text-white-50 m-0">연동 중...</p>
-                </div>
-                <div class="d-flex gap-3 text-center" style="max-width: 460px; width: 100%;">
-                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
-                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
-                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
-                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
-                </div>
-            </div>
+    <nav class="f1-nav-links">
+        <a href="/">🏠 홈 대시보드</a>
+        <a href="/calendar">📅 경기 달력</a>
+        <a href="/standings">🏆 챔피언십 순위</a>
+    </nav>
 
-            <div class="circuit-img-wrapper d-none d-md-flex">
-                <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
-            </div>
-
-        </div>
-    </div>
-
-    <div class="container-fluid px-4 mb-5">
+    <div class="container my-4">
         <div class="row g-4">
-            <div class="col-lg-6">
-                <div id="card-driver" class="card dashboard-row-card h-100" onclick="location.href='/standings'">
-                    <div class="row-content-rank">
-                        <div>
-                            <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
-                        </div>
-                        <div id="dash-drivers-box" class="rank-container">
-                            <div class="text-white-50 small mt-5">동기화 중...</div>
-                        </div>
+            
+            <div class="col-lg-8">
+                <div class="dense-news-container">
+                    <div class="dense-news-header">
+                        <span>📰 최신 헤드라인 피드</span>
+                        <span class="badge bg-danger fs-7" style="font-size:0.75rem;">LIVE</span>
+                    </div>
+                    
+                    <div class="news-feed-list">
+                        {% for article in articles %}
+                        <a href="{{ article.link }}" target="_blank" class="news-feed-item">
+                            <div class="news-main-side">
+                                {% if article.image_url %}
+                                <img class="news-thumbnail" src="{{ article.image_url }}" alt="thumb">
+                                {% else %}
+                                <div class="news-thumbnail d-flex align-items-center justify-content-center" style="font-size:0.6rem; color:#aaa;">F1</div>
+                                {% endif %}
+                                <div class="news-title-text" title="{{ article.title }}">{{ article.title }}</div>
+                            </div>
+                            <div class="news-meta-side">
+                                <span class="news-source-badge">Formula 1</span>
+                                <span class="news-date">{{ article.published_at[:10] if article.published_at else '방금 전' }}</span>
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="text-center text-muted py-4">불러온 최신 뉴스가 없습니다. 애그리게이터를 실행해 주세요.</div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-6">
-                <div id="card-team" class="card dashboard-row-card h-100" onclick="location.href='/standings'">
-                    <div class="row-content-rank">
-                        <div>
-                            <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
-                        </div>
-                        <div id="dash-teams-box" class="rank-container">
-                            <div class="text-white-50 small mt-5">동기화 중...</div>
-                        </div>
+            <div class="col-lg-4">
+                <div class="dash-board-box">
+                    <h5 class="fw-bold text-warning m-0">🏢 Constructor Leaders</h5>
+                    <div class="podium-wrapper" id="dash-teams-box">
+                        <div class="text-white-50 text-center w-100 mb-4" style="font-size:0.85rem;">팀 스탯 집계 중...</div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
-
-    <main class="container">
-        <div class="row">
-            <div class="col-lg-9 mx-auto">
-                {% if articles %}
-                    {% for article in articles %}
-                    <div class="card news-card p-4 mb-3">
-                        {% if article.image_url %}
-                        <div class="mb-3 overflow-hidden rounded" style="max-height: 250px;">
-                            <img src="{{ article.image_url }}" alt="news" class="img-fluid w-100" style="object-fit: cover;">
-                        </div>
-                        {% endif %}
-
-                        <h4 class="h6 fw-bold mb-3">
-                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-dark">{{ article.title }}</a>
-                        </h4>
-                        
-                        {% if article.summary_ko and article.summary_ko.strip() %}
-                        <div class="summary-box">
-                            {% for line in article.summary_ko.split('\n') %}
-                                {% if line.strip() %}
-                                    <p class="summary-line">🔹 {{ line }}</p>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                        
-                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 text-muted" style="font-size: 0.8rem;">
-                            <span>{{ article.published_at }}</span>
-                            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-danger">원문 보기 ↗️</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-5 bg-white rounded card news-card">
-                        <p class="text-muted small mb-0">최신 뉴스를 불러오는 중입니다...</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </main>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const calendarUrl = "https://api.jolpi.ca/ergast/f1/current.json";
-            const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
-            const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
+            const constructorsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
-            // 🎨 국가명을 매칭하여 고해상도 국기 이미지 CDN 주소를 반환하는 유틸 함수
-            function getFlagUrl(countryName) {
-                const name = (countryName || "").toLowerCase().trim();
-                const mapping = {
-                    "australia": "au", "bahrain": "bh", "saudi arabia": "sa", "japan": "jp", "china": "cn",
-                    "usa": "us", "united states": "us", "monaco": "mc", "spain": "es", "canada": "ca",
-                    "austria": "at", "uk": "gb", "united kingdom": "gb", "great britain": "gb", "hungary": "hu",
-                    "belgium": "be", "netherlands": "nl", "italy": "it", "azerbaijan": "az", "singapore": "sg",
-                    "mexico": "mx", "brazil": "br", "qatar": "qa", "uae": "ae", "united arab emirates": "ae"
-                };
-                const code = mapping[name] || "un";
-                return `https://flagcdn.com/w1280/${code}.png`;
-            }
-
-function fetchWikiImage(wikiUrl, elementId) {
-    if (!wikiUrl) return;
-    const pageTitle = wikiUrl.split('/wiki/')[1]; 
-    if (!pageTitle) return;
-
-    // 💥 [버그 수정] 위키피디아 직호출을 백엔드 우회 프록시 API 호출로 전환
-    fetch(`/api/wiki-meta/${pageTitle}`)
-        .then(res => res.json())
-        .then(data => {
-            const imgUrl = data.image; // app.py의 응답 구조인 'image' 필드 매핑
-            if (imgUrl) {
-                document.getElementById(elementId).style.setProperty('--bg-image', `url('${imgUrl}')`);
-            }
-        }).catch(err => console.error(err));
-}
-
-function fetchForegroundImage(wikiUrl, imgElementId) {
-    if (!wikiUrl) return;
-    const pageTitle = wikiUrl.split('/wiki/')[1];
-    if (!pageTitle) return;
-
-    // 💥 [버그 수정] 위키피디아 직호출을 백엔드 우회 프록시 API 호출로 전환
-    fetch(`/api/wiki-meta/${pageTitle}`)
-        .then(res => res.json())
-        .then(data => {
-            const imgUrl = data.image; // app.py의 응답 구조인 'image' 필드 매핑
-            const imgEl = document.getElementById(imgElementId);
-            if (imgUrl && imgEl) {
-                imgEl.src = imgUrl;
-                imgEl.style.display = "block";
-            }
-        }).catch(err => console.error(err));
-}
-
-            // 1. 레이스 캘린더 연동 (배너 배경에 국기 연동)
-            fetch(calendarUrl)
+            fetch(constructorsUrl)
                 .then(res => res.json())
                 .then(data => {
-                    const races = data.MRData.RaceTable.Races;
-                    let nextRace = races.find(r => new Date(r.date + (r.time ? 'T' + r.time : '')) > new Date());
-                    if (!nextRace) nextRace = races[races.length - 1];
+                    const standingsList = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
+                    const t1 = standingsList[0];
+                    const t2 = standingsList[1];
+                    const t3 = standingsList[2];
 
-                    document.getElementById("dash-race-name").innerText = nextRace.raceName.replace("Grand Prix", "GP");
-                    document.getElementById("dash-race-circuit").innerText = nextRace.Circuit.Location.locality;
-
-                    // 💥 분위기 배경을 서킷 사진 대신 개최국 국기로 다이렉트 전환 주입
-                    const flagUrl = getFlagUrl(nextRace.Circuit.Location.country);
-                    document.getElementById("card-race").style.setProperty('--bg-image', `url('${flagUrl}')`);
-                    
-                    fetchForegroundImage(nextRace.Circuit.url, "dash-circuit-map");
-
-                    const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
-                    function updateClock() {
-                        const distance = targetTime - new Date().getTime();
-                        if (distance < 0) return;
-                        document.getElementById("d-day").innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
-                        document.getElementById("d-hour").innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
-                        document.getElementById("d-min").innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                        document.getElementById("d-sec").innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                    let html = "";
+                    if (t2) {
+                        html += `<div class="podium-step podium-2"><img id=\"team-img-2\" class=\"podium-img\" src=\"\" alt=\"2nd\"><div class=\"fw-bold text-white-50\">🥈</div><div class=\"podium-name\">${t2.Constructor.name.split(" ")[0]}</div><div class=\"podium-pts text-warning\">${t2.points} P</div></div>`;
                     }
-                    updateClock(); setInterval(updateClock, 1000);
+                    if (t1) {
+                        html += `<div class="podium-step podium-1"><img id=\"team-img-1\" class=\"podium-img\" src=\"\" alt=\"1st\"><div class=\"fw-bold text-warning\">🥇</div><div class=\"podium-name\" style=\"color:#ffc107;\">${t1.Constructor.name.split(" ")[0]}</div><div class=\"podium-pts text-warning fw-bold\">${t1.points} P</div></div>`;
+                    }
+                    if (t3) {
+                        html += `<div class="podium-step podium-3"><img id=\"team-img-3\" class=\"podium-img\" src=\"\" alt=\"3rd\"><div class=\"fw-bold\" style=\"color:#cd7f32;\">🥉</div><div class=\"podium-name\">${t3.Constructor.name.split(" ")[0]}</div><div class=\"podium-pts text-warning\">${t3.points} P</div></div>`;
+                    }
+                    document.getElementById("dash-teams-box").innerHTML = html;
+
+                    // 위키피디아 팀 로고 매핑 함수 호출용 프록시
+                    const fetchLogo = (url, id) => {
+                        const title = url.split('/wiki/')[-1] || url.split('/').pop();
+                        fetch(`/api/wiki-meta/${title}`).then(r=>r.json()).then(w=>{
+                            const img = document.getElementById(id);
+                            if(img && w.image) img.src = w.image;
+                        });
+                    };
+                    if(t1) fetchLogo(t1.Constructor.url, "team-img-1");
+                    if(t2) fetchLogo(t2.Constructor.url, "team-img-2");
+                    if(t3) fetchLogo(t3.Constructor.url, "team-img-3");
+                }).catch(() => {
+                    document.getElementById("dash-teams-box").innerHTML = "<div class='text-danger text-center w-100 mb-4' style='font-size:0.85rem;'>동기화 실패</div>";
                 });
-
-            // 2. 드라이버 랭킹 연동
-            fetch(driversUrl).then(res => res.json()).then(data => {
-                const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
-                const d1 = list[0], d2 = list[1], d3 = list[2];
-                if (d1) fetchWikiImage(d1.Driver.url, "card-driver");
-
-                let html = "";
-                if (d2) {
-                    html += `<div class="podium-step podium-2"><img id="driver-img-2" class="podium-img" src="" alt="2nd"><div class="podium-rank">🥈</div><div class="podium-name">${d2.Driver.familyName}</div><div class="podium-pts text-warning">${d2.points} PTS</div></div>`;
-                }
-                if (d1) {
-                    html += `<div class="podium-step podium-1"><img id="driver-img-1" class="podium-img" src="" alt="1st"><div class="podium-rank">🥇</div><div class="podium-name">${d1.Driver.givenName}</div><div class="podium-pts text-warning">${d1.points} PTS</div></div>`;
-                }
-                if (d3) {
-                    html += `<div class="podium-step podium-3"><img id="driver-img-3" class="podium-img" src="" alt="3rd"><div class="podium-rank">🥉</div><div class="podium-name">${d3.Driver.familyName}</div><div class="podium-pts text-warning">${d3.points} PTS</div></div>`;
-                }
-                document.getElementById("dash-drivers-box").innerHTML = html;
-                if (d1) fetchForegroundImage(d1.Driver.url, "driver-img-1");
-                if (d2) fetchForegroundImage(d2.Driver.url, "driver-img-2");
-                if (d3) fetchForegroundImage(d3.Driver.url, "driver-img-3");
-            });
-
-            // 3. 팀 랭킹 연동
-            fetch(teamsUrl).then(res => res.json()).then(data => {
-                const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
-                const t1 = list[0], t2 = list[1], t3 = list[2];
-                if (t1) fetchWikiImage(t1.Constructor.url, "card-team");
-
-                let html = "";
-                if (t2) {
-                    html += `<div class="podium-step podium-2 team-step"><img id="team-img-2" class="podium-img" src="" alt="2nd"><div class="podium-rank">🥈</div><div class="podium-name">${t2.Constructor.name.split(" ")[0]}</div><div class="podium-pts text-success">${t2.points} PTS</div></div>`;
-                }
-                if (t1) {
-                    html += `<div class="podium-step podium-1 team-step"><img id="team-img-1" class="podium-img" src="" alt="1st"><div class="podium-rank">🥇</div><div class="podium-name">${t1.Constructor.name.split(" ")[0]}</div><div class="podium-pts text-success">${t1.points} PTS</div></div>`;
-                }
-                if (t3) {
-                    html += `<div class="podium-step podium-3 team-step"><img id="team-img-3" class="podium-img" src="" alt="3rd"><div class="podium-rank">🥉</div><div class="podium-name">${t3.Constructor.name.split(" ")[0]}</div><div class="podium-pts text-success">${t3.points} PTS</div></div>`;
-                }
-                document.getElementById("dash-teams-box").innerHTML = html;
-                if (t1) fetchForegroundImage(t1.Constructor.url, "team-img-1");
-                if (t2) fetchForegroundImage(t2.Constructor.url, "team-img-2");
-                if (t3) fetchForegroundImage(t3.Constructor.url, "team-img-3");
-            });
         });
     </script>
 </body>

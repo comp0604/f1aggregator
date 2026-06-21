@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import sqlite3
 import os
 import urllib.request
@@ -234,3 +234,69 @@ def api_wiki_meta(page_title):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
+
+# 🏛️ [라우트 4] 프랙티스 일정 및 스프린트/퀄리파잉/결승 결과를 일괄 수집하는 종합 세션 API
+@app.route('/api/race-sessions/<round_num>')
+def api_race_sessions(round_num):
+    # 프론트엔드가 넘겨준 조건(current 또는 2025)을 바인딩합니다.
+    season = request.args.get('season', 'current')
+    
+    payload = {
+        "schedule": {},
+        "qualifying": [],
+        "sprint": [],
+        "race": []
+    }
+    
+    # 1. 주말 세션 공식 타임테이블/스케줄 수집 (프랙티스 포함)
+    cal_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}.json")
+    if cal_data and "MRData" in cal_data:
+        races = cal_data["MRData"]["RaceTable"]["Races"]
+        race = next((r for r in races if r["round"] == round_num), None)
+        if race:
+            payload["schedule"] = {
+                "fp1": race.get("FirstPractice", {}).get("date", "-"),
+                "fp2": race.get("SecondPractice", {}).get("date", "-"),
+                "fp3": race.get("ThirdPractice", {}).get("date", "-"),
+                "qualifying": race.get("Qualifying", {}).get("date", "-"),
+                "sprint": race.get("Sprint", {}).get("date", "-"),
+                "race": race.get("date", "-")
+            }
+            
+    # 2. 퀄리파잉 기록 수집 (Top 5)
+    quali_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/qualifying.json")
+    if quali_data and "MRData" in quali_data:
+        r_table = quali_data["MRData"]["RaceTable"]["Races"]
+        if r_table and "QualifyingResults" in r_table[0]:
+            payload["qualifying"] = [{
+                "position": q["position"],
+                "driver": f"{q['Driver']['givenName']} {q['Driver']['familyName']}",
+                "constructor": q["Constructor"]["name"],
+                "time": q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
+            } for q in r_table[0]["QualifyingResults"][:5]]
+            
+    # 3. 스프린트 결과 수집 (스프린트 주말인 경우 Top 5 수집)
+    sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/sprint.json")
+    if sprint_data and "MRData" in sprint_data:
+        r_table = sprint_data["MRData"]["RaceTable"]["Races"]
+        if r_table and "SprintResults" in r_table[0]:
+            payload["sprint"] = [{
+                "position": s["position"],
+                "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
+                "constructor": s["Constructor"]["name"],
+                "points": s.get("points", "0")
+            } for s in r_table[0]["SprintResults"][:5]]
+            
+    # 4. 결승 레이스 결과 수집 (Top 5)
+    race_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/results.json")
+    if race_data and "MRData" in race_data:
+        r_table = race_data["MRData"]["RaceTable"]["Races"]
+        if r_table and "Results" in r_table[0]:
+            payload["race"] = [{
+                "position": r["position"],
+                "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
+                "constructor": r["Constructor"]["name"],
+                "points": r.get("points", "0")
+            } for r in r_table[0]["Results"][:5]]
+            
+    return jsonify(payload)
