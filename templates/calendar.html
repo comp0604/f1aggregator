@@ -84,11 +84,27 @@
         .detail-img-wrapper { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
         .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
         .wiki-extract-box { font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; height: 100%; }
+ 
+        /* 📋 세션 TOP5 박스 - 펼치기/접기 + GAP 뱃지 */
+        .session-rows-container { max-height: 210px; overflow: hidden; transition: max-height 0.35s ease; }
+        .session-rows-container.expanded { max-height: 900px; overflow-y: auto; }
+        .session-rows-container.expanded::-webkit-scrollbar { width: 5px; }
+        .session-rows-container.expanded::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 3px; }
+        .session-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 4px 0; gap: 6px; }
+        .session-row-pos { width: 16px; flex-shrink: 0; }
+        .session-row-name { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 92px; }
+        .session-row-gap { min-width: 54px; text-align: right; font-size: 0.68rem; color: rgba(255,255,255,0.5); font-family: monospace; flex-shrink: 0; }
+        .session-row-gap.is-leader { color: #ffc107; font-weight: bold; }
+        .session-row-value { min-width: 38px; text-align: right; flex-shrink: 0; }
+        .expand-toggle-btn { width: 100%; background: rgba(255,255,255,0.07); border: none; color: rgba(255,255,255,0.65); font-size: 0.68rem; font-weight: bold; padding: 5px 0; margin-top: 8px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s, color 0.2s; letter-spacing: 0.3px; }
+        .expand-toggle-btn:hover { background: rgba(255,255,255,0.16); color: #ffffff; }
+        .expand-toggle-btn .expand-arrow-icon { display: inline-block; margin-left: 4px; transition: transform 0.3s ease; }
+        .expand-toggle-btn.is-expanded .expand-arrow-icon { transform: rotate(180deg); }
         
         .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
         .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
         .back-btn:hover { background-color: #e10600; color: white; }
-
+ 
         /* 유튜브 카드 스타일 */
         .yt-card { transition: all 0.2s ease-in-out; text-decoration: none; border-radius: 12px; }
         .yt-card:hover { transform: translateY(-4px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
@@ -149,7 +165,7 @@
                         <div class="row g-3" id="session-tables-container"></div>
                     </div>
                 </div>
-
+ 
                 <div id="youtube-aggregation-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
                     <div class="col-12 px-0">
                         <h5 class="text-white fw-bold mb-3"><span style="color: #ff0000;">▶</span> F1 Official Video Contents</h5>
@@ -182,6 +198,46 @@
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
  
+            // 세션별(예선/스프린트/본선) TOP5 박스에서 "전체 드라이버 기록 펼치기"에 쓰일 캐시.
+            // 백엔드가 /api/race-sessions 응답에 qualifying_full / sprint_full / race_full 배열을
+            // (TOP5와 동일한 필드 구조로, leader 포함 전체 드라이버) 함께 내려주면 그 데이터를 사용하고,
+            // 없으면 "전체 기록 데이터 없음" 안내만 표시합니다.
+            let fullSessionData = {};
+ 
+            // 순위(position)별 행 1줄을 렌더링. gap은 항목의 item.gap 필드를 그대로 표시하며
+            // (예: "+0.123", "+1 LAP"), 백엔드가 해당 필드를 채워줘야 정상적으로 보입니다.
+            function renderSessionRows(type, items) {
+                if (!items || items.length === 0) return "";
+                const posColor = type === "qualifying" ? "text-info" : (type === "sprint" ? "text-success" : "text-warning");
+                return items.map(item => {
+                    const isLeader = String(item.position) === "1";
+                    const name = (item.driver || "").split(" ")[1] || item.driver || "-";
+                    const gapHtml = isLeader
+                        ? `<span class="session-row-gap is-leader">LEADER</span>`
+                        : `<span class="session-row-gap">${item.gap ? item.gap : "-"}</span>`;
+                    const valueHtml = type === "qualifying"
+                        ? `<span class="text-white-50" style="font-size:0.68rem;">${item.time || "-"}</span>`
+                        : `<span class="text-warning font-monospace" style="font-size:0.7rem;">${(item.points ?? 0)}P</span>`;
+                    return `<div class="session-row"><span class="session-row-pos ${posColor} fw-bold">${item.position}</span><span class="session-row-name">${name}</span>${gapHtml}<span class="session-row-value">${valueHtml}</span></div>`;
+                }).join('');
+            }
+ 
+            function buildExpandableBox(type, icon, label, borderColor, labelColorClass, top5Items, emptyMsg) {
+                if (!top5Items || top5Items.length === 0) {
+                    return `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">${emptyMsg}</div></div>`;
+                }
+                const rows = renderSessionRows(type, top5Items);
+                return `
+                    <div class="col-md-3">
+                        <div class="p-2.5 rounded h-100 d-flex flex-column" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid ${borderColor}; padding: 10px;">
+                            <div class="fw-bold ${labelColorClass} mb-2">${icon} ${label}</div>
+                            <div class="session-rows-container" id="${type}-rows-container">${rows}</div>
+                            <button class="expand-toggle-btn" data-type="${type}" type="button">전체 드라이버 기록<span class="expand-arrow-icon">▼</span></button>
+                        </div>
+                    </div>
+                `;
+            }
+ 
             function loadWeekendSessions(round, isPast) {
                 const sessionRow = document.getElementById("weekend-sessions-row");
                 const tablesContainer = document.getElementById("session-tables-container");
@@ -191,6 +247,7 @@
                 seasonTag.innerText = isPast ? "2026 Live 시즌 데이터" : "2025 전 시즌 데이터 참조";
                 sessionRow.classList.remove("d-none");
                 tablesContainer.innerHTML = `<div class="text-center w-100 py-3 text-white-50"><div class="spinner-border text-warning spinner-border-sm me-2"></div>세션별 세부 기록 스트리밍 중...</div>`;
+                fullSessionData = {};
                 
                 fetch(`/api/race-sessions/${round}?season=${seasonParam}`)
                     .then(res => res.ok ? res.json() : null)
@@ -199,6 +256,14 @@
                             tablesContainer.innerHTML = `<div class="text-center text-danger w-100 py-2">세션 API 연동 누락 (서버 확인 필요)</div>`;
                             return;
                         }
+                        // 펼치기 버튼용 전체 기록 캐시 (백엔드 확장 시 _full 키 사용) + 접기용 TOP5 원본 캐시
+                        fullSessionData.qualifying = data.qualifying_full || null;
+                        fullSessionData.qualifying_top5 = data.qualifying || [];
+                        fullSessionData.sprint = data.sprint_full || null;
+                        fullSessionData.sprint_top5 = data.sprint || [];
+                        fullSessionData.race = data.race_full || null;
+                        fullSessionData.race_top5 = data.race || [];
+ 
                         let html = "";
                         if (data.schedule && Object.keys(data.schedule).length > 0) {
                             const s = data.schedule;
@@ -216,23 +281,44 @@
                                 </div>
                             `;
                         }
-                        if (data.qualifying && data.qualifying.length > 0) {
-                            let rows = data.qualifying.map(q => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-info fw-bold" style="width:15px;">${q.position}</span><span class="text-truncate flex-grow-1 mx-2" style="max-width:100px;">${q.driver.split(" ")[1] || q.driver}</span><span class="text-white-50 text-end text-truncate" style="font-size:0.7rem; max-width:65px;">${q.time}</span></div>`).join('');
-                            html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #00a19c; padding: 10px;"><div class="fw-bold text-info mb-2">⏱️ QUALIFYING TOP 5</div>${rows}</div></div>`;
-                        } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">예선 데이터 제공 불가</div></div>`; }
-                        
-                        if (data.sprint && data.sprint.length > 0) {
-                            let rows = data.sprint.map(s => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-success fw-bold" style="width:15px;">${s.position}</span><span class="text-truncate flex-grow-1 mx-2">${s.driver.split(" ")[1] || s.driver}</span><span class="text-warning font-monospace">${s.points}P</span></div>`).join('');
-                            html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #ff8700; padding: 10px;"><div class="fw-bold text-success mb-2">🏃‍♂️ SPRINT RACE TOP 5</div>${rows}</div></div>`;
-                        } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">스프린트 미개최 주간</div></div>`; }
-                        
-                        if (data.race && data.race.length > 0) {
-                            let rows = data.race.map(r => `<div class="d-flex justify-content-between border-bottom border-secondary border-opacity-25 py-1"><span class="text-warning fw-bold" style="width:15px;">${r.position}</span><span class="text-truncate flex-grow-1 mx-2">${r.driver.split(" ")[1] || r.driver}</span><span class="text-warning fw-bold font-monospace">${r.points}P</span></div>`).join('');
-                            html += `<div class="col-md-3"><div class="p-2.5 rounded h-100" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid #ffc107; padding: 10px;"><div class="fw-bold text-warning mb-2">🏆 MAIN RACE TOP 5</div>${rows}</div></div>`;
-                        } else { html += `<div class="col-md-3"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">레이스 개최 전</div></div>`; }
+ 
+                        html += buildExpandableBox("qualifying", "⏱️", "QUALIFYING TOP 5", "#00a19c", "text-info", data.qualifying, "예선 데이터 제공 불가");
+                        html += buildExpandableBox("sprint", "🏃‍♂️", "SPRINT RACE TOP 5", "#ff8700", "text-success", data.sprint, "스프린트 미개최 주간");
+                        html += buildExpandableBox("race", "🏆", "MAIN RACE TOP 5", "#ffc107", "text-warning", data.race, "레이스 개최 전");
+ 
                         tablesContainer.innerHTML = html;
                     }).catch(() => { tablesContainer.innerHTML = `<div class="text-danger text-center w-100 py-3" style="font-size:0.8rem;">데이터 동기화 실패</div>`; });
             }
+ 
+            // 펼치기/접기 버튼 클릭 위임 처리 (탭/라운드 전환 시 container innerHTML만 바뀌므로 한 번만 등록)
+            document.getElementById("session-tables-container").addEventListener("click", function(e) {
+                const btn = e.target.closest(".expand-toggle-btn");
+                if (!btn) return;
+                const type = btn.getAttribute("data-type");
+                const container = document.getElementById(`${type}-rows-container`);
+                if (!container) return;
+ 
+                const willExpand = !container.classList.contains("expanded");
+                container.classList.toggle("expanded", willExpand);
+                btn.classList.toggle("is-expanded", willExpand);
+ 
+                if (willExpand) {
+                    const fullList = fullSessionData[type];
+                    if (fullList && fullList.length > 0) {
+                        container.innerHTML = renderSessionRows(type, fullList);
+                    } else {
+                        container.innerHTML += `<div class="text-center text-muted py-2" style="font-size:0.65rem;">전체 기록 데이터가 제공되지 않았습니다</div>`;
+                    }
+                    btn.innerHTML = `접기<span class="expand-arrow-icon">▼</span>`;
+                } else {
+                    // 다시 TOP5만 표시 (라운드를 새로 fetch하지 않고 캐시된 원본 TOP5 사용)
+                    const top5 = fullSessionData[`${type}_top5`];
+                    if (top5) {
+                        container.innerHTML = renderSessionRows(type, top5);
+                    }
+                    btn.innerHTML = `전체 드라이버 기록<span class="expand-arrow-icon">▼</span>`;
+                }
+            });
  
             function renderDetailPanel(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
@@ -317,7 +403,7 @@
                 } else { podiumRow.classList.add("d-none"); }
  
                 loadWeekendSessions(race.round, race.is_past);
-
+ 
                 // --- 📺 동적 유튜브 검색 어그리게이션 로직 ---
                 const ytRow = document.getElementById("youtube-aggregation-row");
                 const ytContainer = document.getElementById("youtube-cards-container");
@@ -325,12 +411,12 @@
                 const raceQuery = `${year} ${race.raceName}`;
                 
                 ytRow.classList.remove("d-none");
-
+ 
                 // 검색어 인코딩
                 const highlightsSearch = encodeURIComponent(`Race Highlights ${raceQuery}`);
                 const qualiSearch = encodeURIComponent(`Qualifying Highlights ${raceQuery}`);
                 const allSearch = encodeURIComponent(`F1 ${raceQuery}`);
-
+ 
                 ytContainer.innerHTML = `
                     <div class="col-md-4">
                         <a href="https://www.youtube.com/results?search_query=${highlightsSearch}" target="_blank" class="yt-card yt-card-main p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">

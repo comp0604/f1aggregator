@@ -55,6 +55,23 @@ def get_flag_url(country_name):
     }
     return f"https://flagcdn.com/w1280/{mapping.get(name, 'un')}.png"
  
+# ⏱️ 예선(Qualifying) leader gap 계산용: "1:23.456" / "23.456" 형태의 랩타임 문자열을 초로 변환
+def parse_lap_time_to_seconds(t):
+    if not t or t == "-":
+        return None
+    try:
+        if ":" in t:
+            mins, secs = t.split(":")
+            return int(mins) * 60 + float(secs)
+        return float(t)
+    except (ValueError, TypeError):
+        return None
+ 
+def format_gap_seconds(diff_seconds):
+    if diff_seconds is None:
+        return None
+    return f"+{diff_seconds:.3f}"
+ 
 def fetch_json_safely(url, timeout=7, retries=1, retry_delay=0.6):
     last_err = None
     for attempt in range(retries + 1):
@@ -253,7 +270,10 @@ def api_wiki_meta(page_title):
 @app.route('/api/race-sessions/<round_num>')
 def api_race_sessions(round_num):
     season = request.args.get('season', 'current')
-    payload = {"schedule": {}, "qualifying": [], "sprint": [], "race": []}
+    payload = {
+        "schedule": {}, "qualifying": [], "sprint": [], "race": [],
+        "qualifying_full": [], "sprint_full": [], "race_full": []
+    }
     
     cal_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}.json")
     if cal_data and "MRData" in cal_data:
@@ -273,28 +293,64 @@ def api_race_sessions(round_num):
     if quali_data and "MRData" in quali_data and quali_data["MRData"]["RaceTable"]["Races"]:
         r_table = quali_data["MRData"]["RaceTable"]["Races"]
         if "QualifyingResults" in r_table[0]:
-            payload["qualifying"] = [{
-                "position": q["position"], "driver": f"{q['Driver']['givenName']} {q['Driver']['familyName']}",
-                "constructor": q["Constructor"]["name"], "time": q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
-            } for q in r_table[0]["QualifyingResults"][:5]]
-            
+            q_full = []
+            leader_secs = None
+            for q in r_table[0]["QualifyingResults"]:
+                best_time = q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
+                secs = parse_lap_time_to_seconds(best_time)
+                if q["position"] == "1":
+                    leader_secs = secs
+                q_full.append({
+                    "position": q["position"], "driver": f"{q['Driver']['givenName']} {q['Driver']['familyName']}",
+                    "constructor": q["Constructor"]["name"], "time": best_time, "_secs": secs
+                })
+            for item in q_full:
+                # 리더는 프론트에서 "LEADER"로 표시하므로 gap은 비워두고, 나머지는 대표 기록(Q1/Q2/Q3 중 최종) 기준 leader와의 차이를 계산
+                if item["position"] == "1" or item["_secs"] is None or leader_secs is None:
+                    item["gap"] = None
+                else:
+                    item["gap"] = format_gap_seconds(item["_secs"] - leader_secs)
+                del item["_secs"]
+            payload["qualifying_full"] = q_full
+            payload["qualifying"] = q_full[:5]
+ 
     sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/sprint.json")
     if sprint_data and "MRData" in sprint_data and sprint_data["MRData"]["RaceTable"]["Races"]:
         r_table = sprint_data["MRData"]["RaceTable"]["Races"]
         if "SprintResults" in r_table[0]:
-            payload["sprint"] = [{
-                "position": s["position"], "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
-                "constructor": s["Constructor"]["name"], "points": s.get("points", "0")
-            } for s in r_table[0]["SprintResults"][:5]]
-            
+            s_full = []
+            for s in r_table[0]["SprintResults"]:
+                if s["position"] == "1":
+                    gap = None  # 프론트에서 "LEADER"로 표시
+                elif s.get("Time", {}).get("time"):
+                    gap = s["Time"]["time"]  # 동일 랩 완주: Ergast가 이미 "+5.073" 형태로 제공
+                else:
+                    gap = s.get("status")  # 랩 차이/리타이어 등: "+1 Lap", "Retired" 등
+                s_full.append({
+                    "position": s["position"], "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
+                    "constructor": s["Constructor"]["name"], "points": s.get("points", "0"), "gap": gap
+                })
+            payload["sprint_full"] = s_full
+            payload["sprint"] = s_full[:5]
+ 
     race_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/results.json")
     if race_data and "MRData" in race_data and race_data["MRData"]["RaceTable"]["Races"]:
         r_table = race_data["MRData"]["RaceTable"]["Races"]
         if "Results" in r_table[0]:
-            payload["race"] = [{
-                "position": r["position"], "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
-                "constructor": r["Constructor"]["name"], "points": r.get("points", "0")
-            } for r in r_table[0]["Results"][:5]]
+            r_full = []
+            for r in r_table[0]["Results"]:
+                if r["position"] == "1":
+                    gap = None  # 프론트에서 "LEADER"로 표시
+                elif r.get("Time", {}).get("time"):
+                    gap = r["Time"]["time"]  # 동일 랩 완주: Ergast가 이미 "+5.073" 형태로 제공
+                else:
+                    gap = r.get("status")  # 랩 차이/리타이어 등: "+1 Lap", "+2 Laps", "Retired" 등
+                r_full.append({
+                    "position": r["position"], "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
+                    "constructor": r["Constructor"]["name"], "points": r.get("points", "0"), "gap": gap
+                })
+            payload["race_full"] = r_full
+            payload["race"] = r_full[:5]
             
     return jsonify(payload)
  
