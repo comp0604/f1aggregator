@@ -31,21 +31,17 @@
         .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* =========================================
-           ✨ 수정된 기능: 퓨어 애니메이티드 그라데이션 텍스트
-           ========================================= */
+        /* 텍스트 그라데이션 */
         .gradient-text-only {
             display: inline-block;
-            /* 까만 배경 상자 없이, 글씨에만 F1 스타일의 황금/오렌지 빛이 흐릅니다 */
             background: linear-gradient(90deg, #ffffff, #ffcc00, #ff6600, #ffffff);
             background-size: 300% 100%;
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
             animation: gradient-shift 4s infinite linear;
-            text-shadow: 0 4px 15px rgba(255, 136, 0, 0.3); /* 은은한 텍스트 글로우 추가 */
+            text-shadow: 0 4px 15px rgba(255, 136, 0, 0.3); 
         }
-
         @keyframes gradient-shift {
             0% { background-position: 0% 50%; }
             100% { background-position: -300% 50%; }
@@ -59,17 +55,10 @@
         }
         .dashboard-row-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(225, 6, 0, 0.25); }
 
-        /* 🔥 핵심 수정: 배경 이미지 블러가 바깥으로 새지 않도록 완벽히 가두는 래퍼 */
-        .bg-blur-wrapper {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: inherit; overflow: hidden; z-index: -2;
-        }
-
+        .bg-blur-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit; overflow: hidden; z-index: -2; }
         .card-bg-blur { 
-            width: 100%; height: 100%;
-            background-image: var(--bg-image, none); background-size: cover; background-position: center; 
-            filter: blur(20px) brightness(0.2); transform: scale(1.15); /* 스케일을 살짝 키워 테두리 빈틈 방지 */
-            transition: background-image 0.5s ease-in-out;
+            width: 100%; height: 100%; background-image: var(--bg-image, none); background-size: cover; background-position: center; 
+            filter: blur(20px) brightness(0.2); transform: scale(1.15); transition: background-image 0.5s ease-in-out;
         }
 
         .rank-container { width: 100%; max-width: 520px; display: flex; gap: 12px; align-items: flex-end; height: 250px; margin: 0 auto; }
@@ -83,10 +72,10 @@
         .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; }
         .podium-pts { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
 
-        /* 📰 뉴스 피드 */
-        .dense-news-container { background-color: #ffffff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 1.5rem !important; }
-        .dense-news-header { font-size: 1.15rem; font-weight: bold; border-bottom: 2px solid #1f2124; padding-bottom: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .news-feed-list { display: flex; flex-direction: column; }
+        /* 💡 📰 레이아웃 개편에 맞춘 뉴스 피드 최적화 (높이 맞춤 및 스크롤) */
+        .dense-news-container { background-color: #ffffff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 1.5rem !important; height: 100%; display: flex; flex-direction: column; }
+        .dense-news-header { font-size: 1.15rem; font-weight: bold; border-bottom: 2px solid #1f2124; padding-bottom: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .news-feed-list { display: flex; flex-direction: column; flex: 1; overflow-y: auto; min-height: 0; padding-right: 6px; margin-top: 8px; }
         .news-feed-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 10px; border-bottom: 1px solid #edf0f2; text-decoration: none; color: #212529; transition: background-color 0.15s, padding-left 0.15s; font-size: 0.95rem; }
         .news-feed-item:last-child { border-bottom: none; }
         .news-feed-item:hover { background-color: #f8f9fa; padding-left: 16px; color: #e10600; }
@@ -96,16 +85,20 @@
         .news-meta-side { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font-size: 0.85rem; color: #6c757d; }
         .news-source-badge { background-color: #e3e6e9; color: #495057; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
 
-        /* =========================================
-           ✨ BORDER GLOW (단정하게 정돈됨) ✨ 
-           ========================================= */
+        /* 뉴스 영역 스크롤바 디자인 */
+        .news-feed-list::-webkit-scrollbar { width: 6px; }
+        .news-feed-list::-webkit-scrollbar-track { background: transparent; }
+        .news-feed-list::-webkit-scrollbar-thumb { background: #dcdcdc; border-radius: 10px; }
+        .news-feed-list::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
+
+        /* ✨ BORDER GLOW ✨ */
         .border-glow-card {
             --edge-proximity: 0;
             --cursor-angle: 45deg;
             --edge-sensitivity: 25;
             --color-sensitivity: calc(var(--edge-sensitivity) + 20);
             --border-radius: 24px;
-            --glow-padding: 10px; /* 번짐 축소 */
+            --glow-padding: 10px; 
             --cone-spread: 30;
             --card-bg: #1f2124;
 
@@ -114,26 +107,20 @@
             isolation: isolate;
             transform: translate3d(0, 0, 0.01px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            background: transparent; /* 배경 래퍼를 사용하므로 투명 처리 */
-            overflow: visible; /* 밖으로 퍼지는 빛만 허용 */
+            background: transparent; 
+            overflow: visible; 
         }
 
         .border-glow-card::before,
         .border-glow-card::after,
         .border-glow-card > .edge-light {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            transition: opacity 0.25s ease-out;
-            z-index: -1;
+            content: ""; position: absolute; inset: 0; border-radius: inherit; transition: opacity 0.25s ease-out; z-index: -1;
         }
 
         .border-glow-card:not(:hover):not(.sweep-active)::before,
         .border-glow-card:not(:hover):not(.sweep-active)::after,
         .border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
-            opacity: 0;
-            transition: opacity 0.75s ease-in-out;
+            opacity: 0; transition: opacity 0.75s ease-in-out;
         }
 
         .border-glow-card::before {
@@ -188,24 +175,14 @@
         }
 
         .border-glow-card > .edge-light {
-            inset: calc(var(--glow-padding) * -1);
-            pointer-events: none;
-            z-index: 1;
-
-            mask-image: conic-gradient(
-                from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
-            );
-
+            inset: calc(var(--glow-padding) * -1); pointer-events: none; z-index: 1;
+            mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
             opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
             mix-blend-mode: plus-lighter;
         }
 
         .border-glow-card > .edge-light::before {
-            content: "";
-            position: absolute;
-            inset: var(--glow-padding);
-            border-radius: inherit;
-            /* 더 날렵하고 타이트한 테두리 글로우 */
+            content: ""; position: absolute; inset: var(--glow-padding); border-radius: inherit;
             box-shadow:
                 inset 0 0 0 1px var(--glow-color, hsl(200 100% 70% / 100%)),
                 inset 0 0 2px 0 var(--glow-color-60, hsl(200 100% 70% / 60%)),
@@ -216,10 +193,7 @@
                 0 0 8px 0 var(--glow-color-20, hsl(200 100% 70% / 20%));
         }
 
-        .border-glow-inner {
-            position: relative;
-            z-index: 2; 
-        }
+        .border-glow-inner { position: relative; z-index: 2; }
     </style>
 </head>
 <body>
@@ -255,46 +229,41 @@
 
     <div class="container-fluid px-lg-5 mb-5">
         
-        <div class="row g-4 mb-5">
-            <div class="col-lg-6">
-                <div id="card-driver" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
-                    <div class="bg-blur-wrapper">
-                        <div class="card-bg-blur"></div>
-                    </div>
+        <div class="row g-4">
+            
+            <div class="col-xl-5 col-lg-6 d-flex flex-column gap-4">
+                
+                <div id="card-driver" class="card dashboard-row-card border-glow-card flex-fill" onclick="location.href='/standings'">
+                    <div class="bg-blur-wrapper"><div class="card-bg-blur"></div></div>
                     <div class="edge-light"></div>
                     <div class="row-content-rank border-glow-inner">
                         <div>
                             <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
+                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3</h3>
                         </div>
                         <div id="dash-drivers-box" class="rank-container">
                             <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-lg-6">
-                <div id="card-team" class="card dashboard-row-card border-glow-card h-100" onclick="location.href='/standings'">
-                    <div class="bg-blur-wrapper">
-                        <div class="card-bg-blur"></div>
-                    </div>
+                <div id="card-team" class="card dashboard-row-card border-glow-card flex-fill" onclick="location.href='/standings'">
+                    <div class="bg-blur-wrapper"><div class="card-bg-blur"></div></div>
                     <div class="edge-light"></div>
                     <div class="row-content-rank border-glow-inner">
                         <div>
                             <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
+                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3</h3>
                         </div>
                         <div id="dash-teams-box" class="rank-container">
                             <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col-xl-10 mx-auto">
+            </div>
+
+            <div class="col-xl-7 col-lg-6">
                 <div class="dense-news-container">
                     <div class="dense-news-header">
                         <span>📰 최신 F1 헤드라인 피드</span>
@@ -323,6 +292,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
     </div>
@@ -385,7 +355,6 @@
                     .then(data => {
                         const imgUrl = data.originalimage?.source || data.thumbnail?.source;
                         if (imgUrl) {
-                            // 💡 이미지가 할당되는 타겟을 .card-bg-blur 로 명확히 지정
                             document.getElementById(elementId).querySelector('.card-bg-blur').style.setProperty('--bg-image', `url('${imgUrl}')`);
                         }
                     }).catch(err => console.error(err));
