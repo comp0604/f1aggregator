@@ -31,6 +31,22 @@
         .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
+        /* ⏱️ 새로 추가된 좌측 세션 시간표 레이아웃 */
+        .sessions-left-wrapper {
+            position: absolute; left: 2rem; top: 50%; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px); padding: 14px 18px; border-radius: 16px;
+            border-left: 4px solid #e10600; font-size: 0.8rem; min-width: 240px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 5;
+        }
+        .session-time-item {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding: 4px 0;
+        }
+        .session-time-item:last-child { border-bottom: none; }
+        .session-name { font-weight: bold; color: #b0b0b0; letter-spacing: 0.5px; }
+        .session-time { color: #ffffff; font-family: 'Courier New', Courier, monospace; font-weight: 600; }
+
         /* 텍스트 그라데이션 */
         .gradient-text-only {
             display: inline-block;
@@ -72,7 +88,7 @@
         .podium-name { font-size: 0.95rem; font-weight: bold; word-break: keep-all; margin-bottom: 2px; }
         .podium-pts { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
 
-        /* 💡 📰 레이아웃 개편에 맞춘 뉴스 피드 최적화 (높이 맞춤 및 스크롤) */
+        /* 📰 뉴스 피드 */
         .dense-news-container { background-color: #ffffff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 1.5rem !important; height: 100%; display: flex; flex-direction: column; }
         .dense-news-header { font-size: 1.15rem; font-weight: bold; border-bottom: 2px solid #1f2124; padding-bottom: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .news-feed-list { display: flex; flex-direction: column; flex: 1; overflow-y: auto; min-height: 0; padding-right: 6px; margin-top: 8px; }
@@ -85,7 +101,6 @@
         .news-meta-side { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font-size: 0.85rem; color: #6c757d; }
         .news-source-badge { background-color: #e3e6e9; color: #495057; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; }
 
-        /* 뉴스 영역 스크롤바 디자인 */
         .news-feed-list::-webkit-scrollbar { width: 6px; }
         .news-feed-list::-webkit-scrollbar-track { background: transparent; }
         .news-feed-list::-webkit-scrollbar-thumb { background: #dcdcdc; border-radius: 10px; }
@@ -153,12 +168,12 @@
             background:
                 var(--gradient-one, radial-gradient(at 80% 55%, hsla(268, 100%, 76%, 1) 0px, transparent 50%)) padding-box,
                 var(--gradient-two, radial-gradient(at 69% 34%, hsla(349, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) padding-box,
-                var(--gradient-base, linear-gradient(#c299ff 0 100%)) padding-box;
+                var(--gradient-three, radial-gradient(at 8% 6%, hsla(136, 100%, 78%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-four, radial-gradient(at 41% 38%, hsla(192, 100%, 64%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) border-box,
+                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
 
             mask-image:
                 linear-gradient(to bottom, black, black),
@@ -206,6 +221,11 @@
 
     <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
         <div class="row-content-race">
+            
+            <div id="dash-sessions-left" class="sessions-left-wrapper d-none d-lg-flex">
+                <div class="text-white-50 small w-100 text-center py-2">세션 일정 조율 중...</div>
+            </div>
+
             <div class="d-flex flex-column align-items-center text-center gap-2 mx-auto">
                 <span class="badge bg-danger px-3 py-1.5 mt-2">NEXT GRAND PRIX</span>
                 
@@ -303,7 +323,7 @@
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
-            // 🌟 Border Glow 마우스 트래킹 🌟
+            // Border Glow 마우스 트래킹
             const glowCards = document.querySelectorAll(".border-glow-card");
             
             document.addEventListener("mousemove", (e) => {
@@ -331,6 +351,25 @@
                     card.style.setProperty("--edge-proximity", proximity);
                 });
             });
+
+            // 🌟 사용자 시간대 계산 헬퍼 함수
+            function formatToLocal(dateStr, timeStr) {
+                if (!dateStr || !timeStr) return "-";
+                // Z가 유실되었을 경우를 대비해 처리 후 디바이스 현지시각 계산
+                const utcIso = timeStr.includes('Z') ? `${dateStr}T${timeStr}` : `${dateStr}T${timeStr}Z`;
+                const d = new Date(utcIso);
+                if (isNaN(d.getTime())) return "-";
+                
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                const day = dayNames[d.getDay()];
+                
+                const hh = String(d.getHours()).padStart(2, '0');
+                const min = String(d.getMinutes()).padStart(2, '0');
+                
+                return `${mm}/${dd}(${day}) ${hh}:${min}`;
+            }
 
             function getFlagUrl(countryName) {
                 const name = (countryName || "").toLowerCase().trim();
@@ -392,6 +431,26 @@
                     document.getElementById("card-race").style.setProperty('--bg-image', `url('${flagUrl}')`);
                     
                     fetchForegroundImage(nextRace.Circuit.url, "dash-circuit-map");
+
+                    // 🌟 좌측 세션 시간표 컴포넌트 실시간 바인딩
+                    const sessionsBox = document.getElementById("dash-sessions-left");
+                    if (sessionsBox) {
+                        let sHtml = `
+                            <div class="session-time-item"><span class="session-name">FP1 연습</span><span class="session-time">${formatToLocal(nextRace.FirstPractice?.date, nextRace.FirstPractice?.time)}</span></div>
+                            <div class="session-time-item"><span class="session-name">FP2 연습</span><span class="session-time">${formatToLocal(nextRace.SecondPractice?.date, nextRace.SecondPractice?.time)}</span></div>
+                        `;
+                        if (nextRace.ThirdPractice) {
+                            sHtml += `<div class="session-time-item"><span class="session-name">FP3 연습</span><span class="session-time">${formatToLocal(nextRace.ThirdPractice?.date, nextRace.ThirdPractice?.time)}</span></div>`;
+                        }
+                        if (nextRace.Sprint) {
+                            sHtml += `<div class="session-time-item" style="color:#0dcaf0;"><span class="session-name" style="color:#0dcaf0;">Sprint 스프린트</span><span class="session-time">${formatToLocal(nextRace.Sprint?.date, nextRace.Sprint?.time)}</span></div>`;
+                        }
+                        sHtml += `
+                            <div class="session-time-item"><span class="session-name text-info">Quali 예선</span><span class="session-time text-info">${formatToLocal(nextRace.Qualifying?.date, nextRace.Qualifying?.time)}</span></div>
+                            <div class="session-time-item"><span class="session-name text-warning">Race 결승</span><span class="session-time text-warning">${formatToLocal(nextRace.date, nextRace.time)}</span></div>
+                        `;
+                        sessionsBox.innerHTML = sHtml;
+                    }
 
                     const targetTime = new Date(nextRace.date + (nextRace.time ? 'T' + nextRace.time : 'T00:00:00Z')).getTime();
                     function updateClock() {
