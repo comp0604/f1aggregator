@@ -12,17 +12,17 @@
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 💥 [그랑프리 전용] 화면 끝에서 끝까지 일직선으로 채워지는 대형 배너 */
+        /* 💥 [그랑프리 배너] 높이를 줄이고 중앙 정렬 기반으로 변경 */
         .grandprix-full-banner {
             position: relative;
             background-color: #1f2124;
             color: white;
             cursor: pointer;
-            min-height: 340px;
+            min-height: 240px; /* 💥 높이를 슬림하게 최적화 */
             overflow: hidden;
-            padding: 2rem 4rem !important; /* 내부 여백 */
+            padding: 1.5rem 2rem !important; 
             width: 100%;
-            margin-bottom: 2.5rem; /* 아래 랭킹 보드들과의 간격 */
+            margin-bottom: 2.5rem; 
             border: none;
             display: flex;
             align-items: center;
@@ -46,7 +46,56 @@
             z-index: 1;
         }
 
-        /* 🏎️ 드챔 & 컨챔용 박스 형태 카드 스타일 (기존 유지) */
+        /* 🎯 타이머를 완벽한 정가운데로 놓기 위한 상대 위치 컨테이너 */
+        .row-content-race {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* 💥 내부 요소를 중앙 정렬 */
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* ⏰ 타이머 및 텍스트 폰트 크기 슬림화 */
+        .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
+        .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
+
+        /* 📸 서킷 지도를 오른쪽 구석으로 절대 배치하여 타이머 정중앙 유지 */
+        .circuit-img-wrapper {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 240px; /* 줄어든 높이에 맞춰 지도 크기 조정 */
+            height: 190px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dash-circuit-map {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            border-radius: 12px;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.95); 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            display: none; 
+        }
+
+        /* 🏛️ 랭킹 보드용 스타일 (기존 크기 유지) */
+        .row-content-rank {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            text-align: center;
+            gap: 1.5rem;
+            height: 100%;
+        }
+
         .dashboard-row-card { 
             position: relative; 
             background-color: #1f2124; 
@@ -78,57 +127,7 @@
             transition: background-image 0.5s ease-in-out;
         }
 
-        .dashboard-row-card > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* 그랑프리 가로 정렬 컨테이너 */
-        .row-content-race {
-            display: flex;
-            align-items: center;
-            justify-content: space-between; 
-            width: 100%;
-            height: 100%;
-            gap: 2rem;
-        }
-        
-        /* ⏰ 타이머 디자인 */
-        .timer-num { font-size: 3rem !important; font-weight: 800; line-height: 1; }
-        .timer-label { font-size: 0.8rem; letter-spacing: 1px; margin-top: 4px; }
-
-        /* 오른쪽 배치용 서킷 이미지 프레임 */
-        .circuit-img-wrapper {
-            flex-shrink: 0;
-            width: 320px; 
-            height: 280px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .dash-circuit-map {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; 
-            border-radius: 16px;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.95); 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-            display: none; 
-        }
-
-        /* 🏛️ 랭킹 보드용 컨테이너 */
-        .row-content-rank {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            text-align: center;
-            gap: 1.5rem;
-            height: 100%;
-        }
+        .dashboard-row-card > * { position: relative; z-index: 1; }
 
         .rank-container { 
             width: 100%;
@@ -140,7 +139,6 @@
             margin: 0 auto; 
         }
 
-        /* 시상대 기둥 디자인 */
         .podium-step {
             background-color: rgba(255, 255, 255, 0.08);
             border-radius: 16px 16px 8px 8px;
@@ -171,7 +169,6 @@
             border: 1px solid rgba(205, 127, 50, 0.22);
         }
 
-        /* 📸 포디움 이미지 */
         .podium-img {
             width: 90px;
             height: 90px;
@@ -212,23 +209,23 @@
     </header>
 
     <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
-        <div class="row-content-race px-md-5">
+        <div class="row-content-race">
             
-            <div class="d-flex flex-column align-items-start gap-4">
+            <div class="d-flex flex-column align-items-center text-center gap-3 mx-auto">
                 <div>
                     <span class="badge bg-danger px-3 py-1.5 mb-2">NEXT GRAND PRIX</span>
-                    <h1 id="dash-race-name" class="display-5 fw-bold text-warning m-0">로딩 중...</h1>
-                    <p id="dash-race-circuit" class="fs-5 text-white-50 m-0">연동 중...</p>
+                    <h1 id="dash-race-name" class="fs-2 fw-bold text-warning m-0">로딩 중...</h1>
+                    <p id="dash-race-circuit" class="fs-6 text-white-50 m-0">연동 중...</p>
                 </div>
-                <div class="d-flex gap-3 text-center" style="max-width: 500px; width: 100%;">
-                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
-                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
-                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
-                    <div class="bg-dark p-3 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
+                <div class="d-flex gap-3 text-center" style="max-width: 460px; width: 100%;">
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
+                    <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-sec" class="timer-num text-danger">00</div><div class="timer-label text-white-50">SECONDS</div></div>
                 </div>
             </div>
 
-            <div class="circuit-img-wrapper">
+            <div class="circuit-img-wrapper d-none d-md-flex">
                 <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
             </div>
 
@@ -242,7 +239,7 @@
                     <div class="row-content-rank">
                         <div>
                             <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-4">Current Top 3 Drivers</h3>
+                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
                         </div>
                         <div id="dash-drivers-box" class="rank-container">
                             <div class="text-white-50 small mt-5">동기화 중...</div>
@@ -256,7 +253,7 @@
                     <div class="row-content-rank">
                         <div>
                             <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-4">Current Top 3 Teams</h3>
+                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
                         </div>
                         <div id="dash-teams-box" class="rank-container">
                             <div class="text-white-50 small mt-5">동기화 중...</div>
