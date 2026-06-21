@@ -12,24 +12,39 @@
         .f1-logo { color: white; text-decoration: none; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
         
-        /* 🏎️ 와이드형 대시보드 카드 디자인 최적화 */
+        /* 📦 거대한 슬라이더 컨테이너 설정 */
+        .dashboard-slider-wrapper {
+            position: relative;
+            max-width: 800px; /* 큰 박스 형태를 위한 가로폭 확장 */
+            margin: 0 auto 2.5rem auto;
+            padding: 0 50px; /* 양 옆 화살표 버튼 공간 확보 */
+        }
+
+        /* 미니멀 대시보드 카드 설정 (크기 대폭 확장) */
         .dashboard-card { 
             position: relative; 
             background-color: #1f2124; 
             border: none; 
-            border-radius: 12px; 
+            border-radius: 16px; /* 부드러운 라운드 처리 */
             color: white; 
             cursor: pointer; 
             transition: transform 0.2s, box-shadow 0.2s; 
-            min-height: 100px; /* 가로형 구조에 맞춰 세로 두께 최적화 */
+            min-height: 250px; /* 박스를 든든하게 크게 키움 */
             overflow: hidden; 
+            display: none; /* 기본적으로는 모두 숨김 처리 (JS에서 제어) */
+        }
+        /* 현재 활성화된 슬라이드만 노출 */
+        .dashboard-card.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .dashboard-card:hover { 
             transform: translateY(-4px); 
-            box-shadow: 0 8px 20px rgba(225, 6, 0, 0.15); 
+            box-shadow: 0 12px 25px rgba(225, 6, 0, 0.2); 
         }
 
-        /* 📸 흐릿한 배경 사진 가상 레이어 */
+        /* 흐릿한 배경 사진 레이어 */
         .dashboard-card::before {
             content: "";
             position: absolute;
@@ -37,29 +52,49 @@
             background-image: var(--bg-image, none); 
             background-size: cover;
             background-position: center;
-            filter: blur(6px) brightness(0.35); 
+            filter: blur(6px) brightness(0.35); /* 가독성을 위해 블러와 어둡기 최적화 */
             transform: scale(1.05); 
             z-index: 0;
-            transition: background-image 0.6s ease-in-out;
+            transition: background-image 0.5s ease-in-out;
         }
 
         .dashboard-card > * {
             position: relative;
             z-index: 1;
         }
+
+        /* ◀ ▶ 양 옆 화살표 버튼 스타일 */
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background-color: rgba(33, 37, 41, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+        .slider-arrow:hover {
+            background-color: #e10600;
+            color: white;
+        }
+        .slider-arrow.prev-btn { left: 0; }
+        .slider-arrow.next-btn { right: 0; }
+        .slider-arrow:active { transform: translateY(-50%) scale(0.95); }
         
+        /* 뉴스 카드 영역 스타일 */
         .news-card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .summary-box { background-color: #fff5f5; border-left: 4px solid #e10600; padding: 12px 15px; border-radius: 0 8px 8px 0; }
         .summary-line { margin-bottom: 6px; font-size: 0.95rem; color: #333; line-height: 1.5; }
-        
-        /* 📊 가로 배열에 맞는 순위 아이템 카드 스타일 */
-        .mini-rank-row { 
-            background-color: rgba(255,255,255,0.08); 
-            border-radius: 6px; 
-            padding: 8px 16px; 
-            font-size: 0.9rem; 
-            min-width: 150px; /* 랭킹 아이템 간 일정 너비 확보 */
-        }
+        .mini-rank-row { background-color: rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 15px; margin-bottom: 6px; font-size: 0.95rem; }
         a { text-decoration: none; }
     </style>
 </head>
@@ -75,39 +110,44 @@
 
     <main class="container">
         
-        <div class="row g-3 mb-4">
-            <div class="col-12">
-                <div id="card-race" class="card dashboard-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3" onclick="location.href='/calendar'">
-                    <div>
-                        <h4 id="dash-race-name" class="fw-bold text-warning mb-1">로딩 중...</h4>
-                        <p id="dash-race-circuit" class="text-white-50 small mb-0">연동 중...</p>
-                    </div>
-                    <div class="d-flex gap-2 text-center" style="min-width: 260px;">
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-day" class="fw-bold fs-5">00</div><small class="text-white-50" style="font-size: 0.65rem; display:block; margin-top:2px;">DAYS</small></div>
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-hour" class="fw-bold fs-5">00</div><small class="text-white-50" style="font-size: 0.65rem; display:block; margin-top:2px;">HOURS</small></div>
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-min" class="fw-bold fs-5">00</div><small class="text-white-50" style="font-size: 0.65rem; display:block; margin-top:2px;">MINS</small></div>
-                        <div class="bg-dark p-2 rounded flex-fill"><div id="d-sec" class="fw-bold fs-5 text-danger">00</div><small class="text-white-50" style="font-size: 0.65rem; display:block; margin-top:2px;">SECS</small></div>
-                    </div>
+        <div class="dashboard-slider-wrapper">
+            <button class="slider-arrow prev-btn" id="slide-prev-btn">&#10094;</button>
+
+            <div id="card-race" class="card dashboard-card active p-4" onclick="location.href='/calendar'">
+                <div>
+                    <span class="badge bg-danger mb-2">Next Grand Prix</span>
+                    <h3 id="dash-race-name" class="fw-bold text-warning mb-1">로딩 중...</h3>
+                    <p id="dash-race-circuit" class="text-white-50 small mb-0">연동 중...</p>
+                </div>
+                <div class="d-flex justify-content-between gap-2 text-center mt-3 mx-auto w-100" style="max-width: 500px;">
+                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-day" class="fw-bold fs-3">00</div><small class="text-white-50">DAYS</small></div>
+                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-hour" class="fw-bold fs-3">00</div><small class="text-white-50">HRS</small></div>
+                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-min" class="fw-bold fs-3">00</div><small class="text-white-50">MINS</small></div>
+                    <div class="bg-dark p-3 rounded flex-fill"><div id="d-sec" class="fw-bold fs-3 text-danger">00</div><small class="text-white-50">SECS</small></div>
                 </div>
             </div>
 
-            <div class="col-12">
-                <div id="card-driver" class="card dashboard-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3" onclick="location.href='/standings'">
-                    <h5 class="fw-bold text-white-50 mb-0" style="min-width: 150px;">Driver Top 3</h5>
-                    <div id="dash-drivers-box" class="d-flex flex-row gap-2 flex-wrap flex-grow-1 justify-content-md-end w-100">
-                        <div class="text-center text-muted small">동기화 중...</div>
-                    </div>
+            <div id="card-driver" class="card dashboard-card p-4" onclick="location.href='/standings'">
+                <div>
+                    <span class="badge bg-primary mb-2">Championship Leader</span>
+                    <h4 class="fw-bold text-white mb-3">Driver Top 3</h4>
+                </div>
+                <div id="dash-drivers-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto" style="max-width: 500px;">
+                    <div class="text-center text-muted small">동기화 중...</div>
                 </div>
             </div>
 
-            <div class="col-12">
-                <div id="card-team" class="card dashboard-card p-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3" onclick="location.href='/standings'">
-                    <h5 class="fw-bold text-white-50 mb-0" style="min-width: 150px;">Team Top 3</h5>
-                    <div id="dash-teams-box" class="d-flex flex-row gap-2 flex-wrap flex-grow-1 justify-content-md-end w-100">
-                        <div class="text-center text-muted small">동기화 중...</div>
-                    </div>
+            <div id="card-team" class="card dashboard-card p-4" onclick="location.href='/standings'">
+                <div>
+                    <span class="badge bg-success mb-2">Constructor Leader</span>
+                    <h4 class="fw-bold text-white mb-3">Team Top 3</h4>
+                </div>
+                <div id="dash-teams-box" class="flex-grow-1 d-flex flex-column justify-content-center w-100 mx-auto" style="max-width: 500px;">
+                    <div class="text-center text-muted small">동기화 중...</div>
                 </div>
             </div>
+
+            <button class="slider-arrow next-btn" id="slide-next-btn">&#10095;</button>
         </div>
 
         <div class="row">
@@ -156,6 +196,7 @@
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
+            // 위키피디아 이미지 비동기 로드 함수
             function fetchWikiImage(wikiUrl, elementId) {
                 if (!wikiUrl) return;
                 const pageTitle = wikiUrl.split('/wiki/')[1]; 
@@ -174,7 +215,7 @@
                     .catch(err => console.error("위키 이미지 로드 실패:", err));
             }
 
-            // 1. 레이스 캘린더 및 서킷 배경 매칭 (자동)
+            // 1. 레이스 캘린더 데이터 연동
             fetch(calendarUrl)
                 .then(res => res.json())
                 .then(data => {
@@ -199,7 +240,7 @@
                     updateClock(); setInterval(updateClock, 1000);
                 });
 
-            // 2. 드라이버 현 시즌 1위 배경 매칭 (자동)
+            // 2. 드라이버 랭킹 데이터 연동
             fetch(driversUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings.slice(0, 3);
                 let html = ""; const medals = ["🥇", "🥈", "🥉"];
@@ -207,12 +248,12 @@
                     if (idx === 0) {
                         fetchWikiImage(item.Driver.url, "card-driver");
                     }
-                    html += `<div class="d-flex justify-content-between align-items-center mini-rank-row"><span>${medals[idx]} ${item.Driver.familyName}</span><span class="text-warning fw-bold ms-3">${item.points}</span></div>`;
+                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Driver.familyName}</span><span class="text-warning fw-bold">${item.points} P</span></div>`;
                 });
                 document.getElementById("dash-drivers-box").innerHTML = html;
             });
 
-            // 3. 컨스트럭터 팀 현 시즌 1위 배경 매칭 (자동)
+            // 3. 팀 랭킹 데이터 연동
             fetch(teamsUrl).then(res => res.json()).then(data => {
                 const list = data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.slice(0, 3);
                 let html = ""; const medals = ["🥇", "🥈", "🥉"];
@@ -220,9 +261,43 @@
                     if (idx === 0) {
                         fetchWikiImage(item.Constructor.url, "card-team");
                     }
-                    html += `<div class="d-flex justify-content-between align-items-center mini-rank-row"><span>${medals[idx]} ${item.Constructor.name.split(" ")[0]}</span><span class="text-success fw-bold ms-3">${item.points}</span></div>`;
+                    html += `<div class="d-flex justify-content-between mini-rank-row"><span>${medals[idx]} ${item.Constructor.name}</span><span class="text-success fw-bold">${item.points} P</span></div>`;
                 });
                 document.getElementById("dash-teams-box").innerHTML = html;
+            });
+
+            // 🕹️ 양 옆 화살표 버튼 제어 로직 (캐러셀 구동)
+            const slides = [
+                document.getElementById("card-race"),
+                document.getElementById("card-driver"),
+                document.getElementById("card-team")
+            ];
+            let currentSlideIdx = 0;
+
+            function showSlide(index) {
+                // 경계값 처리 (무한 루프 전환 슬라이딩)
+                if (index >= slides.length) currentSlideIdx = 0;
+                else if (index < 0) currentSlideIdx = slides.length - 1;
+                else currentSlideIdx = index;
+
+                // 모든 슬라이드에서 active 제거 후 해당 인덱스만 활성화
+                slides.forEach((slide, i) => {
+                    if (i === currentSlideIdx) {
+                        slide.classList.add("active");
+                    } else {
+                        slide.classList.remove("active");
+                    }
+                });
+            }
+
+            document.getElementById("slide-prev-btn").addEventListener("click", function(e) {
+                e.stopPropagation(); // 카드 클릭 링크로 넘어가지 않도록 이벤트 버블링 방지
+                showSlide(currentSlideIdx - 1);
+            });
+
+            document.getElementById("slide-next-btn").addEventListener("click", function(e) {
+                e.stopPropagation(); // 카드 클릭 링크로 넘어가지 않도록 이벤트 버블링 방지
+                showSlide(currentSlideIdx + 1);
             });
         });
     </script>
