@@ -11,8 +11,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# 💾 2차 소스(OpenF1) 데이터 구멍 메우기용 서버 메모리 캐시
+# 💾 서버 메모리 캐시 (API Rate Limit 완벽 방어용)
 OPENF1_PODIUM_CACHE = {}
+STANDINGS_CACHE = {"data": None}
 
 def get_db_connection():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +22,6 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# 🎨 2026 규정 반영 11개 팀 컬러 매핑
 def get_team_color(constructor_id, constructor_name):
     c_id = (constructor_id or "").lower().replace(" ", "").replace("_", "").replace("-", "")
     name = (constructor_name or "").lower().replace(" ", "").replace("_", "").replace("-", "")
@@ -62,12 +62,11 @@ def fetch_json_safely(url):
         print(f"⚠️ API 통신 지연/실패 ({url}): {e}")
         return None
 
-# OpenF1 2차 피드 정밀 타격 함수
 def fetch_openf1_fallback(locality, race_date):
     try:
         year = race_date.split("-")[0] if race_date else "2026"
         sessions = fetch_json_safely(f"https://api.openf1.org/v1/sessions?year={year}&session_name=Race")
-        if not sessions: return None
+        if not isinstance(sessions, list): return None
         
         loc_mapping = {
             "monte-carlo": "monaco", "montmeló": "barcelona", "marina bay": "singapore",
@@ -80,7 +79,7 @@ def fetch_openf1_fallback(locality, race_date):
         
         results = fetch_json_safely(f"https://api.openf1.org/v1/session_result?session_key={session_key}")
         drivers = fetch_json_safely(f"https://api.openf1.org/v1/drivers?session_key={session_key}")
-        if not results or not drivers: return None
+        if not isinstance(results, list) or not isinstance(drivers, list): return None
         
         valid_results = []
         for r in results:
@@ -131,50 +130,55 @@ def standings():
 def api_calendar_list():
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
-    calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
-    results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
-    if not calendar_data: return jsonify({"error": "1차 소스 통신 실패"}), 500
     
-    races = calendar_data["MRData"]["RaceTable"]["Races"]
-    results_map = {r["round"]: r["Results"] for r in results_data["MRData"]["RaceTable"]["Races"]} if results_data else {}
-    next_race_idx = next((i for i, r in enumerate(races) if r["date"] >= today_str), len(races) - 1)
+    calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
+    races = calendar_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(calendar_data, dict) else []
+    
+    if not races:
+        return jsonify({"error": "무료 API 서버(Jolpi) 응답 제한", "races": []})
+        
+    results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
+    results_races = results_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(results_data, dict) else []
+    results_map = {r.get("round"): r.get("Results", []) for r in results_races}
+    
+    next_race_idx = next((i for i, r in enumerate(races) if r.get("date", "") >= today_str), len(races) - 1)
     
     list_payload = []
     for idx, race in enumerate(races):
-        r_num = race["round"]
-        c_date = race["date"]
+        r_num = race.get("round")
+        c_date = race.get("date", "")
         is_past = (c_date < today_str or r_num in results_map)
         winner_name, team_color, winner_wiki = "", "#1a1c1e", ""
         
-        podium = results_map.get(r_num)
-        if podium:
+        podium = results_map.get(r_num, [])
+        if podium and len(podium) > 0:
             w1 = podium[0]
-            winner_name = w1["Driver"]["familyName"]
-            team_color = get_team_color(w1["Constructor"]["constructorId"], w1["Constructor"]["name"])
-            winner_wiki = w1["Driver"]["url"].split('/wiki/')[-1]
+            winner_name = w1.get("Driver", {}).get("familyName", "Unknown")
+            team_color = get_team_color(w1.get("Constructor", {}).get("constructorId"), w1.get("Constructor", {}).get("name"))
+            winner_wiki = w1.get("Driver", {}).get("url", "").split('/wiki/')[-1]
         elif is_past:
             if r_num not in OPENF1_PODIUM_CACHE:
-                op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
+                op_podium = fetch_openf1_fallback(race.get("Circuit", {}).get("Location", {}).get("locality", ""), c_date)
                 if op_podium: OPENF1_PODIUM_CACHE[r_num] = {"podium": op_podium, "pole": "", "fastest_lap": "", "sprint_winner": ""}
             if r_num in OPENF1_PODIUM_CACHE:
                 pod_data = OPENF1_PODIUM_CACHE[r_num].get("podium", [])
-                w1 = next((p for p in pod_data if p["position"] == "1"), None)
+                w1 = next((p for p in pod_data if p.get("position") == "1"), None)
                 if w1:
-                    winner_name = w1["familyName"]
-                    team_color = get_team_color(w1["constructorId"], w1["constructorName"])
-                    winner_wiki = w1["wiki_title"]
+                    winner_name = w1.get("familyName", "Unknown")
+                    team_color = get_team_color(w1.get("constructorId"), w1.get("constructorName"))
+                    winner_wiki = w1.get("wiki_title", "")
 
         list_payload.append({
-            "idx": idx, "round": r_num, "raceName": race["raceName"], "locality": race["Circuit"]["Location"]["locality"],
+            "idx": idx, "round": r_num, "raceName": race.get("raceName", "GP"), 
+            "locality": race.get("Circuit", {}).get("Location", {}).get("locality", ""),
             "date": c_date, "is_past": is_past, "is_next": (idx == next_race_idx),
             "winner_name": winner_name, "team_color": team_color, "winner_wiki": winner_wiki,
-            "flag_url": get_flag_url(race["Circuit"]["Location"]["country"]),
-            "circuit_wiki_title": race["Circuit"]["url"].split('/wiki/')[-1],
-            "circuit_name": race["Circuit"]["circuitName"]
+            "flag_url": get_flag_url(race.get("Circuit", {}).get("Location", {}).get("country", "")),
+            "circuit_wiki_title": race.get("Circuit", {}).get("url", "").split('/wiki/')[-1],
+            "circuit_name": race.get("Circuit", {}).get("circuitName", "")
         })
     return jsonify({"next_race_idx": next_race_idx, "races": list_payload})
 
-# 🔥 [구조 고도화] 백엔드에서 칭호(폴포지션, 패스티스트랩, 스프린트) 데이터를 일괄 정제하여 반환
 @app.route('/api/race-podium/<round_num>')
 def api_race_podium(round_num):
     if round_num in OPENF1_PODIUM_CACHE and "pole" in OPENF1_PODIUM_CACHE[round_num]:
@@ -183,33 +187,34 @@ def api_race_podium(round_num):
     payload = {"podium": [], "pole": "", "fastest_lap": "", "sprint_winner": ""}
     
     results_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/results.json")
-    if results_data and results_data["MRData"]["RaceTable"]["Races"]:
-        race_info = results_data["MRData"]["RaceTable"]["Races"][0]
-        podium_list = race_info["Results"][:3]
+    results_races = results_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(results_data, dict) else []
+    
+    if results_races:
+        race_info = results_races[0]
+        podium_list = race_info.get("Results", [])[:3]
         payload["podium"] = [{
-            "position": p["position"], "familyName": p["Driver"]["familyName"],
-            "constructorId": p["Constructor"]["constructorId"], "constructorName": p["Constructor"]["name"],
-            "wiki_title": p["Driver"]["url"].split('/wiki/')[-1]
+            "position": p.get("position"), "familyName": p.get("Driver", {}).get("familyName", "Unknown"),
+            "constructorId": p.get("Constructor", {}).get("constructorId", ""), "constructorName": p.get("Constructor", {}).get("name", "Unknown"),
+            "wiki_title": p.get("Driver", {}).get("url", "").split('/wiki/')[-1]
         } for p in podium_list]
         
-        all_res = race_info["Results"]
+        all_res = race_info.get("Results", [])
         pole_driver = next((r for r in all_res if r.get("grid") == "1"), None)
         fl_driver = next((r for r in all_res if r.get("FastestLap", {}).get("rank") == "1"), None)
-        if pole_driver: payload["pole"] = pole_driver["Driver"]["familyName"]
-        if fl_driver: payload["fastest_lap"] = fl_driver["Driver"]["familyName"]
+        if pole_driver: payload["pole"] = pole_driver.get("Driver", {}).get("familyName", "")
+        if fl_driver: payload["fastest_lap"] = fl_driver.get("Driver", {}).get("familyName", "")
     else:
         calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
-        if calendar_data:
-            race = next((r for r in calendar_data["MRData"]["RaceTable"]["Races"] if r["round"] == round_num), None)
-            if race:
-                op_podium = fetch_openf1_fallback(race["Circuit"]["Location"]["locality"], race["date"])
-                if op_podium: payload["podium"] = op_podium
+        cal_races = calendar_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(calendar_data, dict) else []
+        race = next((r for r in cal_races if r.get("round") == round_num), None)
+        if race:
+            op_podium = fetch_openf1_fallback(race.get("Circuit", {}).get("Location", {}).get("locality", ""), race.get("date", ""))
+            if op_podium: payload["podium"] = op_podium
 
     sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/current/{round_num}/sprint.json")
-    if sprint_data and sprint_data["MRData"]["RaceTable"]["Races"]:
-        sprint_info = sprint_data["MRData"]["RaceTable"]["Races"][0]
-        if sprint_info.get("SprintResults"):
-            payload["sprint_winner"] = sprint_info["SprintResults"][0]["Driver"]["familyName"]
+    sprint_races = sprint_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(sprint_data, dict) else []
+    if sprint_races and sprint_races[0].get("SprintResults"):
+        payload["sprint_winner"] = sprint_races[0]["SprintResults"][0].get("Driver", {}).get("familyName", "")
 
     OPENF1_PODIUM_CACHE[round_num] = payload
     return jsonify(payload)
@@ -230,46 +235,87 @@ def api_race_sessions(round_num):
     payload = {"schedule": {}, "qualifying": [], "sprint": [], "race": []}
     
     cal_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}.json")
-    if cal_data and "MRData" in cal_data:
-        races = cal_data["MRData"]["RaceTable"]["Races"]
-        race = next((r for r in races if r["round"] == round_num), None)
-        if race:
-            payload["schedule"] = {
-                "fp1": race.get("FirstPractice", {}).get("date", "-"),
-                "fp2": race.get("SecondPractice", {}).get("date", "-"),
-                "fp3": race.get("ThirdPractice", {}).get("date", "-"),
-                "qualifying": race.get("Qualifying", {}).get("date", "-"),
-                "sprint": race.get("Sprint", {}).get("date", "-"),
-                "race": race.get("date", "-")
-            }
+    cal_races = cal_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(cal_data, dict) else []
+    race = next((r for r in cal_races if r.get("round") == round_num), None)
+    
+    if race:
+        payload["schedule"] = {
+            "fp1": race.get("FirstPractice", {}).get("date", "-"),
+            "fp2": race.get("SecondPractice", {}).get("date", "-"),
+            "fp3": race.get("ThirdPractice", {}).get("date", "-"),
+            "qualifying": race.get("Qualifying", {}).get("date", "-"),
+            "sprint": race.get("Sprint", {}).get("date", "-"),
+            "race": race.get("date", "-")
+        }
             
     quali_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/qualifying.json")
-    if quali_data and "MRData" in quali_data and quali_data["MRData"]["RaceTable"]["Races"]:
-        r_table = quali_data["MRData"]["RaceTable"]["Races"]
-        if "QualifyingResults" in r_table[0]:
-            payload["qualifying"] = [{
-                "position": q["position"], "driver": f"{q['Driver']['givenName']} {q['Driver']['familyName']}",
-                "constructor": q["Constructor"]["name"], "time": q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
-            } for q in r_table[0]["QualifyingResults"][:5]]
+    quali_races = quali_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(quali_data, dict) else []
+    if quali_races and quali_races[0].get("QualifyingResults"):
+        payload["qualifying"] = [{
+            "position": q.get("position"), "driver": f"{q.get('Driver',{}).get('givenName','')} {q.get('Driver',{}).get('familyName','')}",
+            "constructor": q.get("Constructor",{}).get("name",""), "time": q.get("Q3") or q.get("Q2") or q.get("Q1") or "-"
+        } for q in quali_races[0]["QualifyingResults"][:5]]
             
     sprint_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/sprint.json")
-    if sprint_data and "MRData" in sprint_data and sprint_data["MRData"]["RaceTable"]["Races"]:
-        r_table = sprint_data["MRData"]["RaceTable"]["Races"]
-        if "SprintResults" in r_table[0]:
-            payload["sprint"] = [{
-                "position": s["position"], "driver": f"{s['Driver']['givenName']} {s['Driver']['familyName']}",
-                "constructor": s["Constructor"]["name"], "points": s.get("points", "0")
-            } for s in r_table[0]["SprintResults"][:5]]
+    sprint_races = sprint_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(sprint_data, dict) else []
+    if sprint_races and sprint_races[0].get("SprintResults"):
+        payload["sprint"] = [{
+            "position": s.get("position"), "driver": f"{s.get('Driver',{}).get('givenName','')} {s.get('Driver',{}).get('familyName','')}",
+            "constructor": s.get("Constructor",{}).get("name",""), "points": s.get("points", "0")
+        } for s in sprint_races[0]["SprintResults"][:5]]
             
     race_data = fetch_json_safely(f"https://api.jolpi.ca/ergast/f1/{season}/{round_num}/results.json")
-    if race_data and "MRData" in race_data and race_data["MRData"]["RaceTable"]["Races"]:
-        r_table = race_data["MRData"]["RaceTable"]["Races"]
-        if "Results" in r_table[0]:
-            payload["race"] = [{
-                "position": r["position"], "driver": f"{r['Driver']['givenName']} {r['Driver']['familyName']}",
-                "constructor": r["Constructor"]["name"], "points": r.get("points", "0")
-            } for r in r_table[0]["Results"][:5]]
+    res_races = race_data.get("MRData", {}).get("RaceTable", {}).get("Races", []) if isinstance(race_data, dict) else []
+    if res_races and res_races[0].get("Results"):
+        payload["race"] = [{
+            "position": r.get("position"), "driver": f"{r.get('Driver',{}).get('givenName','')} {r.get('Driver',{}).get('familyName','')}",
+            "constructor": r.get("Constructor",{}).get("name",""), "points": r.get("points", "0")
+        } for r in res_races[0]["Results"][:5]]
             
+    return jsonify(payload)
+
+# 🔥 [신규] 프론트엔드 연쇄 붕괴를 막기 위한 Standings 백엔드 단일 창구
+@app.route('/api/standings-data')
+def api_standings_data():
+    if STANDINGS_CACHE["data"]:
+        return jsonify(STANDINGS_CACHE["data"])
+        
+    drivers_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/driverStandings.json")
+    constructors_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/constructorStandings.json")
+    results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
+    
+    if not drivers_data or not constructors_data:
+        return jsonify({"error": "API 통신 장애"}), 500
+        
+    podium_map_drivers = {}
+    podium_map_constructors = {}
+    
+    if results_data and isinstance(results_data, dict):
+        races = results_data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+        for race in races:
+            for res in race.get("Results", []):
+                try:
+                    pos = int(res.get("position", 99))
+                    if pos <= 3:
+                        d_id = res.get("Driver", {}).get("driverId")
+                        c_id = res.get("Constructor", {}).get("constructorId")
+                        if d_id: podium_map_drivers[d_id] = podium_map_drivers.get(d_id, 0) + 1
+                        if c_id: podium_map_constructors[c_id] = podium_map_constructors.get(c_id, 0) + 1
+                except:
+                    pass
+                    
+    d_list = drivers_data.get("MRData", {}).get("StandingsTable", {}).get("StandingsLists", [{}])[0].get("DriverStandings", [])
+    c_list = constructors_data.get("MRData", {}).get("StandingsTable", {}).get("StandingsLists", [{}])[0].get("ConstructorStandings", [])
+    
+    payload = {
+        "drivers": d_list,
+        "constructors": c_list,
+        "podiums": {
+            "drivers": podium_map_drivers,
+            "constructors": podium_map_constructors
+        }
+    }
+    STANDINGS_CACHE["data"] = payload
     return jsonify(payload)
 
 if __name__ == '__main__':

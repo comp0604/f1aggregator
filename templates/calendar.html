@@ -232,13 +232,13 @@
                         const mapImg = document.getElementById("detail-map-img");
                         if(wiki && wiki.image) { mapImg.src = wiki.image; mapImg.style.display = "block"; } 
                         else { mapImg.style.display = "none"; }
-                    }).catch(() => { document.getElementById("detail-wiki").innerText = "위키 정보 로드 실패."; });
+                    }).catch(() => { document.getElementById("detail-wiki").innerText = "위키 정보 로드 지연."; });
 
                 const podiumRow = document.getElementById("main-podium-row");
                 
                 if (race.is_past) {
                     podiumRow.classList.remove("d-none");
-                    // 💥 자바스크립트 직접 외부 호출을 전면 폐기하고 안전한 내부 정제 프록시 통로만 단일 노킹
+                    
                     fetch(`/api/race-podium/${race.round}`)
                         .then(r => r.ok ? r.json() : null)
                         .then(data => {
@@ -296,36 +296,48 @@
                 loadWeekendSessions(race.round, race.is_past);
             }
 
-            fetch("/api/calendar-list").then(res => res.json()).then(data => {
-                localRacesArray = data.races;
-                let html = "";
-                localRacesArray.forEach(race => {
-                    let cardClass = race.is_past ? "past-race" : "";
-                    let cardStyle = race.winner_name ? `style="background-color: ${race.team_color} !important; border-color: ${race.team_color} !important;"` : "";
-                    let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
-                    if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
-                    if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
-                    let winnerBadge = race.winner_name ? `<div class="scroll-winner-container"><img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win"><span class="scroll-winner-name">🏆 ${race.winner_name}</span></div>` : "";
-                    html += `<div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}"><div><div class="race-round text-danger text-uppercase">${race.round} ROUND</div><div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div><div class="race-loc text-white-50">📍 ${race.locality}</div></div>${winnerBadge}<div class="race-date text-warning">${race.date}</div></div>`;
-                });
-                scrollBox.innerHTML = html;
-
-                localRacesArray.forEach(race => {
-                    if (race.winner_wiki) {
-                        fetch(`/api/wiki-meta/${race.winner_wiki}`).then(r=>r.json()).then(w => { const t = document.getElementById(`win-thumb-${race.round}`); if(t && w?.image) { t.src = w.image; t.style.display = "block"; } });
+            // 🔥 [버그 수정] 통신 에러 발생 시 캘린더 전체 파괴 방지 및 안내 문구 렌더링
+            fetch("/api/calendar-list")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error || !data.races || data.races.length === 0) {
+                        scrollBox.innerHTML = `
+                            <div class="text-warning text-center w-100 py-4 fw-bold">
+                                ⚠️ F1 공식 API 서버 트래픽 초과로 응답이 지연되고 있습니다.<br>
+                                잠시 후 페이지를 새로고침 해보세요.
+                            </div>`;
+                        return;
                     }
-                });
+                    
+                    localRacesArray = data.races;
+                    let html = "";
+                    localRacesArray.forEach(race => {
+                        let cardClass = race.is_past ? "past-race" : "";
+                        let cardStyle = race.winner_name ? `style="background-color: ${race.team_color} !important; border-color: ${race.team_color} !important;"` : "";
+                        let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
+                        if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
+                        if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
+                        let winnerBadge = race.winner_name ? `<div class="scroll-winner-container"><img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win"><span class="scroll-winner-name">🏆 ${race.winner_name}</span></div>` : "";
+                        html += `<div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}"><div><div class="race-round text-danger text-uppercase">${race.round} ROUND</div><div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div><div class="race-loc text-white-50">📍 ${race.locality}</div></div>${winnerBadge}<div class="race-date text-warning">${race.date}</div></div>`;
+                    });
+                    scrollBox.innerHTML = html;
 
-                if(data.next_race_idx !== -1) {
-                    const defRace = localRacesArray[data.next_race_idx];
-                    const defCard = document.querySelector(`[data-idx="${data.next_race_idx}"]`);
-                    if (defCard) defCard.classList.add("selected-card");
-                    renderDetailPanel(defRace);
-                }
-                setTimeout(() => { const t = document.getElementById("next-active-race"); if (t) t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 200);
-            }).catch(() => {
-                scrollBox.innerHTML = `<div class="text-danger p-4">백엔드 서버 캘린더 피드 동기화 실패. 파이썬 콘솔 로그를 확인해 주세요.</div>`;
-            });
+                    localRacesArray.forEach(race => {
+                        if (race.winner_wiki) {
+                            fetch(`/api/wiki-meta/${race.winner_wiki}`).then(r=>r.json()).then(w => { const t = document.getElementById(`win-thumb-${race.round}`); if(t && w?.image) { t.src = w.image; t.style.display = "block"; } });
+                        }
+                    });
+
+                    if(data.next_race_idx !== -1) {
+                        const defRace = localRacesArray[data.next_race_idx];
+                        const defCard = document.querySelector(`[data-idx="${data.next_race_idx}"]`);
+                        if (defCard) defCard.classList.add("selected-card");
+                        renderDetailPanel(defRace);
+                    }
+                    setTimeout(() => { const t = document.getElementById("next-active-race"); if (t) t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 200);
+                }).catch(() => {
+                    scrollBox.innerHTML = `<div class="text-danger p-4 text-center w-100 fw-bold">백엔드 서버 캘린더 피드 통신 실패. 파이썬 서버가 켜져 있는지 확인해 주세요.</div>`;
+                });
 
             scrollBox.addEventListener("click", function(e) {
                 const card = e.target.closest(".mini-race-card");

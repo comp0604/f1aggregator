@@ -11,16 +11,18 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
         .f1-logo:hover { color: rgba(255,255,255,0.8); }
 
-        /* 🔥 상단 Top 5 독립형 블랙 래퍼 */
+        /* 🔥 상단 Top 5 독립형 블랙 래퍼 (데이터 로드 전엔 숨김 처리) */
         .top5-wrapper {
-            background-color: #0a0b0c; border-radius: 24px; padding: 2.5rem 1.5rem 1rem 1.5rem;
+            background: linear-gradient(145deg, #0a0b0c 0%, #16181a 100%);
+            border-radius: 24px; padding: 2.5rem 1.5rem 1rem 1.5rem;
             box-shadow: 0 15px 35px rgba(0,0,0,0.25); margin-bottom: 3rem; border: 1px solid rgba(255,255,255,0.05);
+            display: none; /* 빈 박스 방지 */
         }
 
-        /* 🏆 상단 탑 5 포디움 컨테이너 */
         .podium-top5-container {
-            height: 340px; display: flex; justify-content: center; align-items: flex-end; gap: 12px;
+            display: flex; justify-content: center; align-items: flex-end; gap: 12px;
             margin-bottom: 1rem; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 10px;
+            min-height: 200px;
         }
         .podium-top5-container::-webkit-scrollbar { height: 6px; }
         .podium-top5-container::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
@@ -30,13 +32,14 @@
             background-color: #1f2124; border: none; border-radius: 16px 16px 6px 6px; color: white;
             padding: 1.25rem 0.5rem; text-align: center; position: relative; box-shadow: 0 -4px 15px rgba(0,0,0,0.4);
             transition: transform 0.2s; min-width: 130px; width: 19%; display: flex; flex-direction: column; justify-content: space-between;
+            height: 300px; /* 카드의 개별 고정 높이 할당 */
         }
 
-        .rank-order-1 { order: 3; height: 100%; border: 2px solid #ffc107; background: linear-gradient(to top, rgba(255, 215, 0, 0.12), #1f2124); z-index: 5; }
-        .rank-order-2 { order: 2; height: 85%; border: 2px solid #c0c0c0; z-index: 4; }
-        .rank-order-3 { order: 4; height: 75%; border: 2px solid #cd7f32; z-index: 3; }
-        .rank-order-4 { order: 1; height: 62%; opacity: 0.9; z-index: 2; background-color: #2d3035; }
-        .rank-order-5 { order: 5; height: 55%; opacity: 0.85; z-index: 1; background-color: #2d3035; }
+        .rank-order-1 { order: 3; height: 340px; border: 2px solid #ffc107; background: linear-gradient(to top, rgba(255, 215, 0, 0.12), #1f2124); z-index: 5; }
+        .rank-order-2 { order: 2; height: 290px; border: 2px solid #c0c0c0; z-index: 4; }
+        .rank-order-3 { order: 4; height: 260px; border: 2px solid #cd7f32; z-index: 3; }
+        .rank-order-4 { order: 1; height: 220px; opacity: 0.9; z-index: 2; background-color: #2d3035; }
+        .rank-order-5 { order: 5; height: 200px; opacity: 0.85; z-index: 1; background-color: #2d3035; }
 
         .card-rank-badge { position: absolute; top: 8px; left: 10px; font-size: 1.2rem; font-weight: 900; font-style: italic; opacity: 0.5; }
         .rank-order-1 .card-rank-badge { font-size: 1.6rem; opacity: 1; text-shadow: 0 0 10px rgba(255,193,7,0.5); }
@@ -57,14 +60,13 @@
         .table-f1 { color: white !important; vertical-align: middle !important; border-collapse: separate; border-spacing: 0 6px; }
         .table-f1 th { border-bottom: 2px solid #444 !important; font-weight: bold; color: #aaa; font-size: 0.9rem; border-top: none !important; padding-bottom: 10px; }
         
-        /* 🔥 부트스트랩 셀 배경 강제 투명화 및 테두리 정리 */
         .table-f1 td { 
             background-color: transparent !important; 
             border-bottom: none !important; border-top: none !important; 
             font-size: 0.95rem; padding: 12px 8px !important; 
         }
         
-        /* 🔥 색상 행 전용 클래스 */
+        /* 🔥 브라우저 렌더링 충돌 없는 안전한 색상 행 */
         .color-row { transition: transform 0.2s, box-shadow 0.2s; border-radius: 8px; }
         .color-row:hover { transform: translateX(6px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         
@@ -91,14 +93,17 @@
 
     <div class="container mb-5">
         
-        <div class="top5-wrapper">
-            <h3 class="fw-bold text-white mb-4 text-center">🏆 Championship Leaders</h3>
-            <div class="podium-top5-container" id="top-drivers-cards-row">
-                <div class="w-100 text-center text-muted align-self-center">드라이버 리더보드 데이터 동기화 중...</div>
-            </div>
+        <div id="loading-indicator" class="text-center py-5">
+            <div class="spinner-border text-danger spinner-border-sm me-2"></div>
+            <span class="text-muted fw-bold">서버 통합 데이터 스트리밍 중...</span>
         </div>
 
-        <div class="row g-4">
+        <div class="top5-wrapper" id="top5-wrapper-block">
+            <h3 class="fw-bold text-white mb-4 text-center">🏆 Championship Leaders</h3>
+            <div class="podium-top5-container" id="top-drivers-cards-row"></div>
+        </div>
+
+        <div class="row g-4 d-none" id="standings-tables-block">
             <div class="col-xl-6">
                 <div class="standings-box">
                     <h4 class="fw-bold text-warning mb-3">🏁 Driver Standings</h4>
@@ -145,134 +150,133 @@
     </div>
 
     <script>
-        // 🎨 팀 고유 컬러 헥사코드 매핑기
         const TEAM_COLORS = {
             "ferrari": "#cc0000", "mclaren": "#ff8700", "redbull": "#061043", "mercedes": "#00a19c",
             "astonmartin": "#006f62", "aston": "#006f62", "alpine": "#0090ff", "williams": "#005aff",
             "haas": "#787878", "audi": "#c41130", "sauber": "#c41130", "rb": "#002fa7", "racingbulls": "#002fa7"
         };
+
         function getTeamHex(cid) {
             if(!cid) return "#1a1c1e";
             const key = cid.toLowerCase().replace(/[^a-z]/g, '');
             for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
-            return "#444444"; // 기본색
+            return "#444444"; 
+        }
+
+        // 🔥 HEX 코드를 RGBA 포맷으로 안전하게 변환해주는 유틸 함수 (브라우저 그라데이션 호환성 보장)
+        function hexToRgba(hex, alpha) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
-            const constructorsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
-            const resultsUrl = "https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000";
+            
+            // 💥 프론트엔드 폭파 주범이었던 다중 외부 호출을 백엔드 통합 API 단 하나로 교체 완료
+            fetch("/api/standings-data")
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("loading-indicator").style.display = "none";
 
-            Promise.all([
-                fetch(driversUrl).then(res => res.json()),
-                fetch(constructorsUrl).then(res => res.json()),
-                fetch(resultsUrl).then(res => res.json())
-            ]).then(([driversData, constructorsData, resultsData]) => {
-                
-                // --- 1. 포디움 횟수 전처리 연산 ---
-                const podiumMapDrivers = {};
-                const podiumMapConstructors = {};
-                const races = resultsData.MRData.RaceTable.Races;
-                
-                races.forEach(race => {
-                    race.Results.forEach(res => {
-                        if (parseInt(res.position) <= 3) {
-                            const dId = res.Driver.driverId;
-                            const cId = res.Constructor.constructorId;
-                            podiumMapDrivers[dId] = (podiumMapDrivers[dId] || 0) + 1;
-                            podiumMapConstructors[cId] = (podiumMapConstructors[cId] || 0) + 1;
+                    if (data.error || !data.drivers) {
+                        document.getElementById("loading-indicator").innerHTML = `<div class="text-danger fw-bold py-4">API 데이터 갱신 한도에 도달했습니다. 잠시 후 새로고침 해주세요.</div>`;
+                        document.getElementById("loading-indicator").style.display = "block";
+                        return;
+                    }
+
+                    // 정상 로드 시 컨테이너 블록들 시각화
+                    document.getElementById("top5-wrapper-block").style.display = "block";
+                    document.getElementById("standings-tables-block").classList.remove("d-none");
+                    
+                    const driverStandingsList = data.drivers;
+                    const constStandingsList = data.constructors;
+                    const podiumMapDrivers = data.podiums.drivers;
+                    const podiumMapConstructors = data.podiums.constructors;
+
+                    const top5 = driverStandingsList.slice(0, 5);
+                    let cardsHtml = "";
+                    const medals = { "1": "🥇", "2": "🥈", "3": "🥉" };
+
+                    top5.forEach(item => {
+                        const rank = parseInt(item.position);
+                        const medalIcon = medals[rank] || rank;
+                        const orderClass = `rank-order-${rank}`;
+                        const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
+
+                        cardsHtml += `
+                            <div class="top-driver-card ${orderClass}">
+                                <div class="card-rank-badge">${medalIcon}</div>
+                                <div>
+                                    <img id="card-avatar-${rank}" class="driver-avatar" src="" alt="Driver">
+                                    <div class="driver-name">${item.Driver.givenName}<br>${item.Driver.familyName}</div>
+                                    <div class="driver-team text-truncate" title="${teamName}">${teamName}</div>
+                                </div>
+                                <div class="driver-points">${item.points} PTS</div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
+
+                    top5.forEach(item => {
+                        const rank = item.position;
+                        const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
+                        if (wikiTitle) {
+                            fetch(`/api/wiki-meta/${wikiTitle}`)
+                                .then(r => r.json())
+                                .then(w => {
+                                    const img = document.getElementById(`card-avatar-${rank}`);
+                                    if (img && w.image) { img.src = w.image; img.style.display = "block"; }
+                                });
                         }
                     });
+
+                    // 🎨 드라이버 순위 테이블 렌더링 (안전한 RGBA 그라데이션 주입)
+                    let driversTableHtml = "";
+                    driverStandingsList.forEach(item => {
+                        const cId = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].constructorId : "";
+                        const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
+                        const teamHex = getTeamHex(cId);
+                        const dId = item.Driver.driverId;
+                        const podiums = podiumMapDrivers[dId] || 0;
+                        
+                        driversTableHtml += `
+                            <tr class="color-row" style="background: linear-gradient(90deg, ${hexToRgba(teamHex, 0.18)} 0%, transparent 55%); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="text-center rank-num" style="border-left: 5px solid ${teamHex};">${item.position}</td>
+                                <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
+                                <td class="text-white-50">${teamName}</td>
+                                <td class="text-center wins-num">${item.wins}</td>
+                                <td class="text-center text-info fw-bold">${podiums}</td>
+                                <td class="pts-num">${item.points} P</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById("drivers-table-body").innerHTML = driversTableHtml;
+
+                    // 🎨 팀 순위 테이블 렌더링 (안전한 RGBA 그라데이션 주입)
+                    let constTableHtml = "";
+                    constStandingsList.forEach(item => {
+                        const cId = item.Constructor.constructorId;
+                        const teamHex = getTeamHex(cId);
+                        const podiums = podiumMapConstructors[cId] || 0;
+
+                        constTableHtml += `
+                            <tr class="color-row" style="background: linear-gradient(90deg, ${hexToRgba(teamHex, 0.18)} 0%, transparent 55%); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="text-center rank-num" style="border-left: 5px solid ${teamHex};">${item.position}</td>
+                                <td><strong>${item.Constructor.name}</strong></td>
+                                <td class="text-center wins-num">${item.wins}</td>
+                                <td class="text-center text-info fw-bold">${podiums}</td>
+                                <td class="pts-num">${item.points} P</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById("constructors-table-body").innerHTML = constTableHtml;
+
+                }).catch(err => {
+                    document.getElementById("loading-indicator").innerHTML = `<div class="text-danger fw-bold py-4">통신 장애: 백엔드 서버 파이프라인을 확인해 주세요.</div>`;
                 });
-
-                // --- 2. 상단 Top 5 포디움 렌더링 ---
-                const driverStandingsList = driversData.MRData.StandingsTable.StandingsLists[0].DriverStandings;
-                const top5 = driverStandingsList.slice(0, 5);
-                let cardsHtml = "";
-                const medals = { "1": "🥇", "2": "🥈", "3": "🥉" };
-
-                top5.forEach(item => {
-                    const rank = parseInt(item.position);
-                    const medalIcon = medals[rank] || rank;
-                    const orderClass = `rank-order-${rank}`;
-                    const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
-
-                    cardsHtml += `
-                        <div class="top-driver-card ${orderClass}">
-                            <div class="card-rank-badge">${medalIcon}</div>
-                            <div>
-                                <img id="card-avatar-${rank}" class="driver-avatar" src="" alt="Driver">
-                                <div class="driver-name">${item.Driver.givenName}<br>${item.Driver.familyName}</div>
-                                <div class="driver-team text-truncate" title="${teamName}">${teamName}</div>
-                            </div>
-                            <div class="driver-points">${item.points} PTS</div>
-                        </div>
-                    `;
-                });
-                document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
-
-                top5.forEach(item => {
-                    const rank = item.position;
-                    const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
-                    if (wikiTitle) {
-                        fetch(`/api/wiki-meta/${wikiTitle}`)
-                            .then(r => r.json())
-                            .then(w => {
-                                const img = document.getElementById(`card-avatar-${rank}`);
-                                if (img && w.image) { img.src = w.image; img.style.display = "block"; }
-                            });
-                    }
-                });
-
-                // --- 3. 드라이버 순위 테이블 렌더링 (해결된 팀 컬러 그라데이션) ---
-                let driversTableHtml = "";
-                driverStandingsList.forEach(item => {
-                    const cId = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].constructorId : "";
-                    const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
-                    const teamHex = getTeamHex(cId);
-                    
-                    const dId = item.Driver.driverId;
-                    const podiums = podiumMapDrivers[dId] || 0;
-                    
-                    // 🎨 <tr> 배경에 그라데이션 삽입, 첫 <td>에 테두리 적용
-                    driversTableHtml += `
-                        <tr class="color-row" style="background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <td class="text-center rank-num" style="border-left: 5px solid ${teamHex};">${item.position}</td>
-                            <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
-                            <td class="text-white-50">${teamName}</td>
-                            <td class="text-center wins-num">${item.wins}</td>
-                            <td class="text-center text-info fw-bold">${podiums}</td>
-                            <td class="pts-num">${item.points} P</td>
-                        </tr>
-                    `;
-                });
-                document.getElementById("drivers-table-body").innerHTML = driversTableHtml;
-
-                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 (해결된 팀 컬러 그라데이션) ---
-                const constStandingsList = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
-                let constTableHtml = "";
-                
-                constStandingsList.forEach(item => {
-                    const cId = item.Constructor.constructorId;
-                    const teamHex = getTeamHex(cId);
-                    const podiums = podiumMapConstructors[cId] || 0;
-
-                    constTableHtml += `
-                        <tr class="color-row" style="background: linear-gradient(90deg, ${teamHex}30 0%, transparent 60%); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <td class="text-center rank-num" style="border-left: 5px solid ${teamHex};">${item.position}</td>
-                            <td><strong>${item.Constructor.name}</strong></td>
-                            <td class="text-center wins-num">${item.wins}</td>
-                            <td class="text-center text-info fw-bold">${podiums}</td>
-                            <td class="pts-num">${item.points} P</td>
-                        </tr>
-                    `;
-                });
-                document.getElementById("constructors-table-body").innerHTML = constTableHtml;
-
-            }).catch(err => {
-                console.error("통합 데이터 로드 실패:", err);
-                document.getElementById("top-drivers-cards-row").innerHTML = `<div class="w-100 text-center text-danger">데이터를 불러오는 중 오류가 발생했습니다.</div>`;
-            });
         });
     </script>
 </body>
