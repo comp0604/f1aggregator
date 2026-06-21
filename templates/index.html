@@ -11,10 +11,10 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
 
-        /* 🏁 그랑프리 배너 */
+        /* 🏁 그랑프리 배너 (전체 배경) */
         .grandprix-full-banner {
             position: relative; background-color: #1f2124; color: white; cursor: pointer; min-height: 240px; 
-            overflow: hidden; padding: 1.5rem 1rem !important; width: 100%; border-radius: 0 !important;
+            overflow: hidden; padding: 1.5rem 0 !important; width: 100%; border-radius: 0 !important;
             display: flex; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin-top: 0; margin-bottom: 2.5rem;
         }
         .grandprix-full-banner::before {
@@ -24,33 +24,60 @@
         }
         .grandprix-full-banner > * { position: relative; z-index: 1; }
         
-        /* 배너 내부 중앙 정렬 컨테이너 */
+        /* 💡 핵심 구조 수정: 하단 카드 컴포넌트들과 대칭을 맞추기 위해 최대 가로폭 가두기 및 절대좌표 기준점 설정 */
         .row-content-race { 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            width: 100%; height: 100%; position: relative; max-width: 1280px; margin: 0 auto;
+            width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 2rem;
+            position: relative;
         }
         
+        /* 🎯 중앙 메인 블록: 양옆 컴포넌트에 방해받지 않고 언제나 화면 정중앙 배치 보장 */
+        .main-race-center-block {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            z-index: 6; width: 100%;
+        }
+
         .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
         .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
 
-        /* 우측 서킷 지도 (우측 엣지에 안정감 있게 고정) */
+        /* 🗺️ 우측 서킷 지도 컴포넌트 */
         .circuit-img-wrapper { 
-            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); 
             width: 220px; height: 170px; display: flex; align-items: center; justify-content: center; 
-            opacity: 0.85;
+            opacity: 0.9; margin-top: 1rem;
         }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* ⏱️ 융합형 세션 시간표 컴포넌트 (이름 옆에 붙이기 위해 절대좌표 해제) */
+        /* ⏱️ 좌측 세션 시간표 컴포넌트 */
         .sessions-left-wrapper {
-            display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(8px); padding: 12px 16px; border-radius: 16px;
+            display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px); padding: 10px 14px; border-radius: 16px;
             border-left: 4px solid #e10600; font-size: 0.72rem; 
-            width: 100%; min-width: 240px; max-width: 260px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            z-index: 5;
+            width: 100%; min-width: 240px; max-width: 260px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 5;
+            margin-top: 1rem;
         }
+
+        /* 💡 미디어 쿼리: 데스크톱 화면에서 타이틀 독립 정렬 및 양끝 가두리 밀착 배치 */
         @media (min-width: 992px) {
-            .sessions-left-wrapper { font-size: 0.76rem; }
+            .row-content-race {
+                min-height: 240px;
+            }
+            /* 시간표를 타이틀 왼쪽에 침범 없이 밀착 */
+            .sessions-left-wrapper {
+                position: absolute;
+                left: 2rem; 
+                top: 50%;
+                transform: translateY(-50%);
+                margin-top: 0;
+                font-size: 0.78rem;
+            }
+            /* 서킷 지도를 타이틀 오른쪽에 침범 없이 밀착 */
+            .circuit-img-wrapper { 
+                position: absolute;
+                right: 2rem; 
+                top: 50%;
+                transform: translateY(-50%);
+                margin-top: 0;
+            }
         }
 
         .session-time-item {
@@ -71,10 +98,6 @@
             color: transparent;
             animation: gradient-shift 4s infinite linear;
             text-shadow: 0 4px 15px rgba(255, 136, 0, 0.3); 
-        }
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            100% { background-position: -300% 50%; }
         }
 
         /* 🏆 랭킹 보드 기본 스타일 */
@@ -187,7 +210,7 @@
                 var(--gradient-five, radial-gradient(at 86% 85%, hsla(186, 100%, 74%, 1) 0px, transparent 50%)) border-box,
                 var(--gradient-six, radial-gradient(at 82% 18%, hsla(52, 100%, 65%, 1) 0px, transparent 50%)) border-box,
                 var(--gradient-seven, radial-gradient(at 51% 4%, hsla(12, 100%, 72%, 1) 0px, transparent 50%)) border-box,
-                var(--gradient-base, linear-gradient(#c299ff 0 100%)) padding-box;
+                var(--gradient-base, linear-gradient(#c299ff 0 100%)) border-box;
 
             mask-image:
                 linear-gradient(to bottom, black, black),
@@ -236,22 +259,16 @@
     <div id="card-race" class="grandprix-full-banner" onclick="location.href='/calendar'">
         <div class="row-content-race">
             
-            <div class="d-flex flex-column align-items-center text-center gap-3 mx-auto" style="z-index: 6;">
+            <div id="dash-sessions-left" class="sessions-left-wrapper">
+                <div class="text-white-50 small w-100 text-center py-2">세션 일정 조율 중...</div>
+            </div>
+
+            <div class="main-race-center-block">
                 <span class="badge bg-danger px-3 py-1.5 mt-2">NEXT GRAND PRIX</span>
+                <h1 id="dash-race-name" class="fs-1 m-0 my-2 gradient-text-only fw-bold">로딩 중...</h1>
+                <p id="dash-race-circuit" class="fs-6 text-white-50 m-0 mb-2">연동 중...</p>
                 
-                <div class="d-flex flex-column flex-lg-row align-items-center justify-content-center gap-4 my-1 w-100">
-                    
-                    <div id="dash-sessions-left" class="sessions-left-wrapper">
-                        <div class="text-white-50 small w-100 text-center py-2">세션 일정 조율 중...</div>
-                    </div>
-
-                    <div class="text-center text-lg-start">
-                        <h1 id="dash-race-name" class="fs-1 m-0 gradient-text-only fw-bold">로딩 중...</h1>
-                        <p id="dash-race-circuit" class="fs-6 text-white-50 m-0 mt-1">연동 중...</p>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-3 text-center" style="max-width: 460px; width: 100%;">
+                <div class="d-flex gap-3 text-center mx-auto" style="max-width: 460px; width: 100%;">
                     <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-day" class="timer-num">00</div><div class="timer-label text-white-50">DAYS</div></div>
                     <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-hour" class="timer-num">00</div><div class="timer-label text-white-50">HOURS</div></div>
                     <div class="bg-dark p-2.5 rounded-3 flex-fill"><div id="d-min" class="timer-num">00</div><div class="timer-label text-white-50">MINUTES</div></div>
@@ -259,7 +276,7 @@
                 </div>
             </div>
             
-            <div class="circuit-img-wrapper d-none d-xl-flex">
+            <div class="circuit-img-wrapper d-none d-md-flex">
                 <img id="dash-circuit-map" class="dash-circuit-map" src="" alt="Circuit Map">
             </div>
         </div>
