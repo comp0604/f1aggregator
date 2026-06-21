@@ -143,9 +143,8 @@
 
     </div>
 
-    <script>
+<script>
         document.addEventListener("DOMContentLoaded", function() {
-            // 💥 순수 1차 소스(Jolpi Ergast 엔드포인트)만 활용
             const driversUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
             const constructorsUrl = "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json";
 
@@ -165,8 +164,11 @@
                         const borderClass = rank <= 3 ? `rank-${rank}` : "";
                         const badgeActive = rank <= 3 ? "active-rank" : "";
                         
-                        // 💥 오타 유발 파편을 완전히 청소하고 위키 제목 파싱부 재정돈
-                        const wikiTitle = item.Driver.url.split('/wiki/')[1];
+                        // 🔥 [버그 수정] API가 배열(Constructors)로 내려주므로 첫 번째 팀 이름을 안전하게 추출합니다.
+                        const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
+
+                        // 안전한 위키 URL 파싱
+                        const wikiTitle = (item.Driver.url || "").split('/wiki/')[1] || "";
 
                         cardsHtml += `
                             <div class="col">
@@ -174,7 +176,7 @@
                                     <div class="card-rank-badge ${badgeActive}">${medalIcon || rank}</div>
                                     <img id="card-avatar-${rank}" class="driver-avatar" src="" alt="Driver">
                                     <div class="driver-name">${item.Driver.givenName}<br>${item.Driver.familyName}</div>
-                                    <div class="driver-team text-truncate" title="${item.Constructor.name}">${item.Constructor.name}</div>
+                                    <div class="driver-team text-truncate" title="${teamName}">${teamName}</div>
                                     <div class="driver-points">${item.points} PTS</div>
                                 </div>
                             </div>
@@ -182,10 +184,10 @@
                     });
                     document.getElementById("top-drivers-cards-row").innerHTML = cardsHtml;
 
-                    // 백엔드 위키 프록시 API를 연동한 드라이버 프로필 사진 레이지 로드
+                    // 프로필 사진 순차 프록시 딜리버리
                     top5.forEach(item => {
                         const rank = item.position;
-                        const wikiTitle = item.Driver.url.split('/wiki/')[1];
+                        const wikiTitle = (item.Driver.url || "").split('/wiki/')[1];
                         if (wikiTitle) {
                             fetch(`/api/wiki-meta/${wikiTitle}`)
                                 .then(r => r.json())
@@ -200,11 +202,14 @@
 
                     let tableHtml = "";
                     standingsList.forEach(item => {
+                        // 🔥 [버그 수정] 하단 테이블 렌더링 시에도 Constructors 배열로 접근합니다.
+                        const teamName = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].name : "Unknown";
+                        
                         tableHtml += `
                             <tr>
                                 <td class="text-center rank-num">${item.position}</td>
                                 <td><strong>${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
-                                <td class="text-white-50">${item.Constructor.name}</td>
+                                <td class="text-white-50">${teamName}</td>
                                 <td class="text-center wins-num">${item.wins}</td>
                                 <td class="pts-num">${item.points} P</td>
                             </tr>
@@ -212,7 +217,7 @@
                     });
                     document.getElementById("drivers-table-body").innerHTML = tableHtml;
                 })
-                .catch(err => console.error("드라이버 데이터 로드 오류:", err));
+                .catch(err => console.error("Driver Standings Error:", err));
 
             // 2. 팀 순위 바인딩
             fetch(constructorsUrl)
@@ -233,7 +238,7 @@
                     });
                     document.getElementById("constructors-table-body").innerHTML = tableHtml;
                 })
-                .catch(err => console.error("컨스트럭터 데이터 로드 오류:", err));
+                .catch(err => console.error("Constructor Standings Error:", err));
         });
     </script>
 </body>
