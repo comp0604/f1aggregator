@@ -3,18 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Standings</title>
+    <title>🏎️ LecLovF1 - Race Calendar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
-        .f1-header { background-color: #e10600; color: white; padding: 1.5rem 0; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .f1-logo { color: white; text-decoration: none; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .table-f1 th { background-color: #212529; color: white; text-align: center; font-size: 0.9rem; }
-        .table-f1 td { vertical-align: middle; text-align: center; font-size: 0.9rem; }
-        .podium-1 { background-color: #fff3cd !important; font-weight: bold; }
-        .podium-2 { background-color: #e2e3e5 !important; }
-        .podium-3 { background-color: #f8d7da !important; }
+        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
+        .f1-header { background-color: #e10600; color: white; padding: 1.2rem 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; }
+        .f1-logo:hover { color: rgba(255,255,255,0.8); }
+
+        .calendar-scroll-wrapper {
+            background-color: #1f2124; padding: 1.2rem 1rem; display: flex; overflow-x: auto; gap: 1rem; scroll-behavior: smooth; border-bottom: 5px solid #e10600; min-height: 175px; align-items: center;
+        }
+        .calendar-scroll-wrapper::-webkit-scrollbar { height: 6px; }
+        .calendar-scroll-wrapper::-webkit-scrollbar-track { background: #1f2124; }
+        .calendar-scroll-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .calendar-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #e10600; }
+
+        .mini-race-card {
+            flex: 0 0 240px; background-color: #2d3035; border-radius: 12px; padding: 1rem; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s, border-color 0.2s; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid transparent; cursor: pointer; min-height: 145px;
+        }
+        .mini-race-card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.2); }
+
+        .mini-race-card.current-race {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important; color: #1f2124 !important; font-weight: bold; box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4); border: 2px solid #ffffff !important; opacity: 1 !important;
+        }
+        .mini-race-card.current-race .race-round, .mini-race-card.current-race .race-loc, .mini-race-card.current-race .race-date, .mini-race-card.current-race .scroll-winner-name {
+            color: rgba(31, 33, 36, 0.75) !important;
+        }
+
+        .mini-race-card.has-team-color { color: #ffffff !important; }
+        .mini-race-card.has-team-color .race-round { color: rgba(255, 255, 255, 0.6) !important; }
+        .mini-race-card.has-team-color .race-date { color: #ffffff !important; opacity: 0.9; }
+        .mini-race-card.has-team-color .scroll-winner-name { color: #ffeb3b !important; }
+        .mini-race-card.selected-card { border: 2px solid #e10600 !important; box-shadow: 0 0 12px rgba(225, 6, 0, 0.6); }
+        .mini-race-card.past-race { opacity: 0.85; background-color: #1a1c1e; }
+
+        .race-round { font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; }
+        .race-title { font-size: 1.1rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .race-loc { font-size: 0.8rem; margin-top: 2px; }
+        .race-date { font-size: 0.9rem; font-weight: bold; margin-top: 6px; text-align: right; }
+
+        .scroll-winner-container { display: flex; align-items: center; gap: 8px; margin-top: 8px; background-color: rgba(255,255,255,0.12); padding: 4px 8px; border-radius: 6px; }
+        .mini-race-card.current-race .scroll-winner-container { background-color: rgba(0, 0, 0, 0.06); }
+        .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: center 15%; background-color: white; border: 1px solid rgba(255,255,255,0.3); display: none; }
+        .scroll-winner-name { font-size: 0.75rem; font-weight: bold; color: #ffc107; }
+
+        .race-detail-section { position: relative; background-color: #1f2124; color: white; min-height: 380px; border-radius: 24px; overflow: hidden; padding: 2.5rem !important; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+        .race-detail-section::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--detail-bg, none); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); transform: scale(1.1); z-index: 0; transition: background-image 0.4s ease-in-out;
+        }
+        .race-detail-section > * { position: relative; z-index: 1; }
+
+        .detail-podium { display: flex; gap: 10px; align-items: flex-end; height: 200px; width: 100%; margin-top: 15px; }
+        .detail-podium-step { background-color: rgba(255, 255, 255, 0.08); border-radius: 12px 12px 4px 4px; padding: 10px 4px 6px 4px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .d-podium-1 { height: 100%; background: linear-gradient(to top, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.02)); border: 1px solid rgba(255, 215, 0, 0.3); }
+        .d-podium-2 { height: 80%; background: linear-gradient(to top, rgba(192, 192, 192, 0.12), rgba(192, 192, 192, 0.02)); border: 1px solid rgba(192, 192, 192, 0.2); }
+        .d-podium-3 { height: 66%; background: linear-gradient(to top, rgba(205, 127, 50, 0.1), rgba(205, 127, 50, 0.02)); border: 1px solid rgba(205, 127, 50, 0.15); }
+        
+        .d-podium-img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 2px solid rgba(255, 255, 255, 0.4); background-color: white; margin-bottom: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: none; }
+        .d-podium-rank { font-size: 1.1rem; margin-bottom: 2px; line-height: 1; }
+        .d-podium-name { font-size: 0.8rem; font-weight: bold; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; }
+
+        .detail-img-wrapper { width: 100%; max-width: 320px; height: 240px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
+
+        .wiki-extract-box { font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 3px solid #ffc107; }
+        .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
+        .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
+        .back-btn:hover { background-color: #e10600; color: white; }
     </style>
 </head>
 <body>
@@ -25,58 +81,196 @@
         </div>
     </header>
 
-    <main class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card p-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered table-f1 mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 15%;">순위</th>
-                                    <th style="width: 45%;">드라이버</th>
-                                    <th style="width: 25%;">팀</th>
-                                    <th style="width: 15%;">포인트</th>
-                                </tr>
-                            </thead>
-                            <tbody id="standings-rows">
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">로드 중...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+    <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
+        <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
+            <div class="spinner-border text-danger spinner-border-sm"></div>
+            <span>F1 일정 타임라인 연결 중...</span>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <div class="card race-detail-section mb-4" id="detail-panel">
+            <div class="container-fluid p-0">
+                <div class="row align-items-center g-4">
+                    
+                    <div class="col-md-3 d-none" id="detail-podium-col"></div>
+
+                    <div class="col-md-8" id="detail-text-col">
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <span id="detail-round" class="badge bg-danger px-3 py-1.5 mb-2 fs-6">ROUND 00</span>
+                                <h1 id="detail-title" class="display-6 fw-bold text-warning m-0">그랑프리를 선택해 주세요</h1>
+                                <p id="detail-circuit-name" class="fs-4 text-white-50 m-0">로딩 중...</p>
+                                <p id="detail-location" class="fs-5 text-muted m-0">📍 위치 로딩 중...</p>
+                            </div>
+                            
+                            <div id="detail-wiki" class="wiki-extract-box">레이스를 동기화하는 중입니다.</div>
+                            <div class="fs-5 fw-bold text-white mt-1">📅 레이스 공식 일시: <span id="detail-date" class="text-danger">0000-00-00</span></div>
+                        </div>
                     </div>
+
+                    <div class="col-md-4 d-flex justify-content-center justify-content-md-end" id="detail-map-col">
+                        <div class="detail-img-wrapper">
+                            <img id="detail-map-img" src="" alt="Circuit Map">
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-    </main>
+
+        <div class="text-center mt-4"><button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button></div>
+    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const apiUrl = "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
-            const tableBody = document.getElementById("standings-rows");
+            const scrollBox = document.getElementById("calendar-scroll-box");
+            let localRacesArray = [];
 
-            fetch(apiUrl)
+            // 공통 이미지/설명문 렌더링 함수
+            function renderDetailPanel(race) {
+                document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
+                document.getElementById("detail-title").innerText = race.raceName;
+                document.getElementById("detail-circuit-name").innerText = race.circuit_name;
+                document.getElementById("detail-location").innerText = `📍 ${race.locality}, ${race.country}`;
+                document.getElementById("detail-date").innerText = race.date;
+                document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
+
+                fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
+                    .then(res => res.json())
+                    .then(wiki => {
+                        document.getElementById("detail-wiki").innerText = wiki.extract;
+                        const mapImg = document.getElementById("detail-map-img");
+                        if(wiki.image) {
+                            mapImg.src = wiki.image; mapImg.style.display = "block";
+                        } else {
+                            mapImg.style.display = "none";
+                        }
+                    });
+
+                const pCol = document.getElementById("detail-podium-col");
+                const tCol = document.getElementById("detail-text-col");
+                const mCol = document.getElementById("detail-map-col");
+
+                // 구멍 유무와 관계없이 백엔드가 수집을 대행해 주는 포디움 API 비동기 노크
+                if (race.is_past) {
+                    fetch(`/api/race-podium/${race.round}`)
+                        .then(res => res.json())
+                        .then(podium => {
+                            if (podium && podium.length >= 3) {
+                                pCol.classList.remove("d-none");
+                                pCol.className = "col-md-3"; tCol.className = "col-md-6"; mCol.className = "col-md-3";
+
+                                const d1 = podium.find(p => p.position === "1");
+                                const d2 = podium.find(p => p.position === "2");
+                                const d3 = podium.find(p => p.position === "3");
+
+                                pCol.innerHTML = `
+                                    <span class="badge bg-warning text-dark px-2.5 py-1 mb-2 fw-bold" style="font-size:0.72rem;">RACE PODIUM</span>
+                                    <div class="detail-podium">
+                                        <div class="detail-podium-step d-podium-2">
+                                            <img class="d-podium-img" id="pod-avatar-2" src="" alt="2nd">
+                                            <div class="d-podium-rank">🥈</div>
+                                            <div class="d-podium-name">${d2.familyName}</div>
+                                        </div>
+                                        <div class="detail-podium-step d-podium-1">
+                                            <img class="d-podium-img" id="pod-avatar-1" src="" alt="1st">
+                                            <div class="d-podium-rank">🥇</div>
+                                            <div class="d-podium-name">${d1.familyName}</div>
+                                        </div>
+                                        <div class="detail-podium-step d-podium-3">
+                                            <img class="d-podium-img" id="pod-avatar-3" src="" alt="3rd">
+                                            <div class="d-podium-rank">🥉</div>
+                                            <div class="d-podium-name">${d3.familyName}</div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-1"); i.src=w.image; i.style.display="block"; } });
+                                fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-2"); i.src=w.image; i.style.display="block"; } });
+                                fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-3"); i.src=w.image; i.style.display="block"; } });
+                            } else {
+                                pCol.classList.add("d-none"); tCol.className = "col-md-8"; mCol.className = "col-md-4";
+                            }
+                        });
+                } else {
+                    pCol.classList.add("d-none"); tCol.className = "col-md-8"; mCol.className = "col-md-4";
+                }
+            }
+
+            // 1단계: 메인 리스트 초고속 렌더링
+            fetch("/api/calendar-list")
                 .then(res => res.json())
                 .then(data => {
-                    const list = data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
-                    let htmlContent = "";
+                    localRacesArray = data.races;
+                    let html = "";
 
-                    list.forEach(item => {
-                        const pos = parseInt(item.position);
-                        let rowClass = pos === 1 ? "podium-1" : pos === 2 ? "podium-2" : pos === 3 ? "podium-3" : "";
+                    localRacesArray.forEach(race => {
+                        let cardClass = race.is_past ? "past-race" : "";
+                        let cardStyle = race.winner_name ? `style="background: ${race.team_color}; border-color: ${race.team_color};"` : "";
+                        let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
+                        
+                        if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
+                        if (race.winner_name && !race.is_next) cardClass += " has-team-color";
 
-                        htmlContent += `
-                            <tr class="${rowClass}">
-                                <td class="fw-bold">${pos}</td>
-                                <td class="text-start ps-4 fw-bold">${item.Driver.givenName} ${item.Driver.familyName}</td>
-                                <td><span class="badge bg-secondary">${item.Constructors[0].name}</span></td>
-                                <td class="fw-bold text-danger">${item.points} P</td>
-                            </tr>
+                        let winnerBadge = "";
+                        if (race.winner_name) {
+                            winnerBadge = `
+                                <div class="scroll-winner-container">
+                                    <img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win">
+                                    <span class="scroll-winner-name">🏆 ${race.winner_name}</span>
+                                </div>
+                            `;
+                        }
+
+                        html += `
+                            <div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}">
+                                <div>
+                                    <div class="race-round text-danger text-uppercase">${race.round} ROUND</div>
+                                    <div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div>
+                                    <div class="race-loc text-white-50">📍 ${race.locality}</div>
+                                </div>
+                                ${winnerBadge}
+                                <div class="race-date text-warning">${race.date}</div>
+                            </div>
                         `;
                     });
-                    tableBody.innerHTML = htmlContent;
+
+                    scrollBox.innerHTML = html;
+
+                    // 스크롤바 카드 내 미니 우승자 썸네일 순차적 비동기 로딩
+                    localRacesArray.forEach(race => {
+                        if (race.winner_wiki) {
+                            fetch(`/api/wiki-meta/${race.winner_wiki}`)
+                                .then(r => r.json())
+                                .then(w => {
+                                    const thumb = document.getElementById(`win-thumb-${race.round}`);
+                                    if(thumb && w.image) { thumb.src = w.image; thumb.style.display = "block"; }
+                                });
+                        }
+                    });
+
+                    if(data.next_race_idx !== -1) {
+                        const defRace = localRacesArray[data.next_race_idx];
+                        const defCard = document.querySelector(`[data-idx="${data.next_race_idx}"]`);
+                        if (defCard) defCard.classList.add("selected-card");
+                        renderDetailPanel(defRace);
+                    }
+
+                    setTimeout(() => {
+                        const targetCard = document.getElementById("next-active-race");
+                        if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    }, 200);
                 });
+
+            scrollBox.addEventListener("click", function(e) {
+                const card = e.target.closest(".mini-race-card");
+                if (!card) return;
+                document.querySelectorAll(".mini-race-card").forEach(c => c.classList.remove("selected-card"));
+                card.classList.add("selected-card");
+                const idx = parseInt(card.getAttribute("data-idx"));
+                renderDetailPanel(localRacesArray[idx]);
+            });
         });
     </script>
 </body>
