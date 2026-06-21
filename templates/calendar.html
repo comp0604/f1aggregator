@@ -84,7 +84,7 @@
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
             <div class="spinner-border text-danger spinner-border-sm"></div>
-            <span>대시보드 엔진 가동 중...</span>
+            <span>대시보드 라이브 데이터 로드 중...</span>
         </div>
     </div>
 
@@ -127,7 +127,6 @@
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
 
-            // 💥 텍스트 및 서킷 지도를 레이지 로딩해오는 코어 함수
             function renderDetailPanel(race) {
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
@@ -136,7 +135,7 @@
                 document.getElementById("detail-date").innerText = race.date;
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
 
-                // 💥 텍스트 및 지도만 위키 백엔드 라우트 호출 (레이지 갱신)
+                // 위키 텍스트 설명 프록시 로드
                 fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
                     .then(res => res.json())
                     .then(wiki => {
@@ -149,7 +148,7 @@
                         }
                     });
 
-                // 💥 포디움 순위 패널 분리 호출 기믹
+                // 포디움 정보 레이지 파이프라인
                 const pCol = document.getElementById("detail-podium-col");
                 const tCol = document.getElementById("detail-text-col");
                 const mCol = document.getElementById("detail-map-col");
@@ -187,7 +186,7 @@
                                     </div>
                                 `;
                                 
-                                // 각 시상대 얼굴 프록시 호출 레이지 바인딩
+                                // 얼굴 소싱 매핑 진행
                                 fetch(`/api/wiki-meta/${d1.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-1"); i.src=w.image; i.style.display="block"; } });
                                 fetch(`/api/wiki-meta/${d2.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-2"); i.src=w.image; i.style.display="block"; } });
                                 fetch(`/api/wiki-meta/${d3.wiki_title}`).then(r=>r.json()).then(w => { if(w.image) { const i = document.getElementById("pod-avatar-3"); i.src=w.image; i.style.display="block"; } });
@@ -200,7 +199,7 @@
                 }
             }
 
-            // 1단계: 0.1초 만에 최속 로드되는 경량 API 호출
+            // 0.001초 뼈대 리스트 즉시 반환 유도
             fetch("/api/calendar-list")
                 .then(res => res.json())
                 .then(data => {
@@ -240,7 +239,7 @@
 
                     scrollBox.innerHTML = html;
 
-                    // 스크롤바 우승자 미니 썸네일만 프록시 백그라운드 실시간 순차 로드 (비차단)
+                    // 스크롤바 미니 배지 얼굴 백그라운드 매핑
                     localRacesArray.forEach(race => {
                         if (race.winner_wiki) {
                             fetch(`/api/wiki-meta/${race.winner_wiki}`)
@@ -252,7 +251,6 @@
                         }
                     });
 
-                    // 최초 기본 타겟 활성화 지정
                     if(data.next_race_idx !== -1) {
                         const defRace = localRacesArray[data.next_race_idx];
                         const defCard = document.querySelector(`[data-idx="${data.next_race_idx}"]`);
