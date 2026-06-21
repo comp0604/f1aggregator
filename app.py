@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, jsonify, request
 import sqlite3
 import os
@@ -19,7 +18,7 @@ OPENF1_PODIUM_CACHE = {}
  
 # 💾 /api/calendar-list 전체 응답 캐시 (외부 API가 느리거나 죽었을 때 매 요청마다 재호출 방지)
 CALENDAR_LIST_CACHE = {"payload": None, "ts": 0}
-CALENDAR_LIST_TTL_SECONDS = 60
+CALENDAR_LIST_TTL_SECONDS = 300  # 5분: 캘린더는 자주 안 바뀌고, jolpi.ca 시간당 200req 제한도 있어 너무 짧으면 위험
  
 def get_db_connection():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -56,18 +55,25 @@ def get_flag_url(country_name):
     }
     return f"https://flagcdn.com/w1280/{mapping.get(name, 'un')}.png"
  
-def fetch_json_safely(url):
-    try:
-        ssl_context = ssl._create_unverified_context()
-        req = urllib.request.Request(
-            url,
-            headers={'User-Agent': 'LecLovF1/1.0 (contact@leclovf1.com) Python/3.x'}
-        )
-        with urllib.request.urlopen(req, timeout=4, context=ssl_context) as response:
-            return json.loads(response.read().decode('utf-8'))
-    except Exception as e:
-        print(f"⚠️ API 통신 지연/실패 ({url}): {e}")
-        return None
+def fetch_json_safely(url, timeout=7, retries=1, retry_delay=0.6):
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            ssl_context = ssl._create_unverified_context()
+            req = urllib.request.Request(
+                url,
+                headers={'User-Agent': 'LecLovF1/1.0 (contact@leclovf1.com) Python/3.x'}
+            )
+            with urllib.request.urlopen(req, timeout=timeout, context=ssl_context) as response:
+                return json.loads(response.read().decode('utf-8'))
+        except Exception as e:
+            last_err = e
+            if attempt < retries:
+                # jolpi.ca는 백엔드 과부하 시 503을 자주 반환하는 것으로 알려져 있어 짧게 한 번 재시도
+                time.sleep(retry_delay)
+                continue
+    print(f"⚠️ API 통신 지연/실패 ({url}): {last_err}")
+    return None
  
 # OpenF1 2차 피드 정밀 타격 함수
 def fetch_openf1_fallback(locality, race_date):
@@ -143,8 +149,11 @@ def api_calendar_list():
  
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
-    calendar_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current.json")
-    results_data = fetch_json_safely("https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
+    with ThreadPoolExecutor(max_workers=2) as pre_executor:
+        calendar_future = pre_executor.submit(fetch_json_safely, "https://api.jolpi.ca/ergast/f1/current.json")
+        results_future = pre_executor.submit(fetch_json_safely, "https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000")
+        calendar_data = calendar_future.result()
+        results_data = results_future.result()
     if not calendar_data:
         # 1차 소스 실패 시, 직전에 성공했던 캐시가 있다면 그거라도 내려준다 (프론트가 무한로딩에 빠지지 않도록)
         if cached:
@@ -288,6 +297,6 @@ def api_race_sessions(round_num):
             } for r in r_table[0]["Results"][:5]]
             
     return jsonify(payload)
-
+ 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
