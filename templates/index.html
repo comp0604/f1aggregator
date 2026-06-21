@@ -11,10 +11,10 @@
         .f1-logo { color: white; text-decoration: none; font-weight: bold; font-size: 1.5rem; transition: opacity 0.2s; }
         .f1-logo:hover { opacity: 0.8; color: white; }
 
-        /* 🏁 그랑프리 배너 (상단 완전히 밀착 및 가로 100% 엣지투엣지 구조) */
+        /* 🏁 그랑프리 배너 */
         .grandprix-full-banner {
             position: relative; background-color: #1f2124; color: white; cursor: pointer; min-height: 240px; 
-            overflow: hidden; padding: 1.5rem 2rem !important; width: 100%; border-radius: 0 !important; /* 각진 모서리로 가로 확장 극대화 */
+            overflow: hidden; padding: 1.5rem 2rem !important; width: 100%; border-radius: 0 !important;
             display: flex; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin-top: 0; margin-bottom: 2.5rem;
         }
         .grandprix-full-banner::before {
@@ -25,20 +25,69 @@
         .grandprix-full-banner > * { position: relative; z-index: 1; }
         .row-content-race { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
         
-        /* 타이머 디자인 */
         .timer-num { font-size: 2.6rem !important; font-weight: 800; line-height: 1; }
         .timer-label { font-size: 0.75rem; letter-spacing: 1px; margin-top: 3px; }
 
         .circuit-img-wrapper { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); width: 240px; height: 190px; display: flex; align-items: center; justify-content: center; }
         .dash-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 8px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 6px 15px rgba(0,0,0,0.3); display: none; }
 
-        /* 🏆 랭킹 보드 */
+        /* 🏆 랭킹 보드 공통 레이아웃 */
         .row-content-rank { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; gap: 1.5rem; height: 100%; }
-        .dashboard-row-card { position: relative; background-color: #1f2124; border: none; border-radius: 24px; color: white; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; min-height: 340px; overflow: hidden; padding: 2rem !important; width: 100%; }
-        .dashboard-row-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(225, 6, 0, 0.22); }
+        
+        /* ✨ Border Glow 래퍼 영역 (빛나는 테두리를 만들어주는 바깥 컨테이너) */
+        .glow-wrapper {
+            position: relative;
+            border-radius: 26px; /* 안쪽 카드보다 둥글기를 살짝 크게 설정 */
+            padding: 3px; /* 💡 이 패딩 값이 곧 빛나는 테두리의 두께가 됩니다 */
+            z-index: 0;
+            overflow: hidden;
+            display: flex;
+            height: 100%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: #1a1c1e; /* 그라데이션 바탕색 */
+        }
+        .glow-wrapper:hover {
+            transform: translateY(-4px);
+        }
+        /* 드라이버/팀별 호버 시 글로우 섀도우 색상 분리 */
+        .glow-driver:hover { box-shadow: 0 10px 25px rgba(13, 110, 253, 0.4); }
+        .glow-team:hover { box-shadow: 0 10px 25px rgba(25, 135, 84, 0.4); }
+
+        /* 빙글빙글 도는 그라데이션 애니메이션 */
+        .glow-wrapper::before,
+        .glow-wrapper::after {
+            content: ''; position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            z-index: -2;
+            animation: rotate-glow 4s linear infinite;
+        }
+        /* 애프터 요소에 블러를 주어 빛 번짐 효과 부여 */
+        .glow-wrapper::after { filter: blur(15px); }
+
+        /* 드라이버 카드의 테두리 색상 (파랑/하늘빛) */
+        .glow-driver::before, .glow-driver::after {
+            background: conic-gradient(transparent, transparent, transparent, #0d6efd, #00e6ff);
+        }
+        /* 팀 카드의 테두리 색상 (초록/형광빛) */
+        .glow-team::before, .glow-team::after {
+            background: conic-gradient(transparent, transparent, transparent, #198754, #20c997);
+        }
+
+        @keyframes rotate-glow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 래퍼 안쪽의 진짜 카드 영역 (호버와 그림자는 래퍼가 담당하므로 제거) */
+        .dashboard-row-card { 
+            position: relative; background-color: #1f2124; border: none; border-radius: 24px; color: white; min-height: 340px; overflow: hidden; padding: 2rem !important; width: 100%; height: 100%;
+        }
         .dashboard-row-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--bg-image, none); background-size: cover; background-position: center; filter: blur(20px) brightness(0.2); transform: scale(1.1); z-index: 0; transition: background-image 0.5s ease-in-out; }
         .dashboard-row-card > * { position: relative; z-index: 1; }
 
+        /* 포디움 스타일링 */
         .rank-container { width: 100%; max-width: 520px; display: flex; gap: 12px; align-items: flex-end; height: 250px; margin: 0 auto; }
         .podium-step { background-color: rgba(255, 255, 255, 0.08); border-radius: 16px 16px 8px 8px; padding: 15px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex: 1; position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .podium-1 { height: 100%; background: linear-gradient(to top, rgba(255, 215, 0, 0.18), rgba(255, 215, 0, 0.04)); border: 1px solid rgba(255, 215, 0, 0.4); }
@@ -98,28 +147,32 @@
         
         <div class="row g-4 mb-5">
             <div class="col-lg-6">
-                <div id="card-driver" class="card dashboard-row-card h-100" onclick="location.href='/standings'">
-                    <div class="row-content-rank">
-                        <div>
-                            <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
-                        </div>
-                        <div id="dash-drivers-box" class="rank-container">
-                            <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
+                <div class="glow-wrapper glow-driver" onclick="location.href='/standings'">
+                    <div id="card-driver" class="card dashboard-row-card">
+                        <div class="row-content-rank">
+                            <div>
+                                <span class="badge bg-primary px-3 py-1.5 mb-1">DRIVERS CHAMPIONSHIP</span>
+                                <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Drivers</h3>
+                            </div>
+                            <div id="dash-drivers-box" class="rank-container">
+                                <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-6">
-                <div id="card-team" class="card dashboard-row-card h-100" onclick="location.href='/standings'">
-                    <div class="row-content-rank">
-                        <div>
-                            <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
-                            <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
-                        </div>
-                        <div id="dash-teams-box" class="rank-container">
-                            <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
+                <div class="glow-wrapper glow-team" onclick="location.href='/standings'">
+                    <div id="card-team" class="card dashboard-row-card">
+                        <div class="row-content-rank">
+                            <div>
+                                <span class="badge bg-success px-3 py-1.5 mb-1">CONSTRUCTORS CHAMPIONSHIP</span>
+                                <h3 class="fw-bold text-white m-0 fs-5">Current Top 3 Teams</h3>
+                            </div>
+                            <div id="dash-teams-box" class="rank-container">
+                                <div class="text-white-50 small mt-5 w-100">동기화 중...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
