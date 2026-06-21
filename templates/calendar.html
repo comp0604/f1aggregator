@@ -76,9 +76,9 @@
         /* 🎖️ 부가 칭호 뱃지 (스프린트, 폴포지션, 패스티스트랩) */
         .accolade-badges { display: flex; flex-direction: column; gap: 6px; margin-top: 15px; width: 100%; align-items: center; }
         .accolade-badge { font-size: 0.75rem; font-weight: bold; padding: 5px 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: 85%; text-align: center; letter-spacing: -0.5px; }
-        .badge-sprint { background-color: #0dcaf0; color: #000; }     /* 하늘색 */
-        .badge-fastest { background-color: #800080; color: #fff; }    /* 보라색 */
-        .badge-pole { background-color: #dc3545; color: #fff; }       /* 빨간색 */
+        .badge-sprint { background-color: #0dcaf0; color: #000; }
+        .badge-fastest { background-color: #800080; color: #fff; }
+        .badge-pole { background-color: #dc3545; color: #fff; }
  
         /* 기타 스타일 */
         .detail-img-wrapper { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
@@ -88,6 +88,14 @@
         .content-container { max-width: 1200px; margin: 2.5rem auto; padding: 0 1rem; }
         .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
         .back-btn:hover { background-color: #e10600; color: white; }
+
+        /* 유튜브 카드 스타일 */
+        .yt-card { transition: all 0.2s ease-in-out; text-decoration: none; border-radius: 12px; }
+        .yt-card:hover { transform: translateY(-4px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+        .yt-card-main { background-color: rgba(225, 6, 0, 0.15); border: 1px solid #e10600; }
+        .yt-card-main:hover { background-color: rgba(225, 6, 0, 0.25); }
+        .yt-card-sub { background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.2); }
+        .yt-card-sub:hover { background-color: rgba(255, 255, 255, 0.1); border-color: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
@@ -139,6 +147,15 @@
                     <div class="col-12 px-0">
                         <h5 class="text-warning fw-bold mb-3">📋 그랑프리 세션 리포트 (<span id="session-season-tag" class="text-white-50"></span>)</h5>
                         <div class="row g-3" id="session-tables-container"></div>
+                    </div>
+                </div>
+
+                <div id="youtube-aggregation-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
+                    <div class="col-12 px-0">
+                        <h5 class="text-white fw-bold mb-3"><span style="color: #ff0000;">▶</span> F1 Official Video Contents</h5>
+                        <p class="text-white-50 mb-3" style="font-size: 0.85rem;">F1 채널의 보안 정책상 바로 재생이 제한될 수 있어, 가장 정확한 공식 영상 검색 결과로 즉시 연결해 드립니다.</p>
+                        <div class="row g-3" id="youtube-cards-container">
+                            </div>
                     </div>
                 </div>
  
@@ -221,8 +238,6 @@
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
                 document.getElementById("detail-circuit-name").innerText = race.circuit_name;
-                // detail-location 안에는 detail-date span이 중첩되어 있으므로 innerText로 통째로 덮으면 안 됨(자식 노드 파괴 → 다음 줄에서 null 참조 크래시).
-                // innerHTML로 span을 포함해 한 번에 재생성한다.
                 document.getElementById("detail-location").innerHTML = `📍 ${race.locality} | 📅 <span id="detail-date" class="text-danger">${race.date}</span>`;
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
  
@@ -302,6 +317,43 @@
                 } else { podiumRow.classList.add("d-none"); }
  
                 loadWeekendSessions(race.round, race.is_past);
+
+                // --- 📺 동적 유튜브 검색 어그리게이션 로직 ---
+                const ytRow = document.getElementById("youtube-aggregation-row");
+                const ytContainer = document.getElementById("youtube-cards-container");
+                const year = race.date ? race.date.split("-")[0] : "2026";
+                const raceQuery = `${year} ${race.raceName}`;
+                
+                ytRow.classList.remove("d-none");
+
+                // 검색어 인코딩
+                const highlightsSearch = encodeURIComponent(`Race Highlights ${raceQuery}`);
+                const qualiSearch = encodeURIComponent(`Qualifying Highlights ${raceQuery}`);
+                const allSearch = encodeURIComponent(`F1 ${raceQuery}`);
+
+                ytContainer.innerHTML = `
+                    <div class="col-md-4">
+                        <a href="https://www.youtube.com/results?search_query=${highlightsSearch}" target="_blank" class="yt-card yt-card-main p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                            <span style="font-size: 2rem;">🏎️</span>
+                            <div class="fw-bold text-danger mt-2 text-center" style="font-size: 1.05rem;">Race Highlights</div>
+                            <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery}</div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="https://www.youtube.com/results?search_query=${qualiSearch}" target="_blank" class="yt-card yt-card-sub p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                            <span style="font-size: 2rem;">⏱️</span>
+                            <div class="fw-bold text-white mt-2 text-center" style="font-size: 1.05rem;">Qualifying Highlights</div>
+                            <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery}</div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="https://www.youtube.com/results?search_query=${allSearch}" target="_blank" class="yt-card yt-card-sub p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                            <span style="font-size: 2rem;">🔎</span>
+                            <div class="fw-bold text-white mt-2 text-center" style="font-size: 1.05rem;">More Videos</div>
+                            <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery} 관련 검색 결과</div>
+                        </a>
+                    </div>
+                `;
             }
  
             fetch("/api/calendar-list")
