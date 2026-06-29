@@ -221,7 +221,7 @@
                     }
                 });
 
-                // --- 3. 드라이버 순위 테이블 렌더링 (팀 컬러 글씨에 적용) ---
+                // --- 3. 드라이버 순위 테이블 렌더링 (이름 앞에 팀 컬러 바 적용) ---
                 let driversTableHtml = "";
                 driverStandingsList.forEach(item => {
                     const cId = item.Constructors && item.Constructors.length > 0 ? item.Constructors[0].constructorId : "";
@@ -231,12 +231,12 @@
                     const dId = item.Driver.driverId;
                     const podiums = podiumMapDrivers[dId] || 0;
                     
-                    // 배경은 밝고 깔끔하게, 팀 이름에 직접 고유 팀 컬러 삽입 
+                    // 배경 그라데이션은 유지하고, 팀 이름 글자색 대신 앞부분에 각진 바(|) 추가
                     driversTableHtml += `
                         <tr class="color-row" style="border-left: 4px solid ${teamHex}; background: linear-gradient(90deg, ${teamHex}15 0%, transparent 60%);">
                             <td class="text-center rank-num">${item.position}</td>
                             <td><strong class="text-dark">${item.Driver.givenName} ${item.Driver.familyName}</strong> <small class="text-muted text-uppercase">(${item.Driver.code || ''})</small></td>
-                            <td style="color: ${teamHex}; font-weight: 700;">${teamName}</td>
+                            <td style="color: #212529; font-weight: 700;"><span style="color: ${teamHex}; margin-right: 6px; font-weight: 900;">|</span>${teamName}</td>
                             <td class="text-center wins-num text-warning fw-bold">${item.wins}</td>
                             <td class="text-center text-info fw-bold">${podiums}</td>
                             <td class="pts-num">${item.points} P</td>
@@ -245,7 +245,7 @@
                 });
                 document.getElementById("drivers-table-body").innerHTML = driversTableHtml;
 
-                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 (팀 컬러 글씨에 적용) ---
+                // --- 4. 컨스트럭터 팀 순위 테이블 렌더링 (이름 앞에 팀 컬러 바 적용) ---
                 const constStandingsList = constructorsData.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
                 let constTableHtml = "";
                 
@@ -257,7 +257,7 @@
                     constTableHtml += `
                         <tr class="color-row" style="border-left: 4px solid ${teamHex}; background: linear-gradient(90deg, ${teamHex}15 0%, transparent 60%);">
                             <td class="text-center rank-num">${item.position}</td>
-                            <td style="color: ${teamHex}; font-weight: 700; font-size: 1.05rem;">${item.Constructor.name}</td>
+                            <td style="color: #212529; font-weight: 700; font-size: 1.05rem;"><span style="color: ${teamHex}; margin-right: 6px; font-weight: 900;">|</span>${item.Constructor.name}</td>
                             <td class="text-center wins-num text-warning fw-bold">${item.wins}</td>
                             <td class="text-center text-info fw-bold">${podiums}</td>
                             <td class="pts-num">${item.points} P</td>
