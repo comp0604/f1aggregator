@@ -20,10 +20,10 @@
             flex-wrap: nowrap; overflow-x: auto; padding-bottom: 10px;
         }
         .podium-top5-container::-webkit-scrollbar { height: 6px; }
-        .podium-top5-container::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .podium-top5-container::-webkit-scrollbar-thumb { background: #555; border-radius: 0; }
 
         .top-driver-card {
-            background-color: #1f2124; border: none; border-radius: 16px 16px 6px 6px; color: white;
+            background-color: #1f2124; border: none; border-radius: 0; color: white;
             padding: 1.25rem 0.5rem; text-align: center; position: relative; box-shadow: 0 -4px 15px rgba(0,0,0,0.25);
             transition: transform 0.2s; min-width: 130px; width: 19%; display: flex; flex-direction: column; justify-content: space-between;
         }
@@ -37,7 +37,7 @@
         .card-rank-badge { position: absolute; top: 8px; left: 10px; font-size: 1.2rem; font-weight: 900; font-style: italic; opacity: 0.5; }
         .rank-order-1 .card-rank-badge { font-size: 1.6rem; opacity: 1; text-shadow: 0 0 10px rgba(255,193,7,0.5); }
 
-        .driver-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; object-position: center 15%; border: 3px solid rgba(255,255,255,0.2); background-color: #fff; margin: 0 auto 10px auto; display: none; }
+        .driver-avatar { width: 70px; height: 70px; border-radius: 0; object-fit: cover; object-position: center 15%; border: 3px solid rgba(255,255,255,0.2); background-color: #fff; margin: 0 auto 10px auto; display: none; }
         .rank-order-1 .driver-avatar { width: 95px; height: 95px; border-color: #ffc107; box-shadow: 0 4px 12px rgba(255,193,7,0.3); }
         .rank-order-2 .driver-avatar, .rank-order-3 .driver-avatar { width: 80px; height: 80px; }
         .rank-order-4 .driver-avatar, .rank-order-5 .driver-avatar { width: 60px; height: 60px; margin-bottom: 6px; }
@@ -48,14 +48,14 @@
         .driver-points { font-size: 1.1rem; font-weight: bold; color: #ffc107; margin-top: auto; }
         .rank-order-1 .driver-points { font-size: 1.4rem; }
 
-        /* 💡 하단 테이블: 가독성 극대화를 위한 화이트 톤 변경 */
-        .standings-box { background-color: #ffffff; border-radius: 20px; padding: 1.5rem; color: #212529; box-shadow: 0 10px 25px rgba(0,0,0,0.06); margin-bottom: 2rem; }
+        /* 💡 하단 테이블: 각진 화이트 톤 변경 */
+        .standings-box { background-color: #ffffff; border-radius: 0; padding: 1.5rem; color: #212529; box-shadow: 0 10px 25px rgba(0,0,0,0.06); margin-bottom: 2rem; }
         .table-f1 { color: #212529 !important; vertical-align: middle !important; border-collapse: separate; border-spacing: 0 4px; }
         .table-f1 th { border-bottom: 2px solid #ddd !important; font-weight: bold; color: #666; font-size: 0.9rem; border-top: none !important; }
         .table-f1 td { border-bottom: 1px solid #f2f2f2 !important; border-top: none !important; font-size: 0.95rem; padding: 12px 8px !important; }
         
         /* 🔥 행 색상 적용을 위한 스타일 */
-        .color-row { transition: background-color 0.2s, transform 0.2s; border-radius: 6px; }
+        .color-row { transition: background-color 0.2s, transform 0.2s; border-radius: 0; }
         .color-row:hover { transform: translateX(4px); background-color: #f8f9fa !important; }
 
         .rank-num { font-weight: bold; font-style: italic; font-size: 1.1rem; width: 50px; color: #444; }
@@ -64,12 +64,15 @@
         /* 우승, 포디움 컬러 변경 반영 */
         .wins-num { text-align: center; font-size: 0.95rem; }
 
-        .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: bold; transition: background-color 0.2s; }
+        .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 0; font-weight: bold; transition: background-color 0.2s; }
         .back-btn:hover { background-color: #e10600; color: white; }
 
         @media (max-width: 768px) {
             .podium-top5-container { justify-content: flex-start; }
         }
+
+        /* 🏷️ Bootstrap 배지 및 라운드 유틸리티 전역 각지게 초기화 */
+        .badge, .rounded { border-radius: 0 !important; }
     </style>
 </head>
 <body>
