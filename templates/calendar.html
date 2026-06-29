@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏎️ LecLovF1 - Race Calendar</title>
+    <title>LecLovF1 - Race Calendar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; }
@@ -46,46 +46,50 @@
         .scroll-winner-thumb { width: 26px; height: 26px; border-radius: 0; object-fit: cover; object-position: center 15%; background-color: white; border: 1px solid rgba(255,255,255,0.3); display: none; }
         .scroll-winner-name { font-size: 0.75rem; font-weight: bold; color: #ffc107; }
  
-        /* 🏁 디테일 섹션 배경 */
+        /* Detail Section Background */
         .race-detail-section { position: relative; background-color: #1f2124; color: white; min-height: 400px; border-radius: 0; overflow: hidden; padding: 2.5rem !important; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
         .race-detail-section::before {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: var(--detail-bg, none); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); transform: scale(1.1); z-index: 0; transition: background-image 0.4s ease-in-out;
         }
         .race-detail-section > * { position: relative; z-index: 1; }
  
-        /* 🏆 중앙 집중형 자이언트 포디움 디자인 */
-        .huge-podium-container { display: flex; justify-content: center; gap: 25px; align-items: flex-end; height: 350px; margin-top: 20px; width: 100%; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 0; }
+        /* 💡 Compact Podium Container with Solid Background */
+        .huge-podium-container { 
+            display: flex; justify-content: center; gap: 20px; align-items: flex-end; 
+            height: 240px; margin-top: 20px; width: 100%; border-bottom: 2px solid rgba(255,255,255,0.1); 
+            padding-bottom: 0; background-color: #15171a; padding: 15px;
+        }
         .huge-podium-step {
-            border-radius: 0; padding: 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center;
+            border-radius: 0; padding: 12px 10px; text-align: center; display: flex; flex-direction: column; align-items: center;
             width: 26%; box-shadow: 0 -10px 40px rgba(0,0,0,0.4); transition: transform 0.3s ease; position: relative;
         }
         .huge-podium-step:hover { transform: translateY(-5px); }
         
         .huge-p-1 { height: 100%; z-index: 3; border-top: 3px solid rgba(255,255,255,0.5); border-left: 1px solid rgba(255,255,255,0.2); border-right: 1px solid rgba(255,255,255,0.2); }
-        .huge-p-2 { height: 75%; z-index: 2; border-top: 3px solid rgba(255,255,255,0.3); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
-        .huge-p-3 { height: 60%; z-index: 1; border-top: 3px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
+        .huge-p-2 { height: 80%; z-index: 2; border-top: 3px solid rgba(255,255,255,0.3); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
+        .huge-p-3 { height: 65%; z-index: 1; border-top: 3px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); }
         
-        .huge-avatar { width: 90px; height: 90px; border-radius: 0; object-fit: cover; object-position: center 15%; border: 4px solid rgba(255, 255, 255, 0.6); background-color: white; margin-bottom: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: none; }
-        .huge-p-1 .huge-avatar { width: 130px; height: 130px; border-color: #ffc107; box-shadow: 0 0 30px rgba(255, 193, 7, 0.4); }
+        /* 💡 Reduced Avatar Sizes */
+        .huge-avatar { width: 55px; height: 55px; border-radius: 0; object-fit: cover; object-position: center 15%; border: 3px solid rgba(255, 255, 255, 0.6); background-color: white; margin-bottom: 8px; box-shadow: 0 6px 12px rgba(0,0,0,0.5); display: none; }
+        .huge-p-1 .huge-avatar { width: 75px; height: 75px; border-color: #ffc107; box-shadow: 0 0 20px rgba(255, 193, 7, 0.4); }
         
-        .huge-rank-icon { font-size: 2rem; line-height: 1; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .huge-p-1 .huge-rank-icon { font-size: 2.8rem; }
-        .huge-driver-name { font-size: 1.1rem; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .huge-p-1 .huge-driver-name { font-size: 1.5rem; color: #ffc107; }
+        .huge-rank-icon { font-size: 0.95rem; font-weight: bold; line-height: 1; margin-bottom: 4px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); color: #fff; }
+        .huge-p-1 .huge-rank-icon { font-size: 1.1rem; color: #ffc107; }
+        .huge-driver-name { font-size: 0.9rem; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .huge-p-1 .huge-driver-name { font-size: 1.1rem; color: #ffc107; }
  
-        /* 🎖️ 부가 칭호 뱃지 (스프린트, 폴포지션, 패스티스트랩) */
+        /* Accolade Badges */
         .accolade-badges { display: flex; flex-direction: column; gap: 6px; margin-top: 15px; width: 100%; align-items: center; }
         .accolade-badge { font-size: 0.75rem; font-weight: bold; padding: 5px 10px; border-radius: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: 85%; text-align: center; letter-spacing: -0.5px; }
         .badge-sprint { background-color: #0dcaf0; color: #000; }
         .badge-fastest { background-color: #800080; color: #fff; }
         .badge-pole { background-color: #dc3545; color: #fff; }
  
-        /* 기타 스타일 */
-        .detail-img-wrapper { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
+        /* Image Wrapper Layout */
+        .detail-img-wrapper { width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; }
         .detail-circuit-map { width: 100%; height: 100%; object-fit: contain; border-radius: 0; padding: 10px; background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 8px 20px rgba(0,0,0,0.4); display: none; }
-        .wiki-extract-box { font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.85); background-color: rgba(0,0,0,0.25); padding: 15px; border-radius: 0; border-left: 3px solid #ffc107; height: 100%; }
  
-        /* 📋 세션 결과 박스 */
+        /* Session Result Rows */
         .session-rows-container { display: flex; flex-direction: column; }
         .session-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 4px 0; gap: 6px; }
         .session-row-pos { width: 16px; flex-shrink: 0; }
@@ -94,7 +98,7 @@
         .session-row-gap.is-leader { color: #ffc107; font-weight: bold; }
         .session-row-value { min-width: 38px; text-align: right; flex-shrink: 0; }
  
-        /* 🗓️ WEEKEND TIMELINE */
+        /* WEEKEND TIMELINE */
         .timeline-pill-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
         .timeline-pill { flex: 1 1 150px; background-color: rgba(0,0,0,0.25); border-radius: 0; padding: 10px 14px; border-left: 2px solid #e10600; }
         .timeline-pill-label { font-size: 0.72rem; color: rgba(255,255,255,0.55); font-weight: bold; letter-spacing: 0.5px; }
@@ -110,7 +114,7 @@
         .back-btn { background-color: #212529; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 0; font-weight: bold; transition: background-color 0.2s; }
         .back-btn:hover { background-color: #e10600; color: white; }
  
-        /* 유튜브 카드 스타일 */
+        /* YouTube Card Style */
         .yt-card { transition: all 0.2s ease-in-out; text-decoration: none; border-radius: 0; }
         .yt-card:hover { transform: translateY(-4px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
         .yt-card-main { background-color: rgba(225, 6, 0, 0.15); border: 1px solid #e10600; }
@@ -118,7 +122,6 @@
         .yt-card-sub { background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.2); }
         .yt-card-sub:hover { background-color: rgba(255, 255, 255, 0.1); border-color: rgba(255,255,255,0.4); }
 
-        /* 🏷️ Bootstrap 배지 및 라운드 유틸리티 전역 각지게 초기화 */
         .badge, .rounded { border-radius: 0 !important; }
     </style>
 </head>
@@ -126,14 +129,14 @@
  
     <header class="f1-header text-center">
         <div class="container">
-            <h1 class="fw-bold m-0"><a href="/" class="f1-logo">🏎️ LecLovF1</a></h1>
+            <h1 class="fw-bold m-0"><a href="/" class="f1-logo">LecLovF1</a></h1>
         </div>
     </header>
  
     <div id="calendar-scroll-box" class="calendar-scroll-wrapper">
         <div class="text-white mx-auto d-flex align-items-center gap-3 py-4">
             <div class="spinner-border text-danger spinner-border-sm"></div>
-            <span>대시보드 라이브 데이터 로드 중...</span>
+            <span>Synchronizing Live Dashboard Data...</span>
         </div>
     </div>
  
@@ -144,9 +147,9 @@
                 <div class="row mb-4" id="detail-header-row">
                     <div class="col-12 text-center" id="detail-text-col">
                         <span id="detail-round" class="badge bg-danger px-3 py-1.5 mb-2 fs-6">ROUND 00</span>
-                        <h1 id="detail-title" class="display-5 fw-bold text-warning m-0">그랑프리를 선택해 주세요</h1>
-                        <p id="detail-circuit-name" class="fs-4 text-white-50 m-0 mt-1">로딩 중...</p>
-                        <p id="detail-location" class="fs-5 text-muted m-0">📍 위치 로딩 중... | 📅 <span id="detail-date" class="text-danger">0000-00-00</span></p>
+                        <h1 id="detail-title" class="display-5 fw-bold text-warning m-0">Select a Grand Prix</h1>
+                        <p id="detail-circuit-name" class="fs-4 text-white-50 m-0 mt-1">Loading...</p>
+                        <p id="detail-location" class="fs-5 text-white m-0">Loading location... | <span id="detail-date" class="text-warning fw-bold">0000-00-00</span></p>
                     </div>
                 </div>
  
@@ -156,12 +159,9 @@
                     </div>
                 </div>
  
-                <div class="row mt-4 g-4 align-items-stretch" id="bottom-info-row">
-                    <div class="col-md-8">
-                        <div id="detail-wiki" class="wiki-extract-box">레이스를 동기화하는 중입니다.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="detail-img-wrapper">
+                <div class="row mt-4 justify-content-center" id="bottom-info-row">
+                    <div class="col-md-6 text-center">
+                        <div class="detail-img-wrapper mx-auto">
                             <img id="detail-map-img" class="detail-circuit-map" src="" alt="Circuit Map">
                         </div>
                     </div>
@@ -169,31 +169,30 @@
  
                 <div id="weekend-timeline-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
                     <div class="col-12 px-0">
-                        <h5 class="text-danger fw-bold mb-3">🗓️ WEEKEND TIMELINE</h5>
+                        <h5 class="text-danger fw-bold mb-3">WEEKEND TIMELINE</h5>
                         <div id="weekend-timeline-box" class="timeline-pill-row"></div>
                     </div>
                 </div>
  
                 <div id="weekend-sessions-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
                     <div class="col-12 px-0">
-                        <h5 class="text-warning fw-bold mb-3">📋 그랑프리 세션 리포트 (<span id="session-season-tag" class="text-white-50"></span>)</h5>
+                        <h5 class="text-warning fw-bold mb-3">Grand Prix Session Report (<span id="session-season-tag" class="text-white-50"></span>)</h5>
                         <div class="row g-3" id="session-tables-container"></div>
                     </div>
                 </div>
  
                 <div id="youtube-aggregation-row" class="row mt-5 pt-4 border-top border-secondary d-none mx-0">
                     <div class="col-12 px-0">
-                        <h5 class="text-white fw-bold mb-3"><span style="color: #ff0000;">▶</span> F1 Official Video Contents</h5>
-                        <p class="text-white-50 mb-3" style="font-size: 0.85rem;">F1 채널의 보안 정책상 바로 재생이 제한될 수 있어, 가장 정확한 공식 영상 검색 결과로 즉시 연결해 드립니다.</p>
-                        <div class="row g-3" id="youtube-cards-container">
-                            </div>
+                        <h5 class="text-white fw-bold mb-3">F1 Official Video Contents</h5>
+                        <p class="text-white-50 mb-3" style="font-size: 0.85rem;">Due to F1 security policies, direct playback may be restricted. We connect you directly to the most accurate official video search results.</p>
+                        <div class="row g-3" id="youtube-cards-container"></div>
                     </div>
                 </div>
  
             </div>
         </div>
  
-        <div class="text-center mt-4"><button class="back-btn" onclick="location.href='/'">← 메인 대시보드로 돌아가기</button></div>
+        <div class="text-center mt-4"><button class="back-btn" onclick="location.href='/'">Back to Main Dashboard</button></div>
     </div>
  
     <script>
@@ -208,13 +207,29 @@
             for(let k in TEAM_COLORS) { if(key.includes(k)) return TEAM_COLORS[k]; }
             return "#1a1c1e";
         }
+
+        // 💡 Convert and format UTC schedule into user's detailed local time 
+        function formatToLocal(dateStr, timeStr) {
+            if (!dateStr) return "-";
+            const utcIso = timeStr ? (timeStr.includes('Z') ? `${dateStr}T${timeStr}` : `${dateStr}T${timeStr}Z`) : `${dateStr}T00:00:00Z`;
+            const d = new Date(utcIso);
+            if (isNaN(d.getTime())) return dateStr;
+            
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const day = dayNames[d.getDay()];
+            
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            
+            return `${mm}/${dd}(${day}) ${hh}:${min}`;
+        }
  
         document.addEventListener("DOMContentLoaded", function() {
             const scrollBox = document.getElementById("calendar-scroll-box");
             let localRacesArray = [];
  
-            // 순위(position)별 행 1줄을 렌더링. gap은 항목의 item.gap 필드를 그대로 표시 (예: "+0.123", "+1 Lap").
-            // 1위는 leader이므로 gap 대신 "LEADER"를 표시합니다.
             function renderSessionRows(type, items) {
                 if (!items || items.length === 0) return "";
                 const posColor = type === "qualifying" ? "text-info" : (type === "sprint" ? "text-success" : "text-warning");
@@ -231,7 +246,6 @@
                 }).join('');
             }
  
-            // 펼치기 없이 전체 드라이버 기록을 항상 다 표시하는 결과 박스 (QUALIFYING / RACE / SPRINT RESULT)
             function buildResultBox(type, icon, label, borderColor, labelColorClass, items, emptyMsg) {
                 if (!items || items.length === 0) {
                     return `<div class="col-md-4"><div class="p-3 text-center text-muted rounded h-100 d-flex align-items-center justify-content-center" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem;">${emptyMsg}</div></div>`;
@@ -240,14 +254,13 @@
                 return `
                     <div class="col-md-4">
                         <div class="p-2.5 rounded h-100 d-flex flex-column" style="background-color: rgba(0,0,0,0.25); font-size:0.8rem; border-left: 2px solid ${borderColor}; padding: 10px;">
-                            <div class="fw-bold ${labelColorClass} mb-2">${icon} ${label}</div>
+                            <div class="fw-bold ${labelColorClass} mb-2">${label}</div>
                             <div class="session-rows-container">${rows}</div>
                         </div>
                     </div>
                 `;
             }
  
-            // 🗓️ WEEKEND TIMELINE: 독립 섹션으로 분리, 가로 필(pill) 레이아웃으로 표시
             function renderWeekendTimeline(schedule) {
                 const timelineRow = document.getElementById("weekend-timeline-row");
                 const timelineBox = document.getElementById("weekend-timeline-box");
@@ -274,32 +287,43 @@
                 const sessionRow = document.getElementById("weekend-sessions-row");
                 const tablesContainer = document.getElementById("session-tables-container");
                 const seasonTag = document.getElementById("session-season-tag");
-                const seasonParam = isPast ? "current" : "2025";
                 
-                seasonTag.innerText = isPast ? "2026 Live 시즌 데이터" : "2025 전 시즌 데이터 참조";
+                // 💡 If the race hasn't started yet, hide and clear the session report fields completely
+                if (!isPast) {
+                    sessionRow.classList.add("d-none");
+                    tablesContainer.innerHTML = "";
+                    fetch(`/api/race-sessions/${round}?season=current`)
+                        .then(res => res.ok ? res.json() : null)
+                        .then(data => {
+                            if (data && data.schedule) renderWeekendTimeline(data.schedule);
+                            else document.getElementById("weekend-timeline-row").classList.add("d-none");
+                        }).catch(() => document.getElementById("weekend-timeline-row").classList.add("d-none"));
+                    return;
+                }
+                
+                seasonTag.innerText = "2026 Live Season Data";
                 sessionRow.classList.remove("d-none");
-                tablesContainer.innerHTML = `<div class="text-center w-100 py-3 text-white-50"><div class="spinner-border text-warning spinner-border-sm me-2"></div>세션별 세부 기록 스트리밍 중...</div>`;
+                tablesContainer.innerHTML = `<div class="text-center w-100 py-3 text-white-50"><div class="spinner-border text-warning spinner-border-sm me-2"></div>Streaming session details...</div>`;
                 
-                fetch(`/api/race-sessions/${round}?season=${seasonParam}`)
+                fetch(`/api/race-sessions/${round}?season=current`)
                     .then(res => res.ok ? res.json() : null)
                     .then(data => {
                         if(!data) {
-                            tablesContainer.innerHTML = `<div class="text-center text-danger w-100 py-2">세션 API 연동 누락 (서버 확인 필요)</div>`;
+                            tablesContainer.innerHTML = `<div class="text-center text-danger w-100 py-2">Session API error (Check server connection)</div>`;
                             document.getElementById("weekend-timeline-row").classList.add("d-none");
                             return;
                         }
  
                         renderWeekendTimeline(data.schedule);
  
-                        // 표시 순서: QUALIFYING → RACE → SPRINT
                         let html = "";
-                        html += buildResultBox("qualifying", "⏱️", "QUALIFYING RESULT", "#00a19c", "text-info", data.qualifying, "예선 데이터 제공 불가");
-                        html += buildResultBox("race", "🏆", "RACE RESULT", "#ffc107", "text-warning", data.race, "레이스 개최 전");
-                        html += buildResultBox("sprint", "🏃‍♂️", "SPRINT RESULT", "#ff8700", "text-success", data.sprint, "스프린트 미개최 주간");
+                        html += buildResultBox("qualifying", "", "QUALIFYING RESULT", "#00a19c", "text-info", data.qualifying, "Qualifying data unavailable");
+                        html += buildResultBox("race", "", "RACE RESULT", "#ffc107", "text-warning", data.race, "Race not started yet");
+                        html += buildResultBox("sprint", "", "SPRINT RESULT", "#ff8700", "text-success", data.sprint, "No Sprint scheduled for this weekend");
  
                         tablesContainer.innerHTML = html;
                     }).catch(() => {
-                        tablesContainer.innerHTML = `<div class="text-danger text-center w-100 py-3" style="font-size:0.8rem;">데이터 동기화 실패</div>`;
+                        tablesContainer.innerHTML = `<div class="text-danger text-center w-100 py-3" style="font-size:0.8rem;">Data synchronization failed</div>`;
                         document.getElementById("weekend-timeline-row").classList.add("d-none");
                     });
             }
@@ -308,17 +332,19 @@
                 document.getElementById("detail-round").innerText = `ROUND ${race.round}`;
                 document.getElementById("detail-title").innerText = race.raceName;
                 document.getElementById("detail-circuit-name").innerText = race.circuit_name;
-                document.getElementById("detail-location").innerHTML = `📍 ${race.locality} | 📅 <span id="detail-date" class="text-danger">${race.date}</span>`;
+                
+                // 💡 Apply Local Timezone values to the Hero Detail view header
+                const localDetailTime = formatToLocal(race.date, race.time);
+                document.getElementById("detail-location").innerHTML = `${race.locality} | <span id="detail-date" style="color: #ffcc00; font-weight: bold;">${localDetailTime}</span>`;
                 document.getElementById("detail-panel").style.setProperty('--detail-bg', `url('${race.flag_url}')`);
  
                 fetch(`/api/wiki-meta/${race.circuit_wiki_title}`)
                     .then(res => res.ok ? res.json() : null)
                     .then(wiki => {
-                        document.getElementById("detail-wiki").innerText = wiki ? wiki.extract : "요약 정보를 받아올 수 없습니다.";
                         const mapImg = document.getElementById("detail-map-img");
                         if(wiki && wiki.image) { mapImg.src = wiki.image; mapImg.style.display = "block"; } 
                         else { mapImg.style.display = "none"; }
-                    }).catch(() => { document.getElementById("detail-wiki").innerText = "위키 백과 피드 연동 지연 발생."; });
+                    }).catch(() => { console.error("Map layout error"); });
  
                 const podiumRow = document.getElementById("main-podium-row");
                 
@@ -345,9 +371,9 @@
  
                             const getBadges = (familyName) => {
                                 let b = '';
-                                if (familyName === poleDriver) b += `<span class="accolade-badge badge-pole">🎯 Pole Position</span>`;
-                                if (familyName === sprintWinner) b += `<span class="accolade-badge badge-sprint">🏃‍♂️ Sprint Win</span>`;
-                                if (familyName === flDriver) b += `<span class="accolade-badge badge-fastest">⏱️ Fastest Lap</span>`;
+                                if (familyName === poleDriver) b += `<span class="accolade-badge badge-pole">Pole Position</span>`;
+                                if (familyName === sprintWinner) b += `<span class="accolade-badge badge-sprint">Sprint Win</span>`;
+                                if (familyName === flDriver) b += `<span class="accolade-badge badge-fastest">Fastest Lap</span>`;
                                 return b ? `<div class="accolade-badges">${b}</div>` : '';
                             };
  
@@ -360,19 +386,19 @@
                                 document.getElementById("huge-podium-box").innerHTML = `
                                     <div class="huge-podium-step huge-p-2" style="background: linear-gradient(to top, ${c2}88, ${c2}11); border-color: ${c2};">
                                         <img class="huge-avatar" id="huge-ava-2" src="" alt="2nd">
-                                        <div class="huge-rank-icon">🥈</div>
+                                        <div class="huge-rank-icon">2nd</div>
                                         <div class="huge-driver-name">${d2.familyName}</div>
                                         ${getBadges(d2.familyName)}
                                     </div>
                                     <div class="huge-podium-step huge-p-1" style="background: linear-gradient(to top, ${c1}99, ${c1}22); border-color: ${c1};">
                                         <img class="huge-avatar" id="huge-ava-1" src="" alt="1st">
-                                        <div class="huge-rank-icon">🥇</div>
+                                        <div class="huge-rank-icon">1st</div>
                                         <div class="huge-driver-name">${d1.familyName}</div>
                                         ${getBadges(d1.familyName)}
                                     </div>
                                     <div class="huge-podium-step huge-p-3" style="background: linear-gradient(to top, ${c3}88, ${c3}11); border-color: ${c3};">
                                         <img class="huge-avatar" id="huge-ava-3" src="" alt="3rd">
-                                        <div class="huge-rank-icon">🥉</div>
+                                        <div class="huge-rank-icon">3rd</div>
                                         <div class="huge-driver-name">${d3.familyName}</div>
                                         ${getBadges(d3.familyName)}
                                     </div>
@@ -388,7 +414,6 @@
  
                 loadWeekendSessions(race.round, race.is_past);
  
-                // --- 📺 동적 유튜브 검색 어그리게이션 로직 ---
                 const ytRow = document.getElementById("youtube-aggregation-row");
                 const ytContainer = document.getElementById("youtube-cards-container");
                 const year = race.date ? race.date.split("-")[0] : "2026";
@@ -396,7 +421,6 @@
                 
                 ytRow.classList.remove("d-none");
  
-                // 검색어 인코딩
                 const highlightsSearch = encodeURIComponent(`Race Highlights ${raceQuery}`);
                 const qualiSearch = encodeURIComponent(`Qualifying Highlights ${raceQuery}`);
                 const allSearch = encodeURIComponent(`F1 ${raceQuery}`);
@@ -404,23 +428,20 @@
                 ytContainer.innerHTML = `
                     <div class="col-md-4">
                         <a href="https://www.youtube.com/results?search_query=${highlightsSearch}" target="_blank" class="yt-card yt-card-main p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">
-                            <span style="font-size: 2rem;">🏎️</span>
                             <div class="fw-bold text-danger mt-2 text-center" style="font-size: 1.05rem;">Race Highlights</div>
                             <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery}</div>
                         </a>
                     </div>
                     <div class="col-md-4">
                         <a href="https://www.youtube.com/results?search_query=${qualiSearch}" target="_blank" class="yt-card yt-card-sub p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">
-                            <span style="font-size: 2rem;">⏱️</span>
                             <div class="fw-bold text-white mt-2 text-center" style="font-size: 1.05rem;">Qualifying Highlights</div>
                             <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery}</div>
                         </a>
                     </div>
                     <div class="col-md-4">
                         <a href="https://www.youtube.com/results?search_query=${allSearch}" target="_blank" class="yt-card yt-card-sub p-3 d-flex flex-column align-items-center justify-content-center h-100 w-100">
-                            <span style="font-size: 2rem;">🔎</span>
                             <div class="fw-bold text-white mt-2 text-center" style="font-size: 1.05rem;">More Videos</div>
-                            <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery} 관련 검색 결과</div>
+                            <div class="text-white-50 text-center mt-1" style="font-size: 0.8rem;">${raceQuery} Results</div>
                         </a>
                     </div>
                 `;
@@ -441,8 +462,12 @@
                     let cardIdAttr = race.is_next ? 'id="next-active-race"' : '';
                     if (race.is_next) { cardClass = "current-race"; cardStyle = ""; }
                     if (race.winner_name && !race.is_next) { cardClass += " has-team-color"; }
-                    let winnerBadge = race.winner_name ? `<div class="scroll-winner-container"><img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win"><span class="scroll-winner-name">🏆 ${race.winner_name}</span></div>` : "";
-                    html += `<div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}"><div><div class="race-round text-danger text-uppercase">${race.round} ROUND</div><div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div><div class="race-loc text-white-50">📍 ${race.locality}</div></div>${winnerBadge}<div class="race-date text-warning">${race.date}</div></div>`;
+                    
+                    // 💡 Apply user's local timezone format with detailed hour/min to scroll cards
+                    let localTimeStr = formatToLocal(race.date, race.time);
+                    let winnerBadge = race.winner_name ? `<div class="scroll-winner-container"><img class="scroll-winner-thumb" id="win-thumb-${race.round}" src="" alt="Win"><span class="scroll-winner-name">Winner: ${race.winner_name}</span></div>` : "";
+                    
+                    html += `<div ${cardIdAttr} class="mini-race-card ${cardClass}" ${cardStyle} data-idx="${race.idx}"><div><div class="race-round text-danger text-uppercase">${race.round} ROUND</div><div class="race-title" title="${race.raceName}">${race.raceName.replace("Grand Prix", "GP")}</div><div class="race-loc text-white-50">${race.locality}</div></div>${winnerBadge}<div class="race-date text-warning">${localTimeStr}</div></div>`;
                 });
                 scrollBox.innerHTML = html;
  
@@ -460,10 +485,9 @@
                 }
                 setTimeout(() => { const t = document.getElementById("next-active-race"); if (t) t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 200);
             }).catch(err => {
-                console.error("캘린더 데이터 로드 실패:", err);
-                scrollBox.innerHTML = `<div class="text-white-50 mx-auto d-flex align-items-center gap-2 py-4"><span>⚠️ 캘린더 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</span></div>`;
-                document.getElementById("detail-wiki").innerText = "레이스 일정을 불러오지 못했습니다. 새로고침 해주세요.";
-                document.getElementById("detail-circuit-name").innerText = "데이터 로드 실패";
+                console.error("Calendar data fetch failure:", err);
+                scrollBox.innerHTML = `<div class="text-white-50 mx-auto d-flex align-items-center gap-2 py-4"><span>Failed to load calendar data. Please try again later.</span></div>`;
+                document.getElementById("detail-circuit-name").innerText = "Data load failed";
             });
  
             scrollBox.addEventListener("click", function(e) {
